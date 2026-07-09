@@ -1,0 +1,493 @@
+@font-face {
+  font-family: 'Playfair Display';
+  src: url('/fonts/PlayfairDisplay-Regular.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Playfair Display';
+  src: url('/fonts/PlayfairDisplay-Italic.ttf') format('truetype');
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+
+:root {
+  --bg: #ece5d8;
+  --ink: #2f2a24;
+  --muted: #8a7f6d;
+  --line: rgba(47, 42, 36, 0.18);
+  --serif: 'Playfair Display', Georgia, 'Times New Roman', serif;
+  --sans: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  overflow: hidden;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--sans);
+}
+
+.gallery-canvas {
+  position: fixed;
+  inset: 0;
+}
+
+/* the ceiling lamps live in the 3D scene now — keep only a soft vignette */
+.light-overlay {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(120% 90% at 50% 50%, transparent 60%, rgba(45, 33, 18, 0.16) 100%);
+}
+
+.dim {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background: rgba(30, 24, 16, 0.18);
+  opacity: 0;
+  transition: opacity 0.45s ease;
+}
+
+.dim-on {
+  opacity: 1;
+}
+
+/* ---------- header / footer ---------- */
+
+.header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 26px 40px;
+  z-index: 10;
+  pointer-events: none;
+}
+
+.logo {
+  font-family: var(--serif);
+  font-size: 26px;
+  letter-spacing: 0.14em;
+}
+
+.nav {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 38px;
+}
+
+.header a,
+.header button,
+.footer a {
+  pointer-events: auto;
+}
+
+.nav-link {
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-family: var(--sans);
+  color: var(--ink);
+  text-decoration: none;
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  padding-bottom: 3px;
+  opacity: 0.75;
+}
+
+.nav-link:hover {
+  opacity: 1;
+}
+
+.nav-link-active {
+  border-bottom: 1px solid var(--ink);
+  opacity: 1;
+}
+
+.header-right {
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 22px 40px;
+  z-index: 10;
+  pointer-events: none;
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.footer-links {
+  display: flex;
+  gap: 28px;
+}
+
+.footer a {
+  color: var(--muted);
+  text-decoration: none;
+}
+
+.footer a:hover {
+  color: var(--ink);
+}
+
+/* ---------- wall navigation ---------- */
+
+.wall-nav-arrow {
+  position: fixed;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 10;
+  width: 52px;
+  height: 52px;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  background: rgba(246, 241, 231, 0.65);
+  color: var(--ink);
+  font-size: 18px;
+  cursor: pointer;
+  transition: background 0.3s ease, opacity 0.3s ease;
+  backdrop-filter: blur(4px);
+}
+
+.wall-nav-arrow:hover:not(:disabled) {
+  background: rgba(246, 241, 231, 0.95);
+}
+
+.wall-nav-arrow:disabled {
+  opacity: 0.25;
+  cursor: default;
+}
+
+.wall-nav-prev {
+  left: 28px;
+}
+
+.wall-nav-next {
+  right: 28px;
+}
+
+.wall-nav-indicator {
+  position: fixed;
+  bottom: 22px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+  font-size: 10px;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.wall-nav-hidden {
+  opacity: 0;
+  pointer-events: none;
+  visibility: hidden;
+}
+
+.wall-nav-arrow,
+.wall-nav-indicator {
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.wall-nav-hidden .wall-nav-arrow {
+  pointer-events: none;
+}
+
+/* ---------- artwork panel ---------- */
+
+.artwork-panel {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 20;
+  width: min(400px, 92vw);
+  padding: 96px 44px 44px;
+  background: rgba(246, 241, 231, 0.96);
+  border-left: 1px solid var(--line);
+  backdrop-filter: blur(6px);
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  animation: panel-in 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes panel-in {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+.panel-close {
+  position: absolute;
+  top: 30px;
+  right: 40px;
+  border: none;
+  background: none;
+  color: var(--muted);
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.panel-close:hover {
+  color: var(--ink);
+}
+
+.eyebrow {
+  font-size: 10px;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 18px;
+}
+
+.panel-title {
+  font-family: var(--serif);
+  font-style: italic;
+  font-weight: 400;
+  font-size: 34px;
+  line-height: 1.15;
+  margin-bottom: 8px;
+}
+
+.panel-subtitle {
+  font-size: 10px;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 28px;
+}
+
+.panel-description {
+  font-family: var(--serif);
+  font-size: 15px;
+  line-height: 1.65;
+  color: #4d453a;
+  margin-bottom: 34px;
+}
+
+.panel-specs {
+  border-top: 1px solid var(--line);
+  margin-bottom: 38px;
+}
+
+.panel-specs > div {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.panel-specs dt {
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.panel-specs dd {
+  font-size: 13px;
+}
+
+.panel-price {
+  font-family: var(--serif);
+  font-size: 20px !important;
+}
+
+.panel-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: auto;
+}
+
+.btn {
+  padding: 15px 20px;
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: opacity 0.25s ease, background 0.25s ease;
+}
+
+.btn-primary {
+  background: var(--ink);
+  color: #f6f1e7;
+  border: 1px solid var(--ink);
+}
+
+.btn-primary:hover {
+  opacity: 0.85;
+}
+
+.btn-ghost {
+  background: none;
+  color: var(--ink);
+  border: 1px solid var(--line);
+}
+
+.btn-ghost:hover {
+  border-color: var(--ink);
+}
+
+.toast {
+  position: absolute;
+  bottom: 130px;
+  left: 44px;
+  right: 44px;
+  padding: 13px 16px;
+  background: var(--ink);
+  color: #f6f1e7;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  text-align: center;
+  animation: toast-in 0.3s ease;
+}
+
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ---------- mobile ---------- */
+
+@media (max-width: 700px), (orientation: portrait) {
+  .header {
+    padding: 20px 22px;
+  }
+
+  .nav {
+    display: none;
+  }
+
+  .footer {
+    padding: 16px 22px;
+  }
+
+  .wall-nav-arrow {
+    width: 42px;
+    height: 42px;
+  }
+
+  .wall-nav-prev {
+    left: 14px;
+  }
+
+  .wall-nav-next {
+    right: 14px;
+  }
+
+  .wall-nav-indicator {
+    bottom: 48px;
+  }
+
+  /* bottom sheet instead of side panel */
+  .artwork-panel {
+    top: auto;
+    left: 0;
+    width: 100%;
+    max-height: 62vh;
+    padding: 30px 26px 26px;
+    border-left: none;
+    border-top: 1px solid var(--line);
+    overflow-y: auto;
+    animation: sheet-in 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  @keyframes sheet-in {
+    from {
+      transform: translateY(100%);
+    }
+    to {
+      transform: translateY(0);
+    }
+  }
+
+  .panel-close {
+    position: sticky;
+    top: 0;
+    right: auto;
+    align-self: flex-end;
+    z-index: 1;
+  }
+
+  .panel-title {
+    font-size: 26px;
+  }
+
+  .panel-actions {
+    margin-top: 8px;
+  }
+
+  .toast {
+    position: fixed;
+    bottom: auto;
+    top: 20px;
+    left: 22px;
+    right: 22px;
+  }
+}
+
+/* keyboard/screen-reader path to artworks */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.sr-only:focus-within {
+  position: fixed;
+  top: 80px;
+  left: 40px;
+  width: auto;
+  height: auto;
+  clip-path: none;
+  z-index: 30;
+  background: var(--bg);
+  padding: 10px;
+}
