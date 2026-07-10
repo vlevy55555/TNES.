@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { SRGBColorSpace, type MeshBasicMaterial } from 'three'
 import { useTexture } from '@react-three/drei'
-import { FRAME_BORDER, HERO, MAT_BORDER } from '../../data/artworks'
+import { FRAME_BORDER, HERO, MAT_BORDER, TNES } from '../../data/artworks'
 import { useGalleryStore } from '../../store/useGalleryStore'
 import { introScrub } from './introScrub'
 
@@ -39,11 +39,11 @@ export function HeroFrame() {
     <group position={HERO.position}>
       <mesh>
         <boxGeometry args={[frameW, frameH, 0.1]} />
-        <meshStandardMaterial color="#8f7c4e" metalness={0.35} roughness={0.5} />
+        <meshStandardMaterial color={TNES.black} metalness={0} roughness={0.7} />
       </mesh>
       <mesh position={[0, 0, 0.055]}>
         <boxGeometry args={[w + MAT_BORDER * 2, h + MAT_BORDER * 2, 0.03]} />
-        <meshStandardMaterial color="#e7dfd0" />
+        <meshStandardMaterial color={TNES.white} />
       </mesh>
       <mesh position={[0, 0, 0.072]}>
         <planeGeometry args={[w, h]} />

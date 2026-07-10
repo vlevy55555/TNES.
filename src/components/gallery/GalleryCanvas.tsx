@@ -25,9 +25,9 @@ export function GalleryCanvas() {
         </Suspense>
       </Canvas>
       <Loader
-        containerStyles={{ background: '#ece5d8' }}
-        barStyles={{ background: '#2f2a24' }}
-        dataStyles={{ color: '#8a7f6d' }}
+        containerStyles={{ background: '#f7f4ee' }}
+        barStyles={{ background: '#121212' }}
+        dataStyles={{ color: '#8c867d' }}
       />
     </div>
   )

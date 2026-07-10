@@ -1,15 +1,14 @@
 import { Html, RoundedBox, Text } from '@react-three/drei'
 import { useEffect, useMemo, useState, type FormEvent } from 'react'
 import { CanvasTexture, RepeatWrapping, Shape } from 'three'
-import { OPENING_DATE, SERIF, SERIF_ITALIC } from '../../data/artworks'
+import { FONT_SANS, FONT_SANS_MEDIUM, OPENING_DATE, TNES } from '../../data/artworks'
 
 const FRAME_BORDER = 0.15
 
-const INK = '#2f2a24'
-const MUTED = '#8a7f6d'
-const GOLD = '#b69b5e'
-const PLATE = '#dcd5c3'
-const RIVET = '#6b6152'
+const INK = TNES.black
+const MUTED = TNES.sand
+const PLATE = TNES.beige // sign plates, distinct from the white wall
+const RIVET = '#6f6a61' // muted metal
 const FLOOR_Y = -2.2
 
 function useCountdown() {
@@ -43,13 +42,14 @@ function makeCautionTexture() {
   canvas.width = canvas.height = size
   const ctx = canvas.getContext('2d')!
   const img = ctx.createImageData(size, size)
+  // monochrome hazard stripe: beige + black (no yellow — see 05. Cromática)
   for (let y = 0; y < size; y++) {
     for (let x = 0; x < size; x++) {
-      const yellow = (((x + y) % period) + period) % period < period / 2
+      const light = (((x + y) % period) + period) % period < period / 2
       const i = (y * size + x) * 4
-      img.data[i] = yellow ? 240 : 24
-      img.data[i + 1] = yellow ? 192 : 20
-      img.data[i + 2] = yellow ? 46 : 16
+      img.data[i] = light ? 207 : 18
+      img.data[i + 1] = light ? 200 : 18
+      img.data[i + 2] = light ? 191 : 18
       img.data[i + 3] = 255
     }
   }
@@ -70,11 +70,11 @@ function TapeAnchor({ x, y, depth }: { x: number; y: number; depth: number }) {
     <group position={[x, 0, depth]}>
       <mesh position={[0, postCenterY, 0]}>
         <cylinderGeometry args={[0.026, 0.034, postHeight, 10]} />
-        <meshStandardMaterial color="#4a4238" metalness={0.45} roughness={0.4} />
+        <meshStandardMaterial color="#3a3733" metalness={0.45} roughness={0.4} />
       </mesh>
       <mesh position={[0, y, 0.02]}>
         <circleGeometry args={[0.042, 16]} />
-        <meshStandardMaterial color="#2a251e" metalness={0.55} roughness={0.3} />
+        <meshStandardMaterial color={TNES.black} metalness={0.55} roughness={0.3} />
       </mesh>
     </group>
   )
@@ -119,15 +119,15 @@ function CautionTape({
           {variant === 'stripes' ? (
             <meshBasicMaterial map={texture} toneMapped={false} />
           ) : (
-            <meshBasicMaterial color="#f0c02e" toneMapped={false} />
+            <meshBasicMaterial color={TNES.sand} toneMapped={false} />
           )}
         </mesh>
         {variant === 'text' && (
           <Text
-            font={SERIF}
-            fontSize={0.082}
-            letterSpacing={0.2}
-            color="#171310"
+            font={FONT_SANS}
+            fontSize={0.078}
+            letterSpacing={0.24}
+            color={TNES.black}
             anchorX="center"
             anchorY="middle"
             position={[0, 0, 0.004]}
@@ -226,13 +226,13 @@ function PostSign({
         <WarningTriangle size={h * 0.24} />
       </group>
       <Text
-        font={SERIF}
-        fontSize={0.078}
-        letterSpacing={0.06}
+        font={FONT_SANS}
+        fontSize={0.074}
+        letterSpacing={0.12}
         color={INK}
         anchorX="center"
         anchorY="middle"
-        lineHeight={1.25}
+        lineHeight={1.3}
         position={[0, -h * 0.2, 0.02]}
       >
         {lines.join('\n')}
@@ -262,13 +262,13 @@ function AFrameSign({ position }: { position: [number, number, number] }) {
             <WarningTriangle size={0.14} />
           </group>
           <Text
-            font={SERIF}
-            fontSize={0.082}
-            letterSpacing={0.05}
+            font={FONT_SANS}
+            fontSize={0.076}
+            letterSpacing={0.1}
             color={INK}
             anchorX="center"
             anchorY="middle"
-            lineHeight={1.3}
+            lineHeight={1.35}
             position={[0, -h * 0.16, 0.018]}
           >
             {'EXHIBITION\nIN PREPARATION'}
@@ -279,7 +279,7 @@ function AFrameSign({ position }: { position: [number, number, number] }) {
       <group rotation={[tilt, 0, 0]}>
         <mesh position={[0, -h / 2, 0]}>
           <boxGeometry args={[w, h, 0.028]} />
-          <meshStandardMaterial color="#c7bea9" metalness={0.2} roughness={0.65} />
+          <meshStandardMaterial color="#bcb5aa" metalness={0.2} roughness={0.65} />
         </mesh>
       </group>
     </group>
@@ -346,7 +346,7 @@ function WallSubscribe({ position }: { position: [number, number, number] }) {
 const UNITS = ['DAYS', 'HOURS', 'MINUTES', 'SECONDS']
 const UNIT_X = [-1.86, -0.62, 0.62, 1.86]
 
-// the countdown lives inside a real gold frame, like the artworks on the other walls
+// the countdown lives inside a real frame, like the artworks on the other walls
 function CountdownFrame({
   position,
   parts,
@@ -363,17 +363,17 @@ function CountdownFrame({
     <group position={position}>
       <mesh>
         <boxGeometry args={[frameW, frameH, 0.12]} />
-        <meshStandardMaterial color={GOLD} metalness={0.35} roughness={0.45} />
+        <meshStandardMaterial color={TNES.black} metalness={0} roughness={0.7} />
       </mesh>
       <mesh position={[0, 0, 0.065]}>
         <boxGeometry args={[w, h, 0.03]} />
-        <meshStandardMaterial color="#f6f1e7" />
+        <meshStandardMaterial color={TNES.white} />
       </mesh>
 
       <Text
-        font={SERIF_ITALIC}
-        fontSize={0.185}
-        letterSpacing={0.13}
+        font={FONT_SANS}
+        fontSize={0.15}
+        letterSpacing={0.22}
         color={MUTED}
         anchorX="center"
         position={[0, h / 2 - 0.32, 0.085]}
@@ -383,13 +383,13 @@ function CountdownFrame({
 
       {parts.map((value, i) => (
         <group key={UNITS[i]} position={[UNIT_X[i], -0.05, 0.085]}>
-          <Text font={SERIF} fontSize={0.54} color={INK} anchorX="center">
+          <Text font={FONT_SANS_MEDIUM} fontSize={0.54} color={INK} anchorX="center">
             {value}
           </Text>
           <Text
-            font={SERIF}
-            fontSize={0.05}
-            letterSpacing={0.28}
+            font={FONT_SANS}
+            fontSize={0.048}
+            letterSpacing={0.3}
             color={MUTED}
             anchorX="center"
             position={[0, -0.42, 0]}
@@ -401,11 +401,11 @@ function CountdownFrame({
       {[-1.24, 0, 1.24].map((x) => (
         <Text
           key={x}
-          font={SERIF}
-          fontSize={0.38}
+          font={FONT_SANS}
+          fontSize={0.34}
           color={MUTED}
           anchorX="center"
-          position={[x, -0.08, 0.085]}
+          position={[x, -0.04, 0.085]}
         >
           :
         </Text>

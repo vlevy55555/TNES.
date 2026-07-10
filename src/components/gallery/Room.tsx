@@ -1,36 +1,36 @@
 import { CanvasTexture, RepeatWrapping, SRGBColorSpace } from 'three'
-import { walls, WALL_SPACING } from '../../data/artworks'
+import { TNES, walls, WALL_SPACING } from '../../data/artworks'
 
-// ponytail: procedural plank texture on a canvas — no image asset, no loader
-function makeWoodTexture() {
+// ponytail: procedural polished-concrete floor on a canvas — monochrome, no
+// asset, no loader. Soft mottling + fine speckle in the sand/beige range.
+function makeFloorTexture() {
   const canvas = document.createElement('canvas')
   canvas.width = canvas.height = 512
   const ctx = canvas.getContext('2d')!
-  const shades = ['#6e4526', '#7a4f2c', '#5f3a1f', '#835832', '#714828', '#583517', '#7d5230', '#684123']
-  const plank = 64
-  shades.forEach((shade, i) => {
-    ctx.fillStyle = shade
-    ctx.fillRect(i * plank, 0, plank, 512)
-    // grain streaks
-    ctx.strokeStyle = 'rgba(60, 35, 15, 0.16)'
-    for (let g = 0; g < 5; g++) {
-      ctx.beginPath()
-      ctx.moveTo(i * plank + 8 + g * 12, 0)
-      ctx.lineTo(i * plank + 12 + g * 12, 512)
-      ctx.stroke()
-    }
-    // seams + staggered butt joints
-    ctx.fillStyle = 'rgba(30, 18, 8, 0.5)'
-    ctx.fillRect(i * plank, 0, 2, 512)
-    ctx.fillRect(i * plank, (i * 197) % 512, plank, 2)
-  })
+  ctx.fillStyle = '#c3bcb1'
+  ctx.fillRect(0, 0, 512, 512)
+  for (let i = 0; i < 44; i++) {
+    const x = Math.random() * 512
+    const y = Math.random() * 512
+    const r = 40 + Math.random() * 130
+    const g = ctx.createRadialGradient(x, y, 0, x, y, r)
+    const dark = Math.random() > 0.5
+    g.addColorStop(0, dark ? 'rgba(120, 112, 102, 0.06)' : 'rgba(228, 223, 215, 0.06)')
+    g.addColorStop(1, 'rgba(0, 0, 0, 0)')
+    ctx.fillStyle = g
+    ctx.fillRect(0, 0, 512, 512)
+  }
+  for (let i = 0; i < 1500; i++) {
+    ctx.fillStyle = `rgba(92, 86, 78, ${Math.random() * 0.05})`
+    ctx.fillRect(Math.random() * 512, Math.random() * 512, 1, 1)
+  }
   const texture = new CanvasTexture(canvas)
   texture.colorSpace = SRGBColorSpace
   texture.wrapS = texture.wrapT = RepeatWrapping
-  texture.repeat.set(11, 4.8) // ~0.4u planks running toward the viewer
+  texture.repeat.set(6, 3.4)
   return texture
 }
-const woodTexture = makeWoodTexture()
+const floorTexture = makeFloorTexture()
 
 const centerX = ((walls.length - 1) * WALL_SPACING) / 2
 const WIDTH = 36
@@ -42,21 +42,21 @@ const CEILING_Y = 2.73
 export function Room() {
   return (
     <group position={[centerX, 0, 0]}>
-      {/* wooden floor */}
+      {/* polished-concrete floor */}
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -2.2, DEPTH / 2 - 1]}>
         <planeGeometry args={[WIDTH, DEPTH]} />
-        <meshStandardMaterial map={woodTexture} />
+        <meshStandardMaterial map={floorTexture} />
       </mesh>
       {/* white ceiling — unlit and deliberately brighter than the lit walls,
           so it still reads clearly once tone-mapped and exposed */}
       <mesh rotation={[Math.PI / 2, 0, 0]} position={[0, CEILING_Y, DEPTH / 2 - 1]}>
         <planeGeometry args={[WIDTH, DEPTH]} />
-        <meshBasicMaterial color="#faf8f2" />
+        <meshBasicMaterial color="#fbfaf7" />
       </mesh>
       {/* backdrop closing the gap behind/between the angled walls */}
       <mesh position={[0, 0, -0.55]}>
         <planeGeometry args={[WIDTH, 6]} />
-        <meshStandardMaterial color="#e3d9c9" />
+        <meshStandardMaterial color={TNES.beige} />
       </mesh>
     </group>
   )

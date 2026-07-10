@@ -137,5 +137,20 @@ export const artworks: Artwork[] = [
 export const FRAME_BORDER = 0.26
 export const MAT_BORDER = 0.2
 
-export const SERIF = '/fonts/PlayfairDisplay-Regular.ttf'
-export const SERIF_ITALIC = '/fonts/PlayfairDisplay-Italic.ttf'
+// ---- 05. Cromática (VSL × TNES) — light monochrome "studio" palette ----
+export const TNES = {
+  white: '#f7f4ee', // backgrounds, walls, mats
+  black: '#121212', // text, ink, frames
+  sand: '#8c867d', // muted labels, floor, lines
+  beige: '#cfc8bf', // soft secondary surfaces
+}
+
+// ---- 02. Sistema Tipográfico (troika loads font files) ----
+// primary sans (titles, UI) · editorial serif (Georgia≈Gelasio, body) ·
+// Playfair reserved for brand/authorship + H3 subheaders
+export const FONT_SANS = '/fonts/Manrope-Regular.ttf'
+export const FONT_SANS_MEDIUM = '/fonts/Manrope-Medium.ttf'
+export const FONT_SERIF = '/fonts/Gelasio-Regular.ttf'
+export const FONT_SERIF_ITALIC = '/fonts/Gelasio-Italic.ttf'
+export const FONT_BRAND = '/fonts/PlayfairDisplay-Regular.ttf'
+export const FONT_BRAND_ITALIC = '/fonts/PlayfairDisplay-Italic.ttf'

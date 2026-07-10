@@ -4,8 +4,9 @@ import type { Object3D, SpotLight } from 'three'
 import {
   artworks,
   COMING_SOON_WALL,
-  SERIF,
+  FONT_SANS,
   SIGNATURE_WALL,
+  TNES,
   WALL_SPACING,
   type Wall as WallType,
 } from '../../data/artworks'
@@ -30,8 +31,8 @@ function WallLamp({ x }: { x: number }) {
       <spotLight
         ref={spot}
         position={[x, 2.55, 1.05]}
-        color="#fff1d6"
-        intensity={26}
+        color="#fffdf9"
+        intensity={24}
         angle={0.6}
         penumbra={0.55}
         decay={1.6}
@@ -61,7 +62,7 @@ export function Wall({ wall }: { wall: WallType }) {
           peeks in once the camera dollies back for a wall-to-wall transition */}
       <mesh position={[0, 0.265, 0]} onClick={() => !dragState.moved && closeArtwork()}>
         <boxGeometry args={[9.4, 4.93, 0.1]} />
-        <meshStandardMaterial color="#e8dfd2" />
+        <meshStandardMaterial color={TNES.white} />
       </mesh>
 
       {lampX.map((x) => (
@@ -71,10 +72,10 @@ export function Wall({ wall }: { wall: WallType }) {
       {/* the signature IS the title on the hero wall — no text label there */}
       {wall.index !== SIGNATURE_WALL && (
         <Text
-          font={SERIF}
-          fontSize={0.075}
-          letterSpacing={0.35}
-          color="#a99d8a"
+          font={FONT_SANS}
+          fontSize={0.072}
+          letterSpacing={0.34}
+          color={TNES.sand}
           anchorX="left"
           anchorY="middle"
           position={[-2.95, 1.72, 0.06]}
