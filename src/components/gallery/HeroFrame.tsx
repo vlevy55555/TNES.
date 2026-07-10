@@ -1,14 +1,12 @@
-import { useEffect, useRef } from 'react'
+import { useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { SRGBColorSpace, type MeshBasicMaterial } from 'three'
 import { useTexture } from '@react-three/drei'
 import { FRAME_BORDER, HERO, MAT_BORDER } from '../../data/artworks'
-import { useGalleryStore } from '../../store/useGalleryStore'
 import { introScrub } from './introScrub'
 
-// the painting the signature is written over: it opens at full brightness
-// (the opening is zoomed into it) then sinks to a dim secondary backdrop as the
-// scroll pulls the camera back and the VSL signature takes over
+// the painting the signature is written over: full brightness when the visitor
+// zooms into it (signature gone), dimmed to a backdrop at rest (signature formed)
 const DIM = 0.5
 
 export function HeroFrame() {
@@ -17,18 +15,11 @@ export function HeroFrame() {
   })
   const photo = useRef<MeshBasicMaterial>(null)
 
-  // opening consumed / later visit: settle at the dimmed backdrop level
-  useEffect(() => {
-    const mat = photo.current
-    if (mat && !useGalleryStore.getState().introPlaying) mat.color.setScalar(DIM)
-  }, [])
-
-  // while the opening is armed, brightness follows the scroll scrub (reversible)
+  // brightness follows the scroll scrub: full when zoomed into the painting
+  // (progress 0), dimmed to a backdrop when formed/at rest (progress 1)
   useFrame(() => {
     const mat = photo.current
-    if (mat && useGalleryStore.getState().introPlaying) {
-      mat.color.setScalar(1 + (DIM - 1) * introScrub.progress)
-    }
+    if (mat) mat.color.setScalar(1 + (DIM - 1) * introScrub.progress)
   })
 
   const [w, h] = HERO.size

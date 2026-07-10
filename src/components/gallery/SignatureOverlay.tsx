@@ -21,30 +21,26 @@ function drawnFraction(t: number) {
 
 export function SignatureOverlay() {
   const currentWall = useGalleryStore((s) => s.currentWall)
-  const introPlaying = useGalleryStore((s) => s.introPlaying)
   const brush = useRef<SVGPathElement>(null)
-  const hint = useRef<HTMLDivElement>(null)
   const onWall = currentWall === SIGNATURE_WALL
 
   useEffect(() => {
     const el = brush.current
     if (!el) return
-    // while the opening is armed, the signature tracks the scroll scrub every
-    // frame — it writes on as you scroll down and un-writes as you scroll up
-    if (introPlaying) {
+    // on the signature wall the signature tracks the scroll scrub every frame:
+    // formed at rest (progress 1), un-writing as the visitor scrolls in (→ 0)
+    if (onWall) {
       let raf = 0
       const tick = () => {
-        const p = introScrub.progress
-        el.style.strokeDashoffset = String(1 - drawnFraction(p))
-        if (hint.current) hint.current.style.opacity = String(Math.max(0, 1 - p * 6))
+        el.style.strokeDashoffset = String(1 - drawnFraction(introScrub.progress))
         raf = requestAnimationFrame(tick)
       }
       tick()
       return () => cancelAnimationFrame(raf)
     }
-    // opening consumed (or a later visit): show it whole
+    // off the signature wall: keep it whole (it fades out via opacity)
     el.style.strokeDashoffset = '0'
-  }, [introPlaying])
+  }, [onWall])
 
   return (
     <div className={`signature-overlay ${onWall ? 'is-on' : ''}`} aria-hidden="true">
@@ -67,12 +63,6 @@ export function SignatureOverlay() {
         </defs>
         <path className="sig-ink" d={SIGNATURE_FILL_D} fillRule="evenodd" mask="url(#sig-reveal)" />
       </svg>
-      {introPlaying && onWall && (
-        <div className="scroll-hint" ref={hint}>
-          <span>scroll</span>
-          <span className="scroll-hint-arrow">↓</span>
-        </div>
-      )}
     </div>
   )
 }

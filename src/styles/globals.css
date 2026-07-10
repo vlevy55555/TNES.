@@ -124,44 +124,6 @@ body,
   }
 }
 
-/* "scroll" cue on the opening — fades out as the scrub progresses */
-.scroll-hint {
-  position: absolute;
-  bottom: 7%;
-  left: 50%;
-  transform: translateX(-50%);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.35rem;
-  padding: 0.6rem 1.1rem 0.65rem;
-  border-radius: 999px;
-  background: rgba(28, 22, 14, 0.42);
-  font-size: 0.64rem;
-  letter-spacing: 0.3em;
-  text-transform: uppercase;
-  color: #f3ede1;
-  pointer-events: none;
-}
-
-.scroll-hint-arrow {
-  font-size: 1rem;
-  letter-spacing: 0;
-  animation: scroll-hint-bounce 1.6s ease-in-out infinite;
-}
-
-@keyframes scroll-hint-bounce {
-  0%,
-  100% {
-    transform: translateY(0);
-    opacity: 0.5;
-  }
-  50% {
-    transform: translateY(5px);
-    opacity: 1;
-  }
-}
-
 .dim {
   position: fixed;
   inset: 0;
