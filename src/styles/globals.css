@@ -44,17 +44,12 @@
 }
 
 :root {
-  /* 05. Cromática (VSL × TNES) — light monochrome studio */
-  --white: #f7f4ee;
-  --black: #121212;
-  --sand: #8c867d;
-  --beige: #cfc8bf;
-
-  --bg: var(--white);
-  --ink: var(--black);
-  --muted: var(--sand);
-  --line: rgba(18, 18, 18, 0.14);
-
+  /* colours stay warm (reverted per request) */
+  --bg: #ece5d8;
+  --ink: #2f2a24;
+  --muted: #8a7f6d;
+  --line: rgba(47, 42, 36, 0.18);
+  /* 02. type system */
   --sans: 'Manrope', 'Helvetica Neue', Arial, sans-serif;
   --serif: 'Gelasio', Georgia, 'Times New Roman', serif;
   --brand: 'Playfair Display', Georgia, serif;
@@ -86,7 +81,7 @@ body,
   position: fixed;
   inset: 0;
   pointer-events: none;
-  background: radial-gradient(120% 90% at 50% 50%, transparent 62%, rgba(18, 18, 18, 0.09) 100%);
+  background: radial-gradient(120% 90% at 50% 50%, transparent 60%, rgba(45, 33, 18, 0.16) 100%);
 }
 
 /* VSL signature written over the hero wall — a 2D overlay above the canvas but
@@ -115,11 +110,11 @@ body,
 }
 
 .sig-ink {
-  fill: var(--black);
-  /* soft white halo lifts the ink off the darker centre of the painting;
-     over the white wall the black ink already carries its own contrast */
-  filter: drop-shadow(0 0 9px rgba(247, 244, 238, 0.6))
-    drop-shadow(0 2px 6px rgba(18, 18, 18, 0.22));
+  fill: #221c13;
+  /* soft light halo lifts the dark ink off the darker centre of the painting;
+     over the cream wall the ink already carries its own contrast */
+  filter: drop-shadow(0 0 10px rgba(244, 238, 226, 0.55))
+    drop-shadow(0 2px 6px rgba(20, 14, 6, 0.28));
 }
 
 @media (max-width: 700px) {
@@ -171,7 +166,7 @@ body,
   position: fixed;
   inset: 0;
   pointer-events: none;
-  background: rgba(18, 18, 18, 0.16);
+  background: rgba(30, 24, 16, 0.18);
   opacity: 0;
   transition: opacity 0.45s ease;
 }
@@ -228,7 +223,7 @@ body,
   letter-spacing: 0.24em;
   text-transform: uppercase;
   padding-bottom: 3px;
-  opacity: 0.7;
+  opacity: 0.75;
 }
 
 .nav-link:hover {
@@ -287,7 +282,7 @@ body,
   height: 52px;
   border: 1px solid var(--line);
   border-radius: 50%;
-  background: rgba(247, 244, 238, 0.68);
+  background: rgba(246, 241, 231, 0.65);
   color: var(--ink);
   font-size: 18px;
   cursor: pointer;
@@ -296,7 +291,7 @@ body,
 }
 
 .wall-nav-arrow:hover:not(:disabled) {
-  background: rgba(247, 244, 238, 0.95);
+  background: rgba(246, 241, 231, 0.95);
 }
 
 .wall-nav-arrow:disabled {
@@ -349,7 +344,7 @@ body,
   z-index: 20;
   width: min(400px, 92vw);
   padding: 96px 44px 44px;
-  background: rgba(247, 244, 238, 0.96);
+  background: rgba(246, 241, 231, 0.96);
   border-left: 1px solid var(--line);
   backdrop-filter: blur(6px);
   display: flex;
@@ -410,12 +405,11 @@ body,
   margin-bottom: 28px;
 }
 
-/* body — Georgia, generous leading */
 .panel-description {
   font-family: var(--serif);
   font-size: 15px;
-  line-height: 1.6;
-  color: var(--ink);
+  line-height: 1.65;
+  color: #4d453a;
   margin-bottom: 34px;
 }
 
@@ -468,7 +462,7 @@ body,
 
 .btn-primary {
   background: var(--ink);
-  color: var(--white);
+  color: #f6f1e7;
   border: 1px solid var(--ink);
 }
 
@@ -493,7 +487,7 @@ body,
   right: 44px;
   padding: 13px 16px;
   background: var(--ink);
-  color: var(--white);
+  color: #f6f1e7;
   font-size: 11px;
   letter-spacing: 0.14em;
   text-transform: uppercase;
@@ -604,7 +598,7 @@ body,
 
 .wall-notify .btn {
   min-width: 210px;
-  background: rgba(247, 244, 238, 0.72);
+  background: rgba(246, 241, 231, 0.7);
 }
 
 .wall-notify-form {

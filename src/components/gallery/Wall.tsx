@@ -6,7 +6,6 @@ import {
   COMING_SOON_WALL,
   FONT_SANS,
   SIGNATURE_WALL,
-  TNES,
   WALL_SPACING,
   type Wall as WallType,
 } from '../../data/artworks'
@@ -31,8 +30,8 @@ function WallLamp({ x }: { x: number }) {
       <spotLight
         ref={spot}
         position={[x, 2.55, 1.05]}
-        color="#fffdf9"
-        intensity={24}
+        color="#fff1d6"
+        intensity={26}
         angle={0.6}
         penumbra={0.55}
         decay={1.6}
@@ -62,7 +61,7 @@ export function Wall({ wall }: { wall: WallType }) {
           peeks in once the camera dollies back for a wall-to-wall transition */}
       <mesh position={[0, 0.265, 0]} onClick={() => !dragState.moved && closeArtwork()}>
         <boxGeometry args={[9.4, 4.93, 0.1]} />
-        <meshStandardMaterial color={TNES.white} />
+        <meshStandardMaterial color="#e8dfd2" />
       </mesh>
 
       {lampX.map((x) => (
@@ -75,7 +74,7 @@ export function Wall({ wall }: { wall: WallType }) {
           font={FONT_SANS}
           fontSize={0.072}
           letterSpacing={0.34}
-          color={TNES.sand}
+          color="#a99d8a"
           anchorX="left"
           anchorY="middle"
           position={[-2.95, 1.72, 0.06]}

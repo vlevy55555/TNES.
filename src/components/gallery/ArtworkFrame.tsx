@@ -8,7 +8,6 @@ import {
   FONT_SANS,
   FRAME_BORDER,
   MAT_BORDER,
-  TNES,
   type Artwork,
 } from '../../data/artworks'
 import { useGalleryStore } from '../../store/useGalleryStore'
@@ -20,8 +19,8 @@ function makeShadowTexture() {
   canvas.width = canvas.height = 128
   const ctx = canvas.getContext('2d')!
   const gradient = ctx.createRadialGradient(64, 64, 24, 64, 64, 64)
-  gradient.addColorStop(0, 'rgba(18,18,18,0.22)')
-  gradient.addColorStop(1, 'rgba(18,18,18,0)')
+  gradient.addColorStop(0, 'rgba(40,30,15,0.26)')
+  gradient.addColorStop(1, 'rgba(40,30,15,0)')
   ctx.fillStyle = gradient
   ctx.fillRect(0, 0, 128, 128)
   return new CanvasTexture(canvas)
@@ -79,16 +78,16 @@ export function ArtworkFrame({ artwork }: { artwork: Artwork }) {
         />
       </mesh>
 
-      {/* thin matte black frame — monochrome, lets the photograph lead */}
+      {/* gold frame */}
       <mesh>
         <boxGeometry args={[frameW, frameH, 0.1]} />
-        <meshStandardMaterial color={TNES.black} metalness={0} roughness={0.7} />
+        <meshStandardMaterial color="#b69b5e" metalness={0.35} roughness={0.45} />
       </mesh>
 
       {/* passe-partout layered over the frame face (frontal camera never sees the seam) */}
       <mesh position={[0, 0, 0.055]}>
         <boxGeometry args={[w + MAT_BORDER * 2, h + MAT_BORDER * 2, 0.03]} />
-        <meshStandardMaterial color={TNES.white} />
+        <meshStandardMaterial color="#f6f1e7" />
       </mesh>
 
       {/* photograph */}
@@ -102,7 +101,7 @@ export function ArtworkFrame({ artwork }: { artwork: Artwork }) {
       <Text
         font={FONT_BRAND}
         fontSize={0.115}
-        color={TNES.black}
+        color="#2f2a24"
         anchorX="left"
         anchorY="top"
         position={[-frameW / 2, -frameH / 2 - 0.18, 0]}
@@ -112,12 +111,12 @@ export function ArtworkFrame({ artwork }: { artwork: Artwork }) {
       {/* caption — Manrope, tracked */}
       <Text
         font={FONT_SANS}
-        fontSize={0.055}
-        letterSpacing={0.24}
-        color={TNES.sand}
+        fontSize={0.058}
+        letterSpacing={0.22}
+        color="#9a8f7f"
         anchorX="left"
         anchorY="top"
-        position={[-frameW / 2, -frameH / 2 - 0.35, 0]}
+        position={[-frameW / 2, -frameH / 2 - 0.36, 0]}
       >
         {artwork.subtitle.toUpperCase()}
       </Text>

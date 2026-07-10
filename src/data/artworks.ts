@@ -137,14 +137,6 @@ export const artworks: Artwork[] = [
 export const FRAME_BORDER = 0.26
 export const MAT_BORDER = 0.2
 
-// ---- 05. Cromática (VSL × TNES) — light monochrome "studio" palette ----
-export const TNES = {
-  white: '#f7f4ee', // backgrounds, walls, mats
-  black: '#121212', // text, ink, frames
-  sand: '#8c867d', // muted labels, floor, lines
-  beige: '#cfc8bf', // soft secondary surfaces
-}
-
 // ---- 02. Sistema Tipográfico (troika loads font files) ----
 // primary sans (titles, UI) · editorial serif (Georgia≈Gelasio, body) ·
 // Playfair reserved for brand/authorship + H3 subheaders
