@@ -6,10 +6,14 @@ import {
   artworks,
   CAMERA_Z,
   FRAME_BORDER,
+  HERO,
+  HERO_ZOOM_Z,
+  SIGNATURE_WALL,
   WALL_SPACING,
   walls,
 } from '../../data/artworks'
 import { useGalleryStore } from '../../store/useGalleryStore'
+import { introScrub } from './introScrub'
 
 // set while the pointer is dragging so frame/wall clicks can ignore the release
 export const dragState = { moved: false }
@@ -26,16 +30,20 @@ export function CameraController() {
   const currentWall = useGalleryStore((s) => s.currentWall)
   const selectedArtworkId = useGalleryStore((s) => s.selectedArtworkId)
 
+  // true only for the one-time opening sequence: start framed inside the hero
+  const introActive = useRef(useGalleryStore.getState().introPlaying)
+  const cx0 = useGalleryStore.getState().currentWall * WALL_SPACING
+
   // GSAP drives base + look; useFrame composes orbit/pitch/dolly on top each frame
   const base = useRef(
-    new Vector3(
-      useGalleryStore.getState().currentWall * WALL_SPACING,
-      0,
-      CAMERA_Z,
-    ),
+    introActive.current
+      ? new Vector3(cx0, HERO.position[1], HERO_ZOOM_Z)
+      : new Vector3(cx0, 0, CAMERA_Z),
   )
   const look = useRef(
-    new Vector3(useGalleryStore.getState().currentWall * WALL_SPACING, 0, 0),
+    introActive.current
+      ? new Vector3(cx0, HERO.position[1], 0)
+      : new Vector3(cx0, 0, 0),
   )
   const yaw = useRef(0)
   const yawTarget = useRef(0)
@@ -63,15 +71,28 @@ export function CameraController() {
     let startY = 0
     let down = false
 
+    let lastY = 0
     const onDown = (e: PointerEvent) => {
       down = true
       startX = e.clientX
       startY = e.clientY
+      lastY = e.clientY
       dragState.moved = false
       document.body.style.cursor = 'grabbing'
     }
     const onMove = (e: PointerEvent) => {
       if (!down) return
+      // during the opening, a vertical drag scrubs it (touch + trackpad) instead
+      // of orbiting the wall
+      if (useGalleryStore.getState().introPlaying) {
+        introScrub.target = Math.max(
+          0,
+          Math.min(1, introScrub.target + (lastY - e.clientY) * 0.004),
+        )
+        lastY = e.clientY
+        dragState.moved = true
+        return
+      }
       const dx = e.clientX - startX
       const dy = e.clientY - startY
       if (Math.abs(dx) + Math.abs(dy) > 6) dragState.moved = true
@@ -93,6 +114,15 @@ export function CameraController() {
     }
     const onWheel = (e: WheelEvent) => {
       e.preventDefault()
+      // the opening is scrubbed by scroll: reveal on the way down, reverse on the
+      // way up, until it locks fully open and the wheel returns to dolly
+      if (useGalleryStore.getState().introPlaying) {
+        introScrub.target = Math.max(
+          0,
+          Math.min(1, introScrub.target + e.deltaY * 0.0009),
+        )
+        return
+      }
       dollyTarget.current = Math.max(
         DOLLY_RANGE[0],
         Math.min(DOLLY_RANGE[1], dollyTarget.current + e.deltaY * 0.0045),
@@ -114,6 +144,25 @@ export function CameraController() {
   }, [gl])
 
   useFrame((_, delta) => {
+    // scroll-scrubbed opening: derive base/look from the scroll progress, easing
+    // toward the wheel/drag target so discrete scroll steps read as a fluid move
+    if (introActive.current) {
+      const d = Math.min(1, delta * 8)
+      introScrub.progress += (introScrub.target - introScrub.progress) * d
+      const t = introScrub.progress
+      const aspect = size.width / size.height
+      const tanH = Math.tan((35 * Math.PI) / 360)
+      const wallZ =
+        aspect >= 1
+          ? Math.min(Math.max(CAMERA_Z, 6.9 / (2 * tanH * aspect)), 9.2 / (2 * tanH * aspect))
+          : CAMERA_Z
+      const y = HERO.position[1] * (1 - t)
+      base.current.set(cx0, y, HERO_ZOOM_Z + (wallZ - HERO_ZOOM_Z) * t)
+      look.current.set(cx0, y, 0)
+      // no auto-complete: the opening stays fully scrubbable both ways until the
+      // visitor navigates off the signature wall (handled in the effect below)
+    }
+
     const damp = Math.min(1, delta * 6)
     yaw.current += (yawTarget.current - yaw.current) * damp
     pitch.current += (pitchTarget.current - pitch.current) * damp
@@ -133,6 +182,19 @@ export function CameraController() {
   })
 
   useEffect(() => {
+    if (introActive.current) {
+      // still on the signature wall: the scroll scrub owns the camera
+      if (currentWall === SIGNATURE_WALL) {
+        prevWall.current = currentWall
+        return
+      }
+      // navigated away mid-opening: consume it (snap it fully open) and let the
+      // normal wall-change tween take over from here
+      introActive.current = false
+      introScrub.progress = 1
+      introScrub.target = 1
+      useGalleryStore.getState().endIntro()
+    }
     const artwork = artworks.find((a) => a.id === selectedArtworkId)
     const aspect = size.width / size.height
     // must match the CSS bottom-sheet breakpoint: narrow OR portrait

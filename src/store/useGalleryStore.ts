@@ -11,10 +11,17 @@ const initialWall =
     Math.max(Math.trunc(Number(params.get('wall')) || 0), 0),
     walls.length - 1,
   )
+// the opening zoom-out + signature write-on plays only on a bare first visit to
+// the signature wall — never when deep-linked to a wall or artwork
+const bareLanding = !params.get('wall') && !params.get('artwork')
 
 type GalleryState = {
   currentWall: number
   selectedArtworkId: string | null
+  /** the scroll-scrubbed opening is armed (bare landing on the signature wall);
+      cleared once the user has scrolled all the way through it */
+  introPlaying: boolean
+  endIntro: () => void
   goToWall: (index: number) => void
   goToNextWall: () => void
   goToPreviousWall: () => void
@@ -25,6 +32,9 @@ type GalleryState = {
 export const useGalleryStore = create<GalleryState>((set, get) => ({
   currentWall: initialWall,
   selectedArtworkId: initialArtwork,
+  introPlaying: bareLanding,
+
+  endIntro: () => set({ introPlaying: false }),
 
   goToWall: (index) =>
     set({

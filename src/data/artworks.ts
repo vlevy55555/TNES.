@@ -24,9 +24,28 @@ export type Artwork = {
 }
 
 export const walls: Wall[] = [
-  { index: 0, name: 'Exhibition', roman: 'I', angle: -0.085 },
-  { index: 1, name: 'Archive', roman: 'II', angle: 0.085 },
+  { index: 0, name: 'Signature', roman: 'I', angle: 0 },
+  { index: 1, name: 'Exhibition', roman: 'II', angle: -0.085 },
+  { index: 2, name: 'Archive', roman: 'III', angle: 0.085 },
+  { index: 3, name: 'Coming Soon', roman: 'IV', angle: -0.085 },
 ]
+
+export const SIGNATURE_WALL = 0
+export const COMING_SOON_WALL = 3
+export const OPENING_DATE = new Date('2026-08-15T18:00:00')
+
+// decorative hero on the signature wall: a single dimmed painting the VSL
+// signature is written over. Not a sellable artwork — never in `artworks`.
+export const HERO = {
+  image: '/artworks/coastal-run.jpg',
+  // z 0.07 seats the frame in front of the wall face (same as ArtworkFrame) —
+  // at z 0 its front is coplanar with the wall and z-fights into dashes
+  position: [0, 0.2, 0.07] as [number, number, number],
+  size: [1.3, 0.87] as [number, number],
+}
+// camera distance when the intro opens "fully zoomed into" the hero frame,
+// before it dollies back to the resting wall view
+export const HERO_ZOOM_Z = 1.65
 
 export const artworks: Artwork[] = [
   {
@@ -37,7 +56,7 @@ export const artworks: Artwork[] = [
       'Striped parasols over a volcanic cove — leisure arranged in perfect geometry.',
     price: '£350',
     image: '/artworks/blue-parasols.jpg',
-    wallIndex: 0,
+    wallIndex: 1,
     position: [-2.5, 0.3, 0],
     size: [1.0, 1.5],
     edition: 'Limited edition of 30',
@@ -51,7 +70,7 @@ export const artworks: Artwork[] = [
       'A limestone amphitheatre of swimmers — collective energy at the edge of the sea.',
     price: '£420',
     image: '/artworks/high-season.jpg',
-    wallIndex: 0,
+    wallIndex: 1,
     position: [0.1, -0.5, 0],
     size: [1.35, 0.9],
     edition: 'Limited edition of 25',
@@ -65,7 +84,7 @@ export const artworks: Artwork[] = [
       'A quiet coastal scene balancing distance, atmosphere and motion.',
     price: '£500',
     image: '/artworks/coastal-run.jpg',
-    wallIndex: 0,
+    wallIndex: 1,
     position: [2.45, 0.45, 0],
     size: [1.3, 0.87],
     edition: 'Limited edition of 20',
@@ -79,7 +98,7 @@ export const artworks: Artwork[] = [
       'A study of architectural texture, shadow and urban repetition.',
     price: '£380',
     image: '/artworks/urban-texture.jpg',
-    wallIndex: 1,
+    wallIndex: 2,
     position: [-2.4, 0.2, 0],
     size: [1.0, 1.5],
     edition: 'Limited edition of 30',
@@ -93,7 +112,7 @@ export const artworks: Artwork[] = [
       'Two silhouettes in the fog — a mountain path dissolving into white.',
     price: '£340',
     image: '/artworks/still-morning.jpg',
-    wallIndex: 1,
+    wallIndex: 2,
     position: [0, -0.2, 0],
     size: [0.9, 1.35],
     edition: 'Limited edition of 40',
@@ -107,7 +126,7 @@ export const artworks: Artwork[] = [
       'An afternoon pause on old stone — a man, his dog and the heat.',
     price: '£460',
     image: '/artworks/city-silence.jpg',
-    wallIndex: 1,
+    wallIndex: 2,
     position: [2.45, 0.3, 0],
     size: [1.1, 1.65],
     edition: 'Limited edition of 20',
