@@ -42,16 +42,25 @@ export function CameraController() {
 
   const startWall = useGalleryStore.getState().currentWall
   const startAngle = walls[startWall].angle
+  // the very first load opens zoomed into the hero on the signature wall
+  // (introScrub starts at 0); every later arrival resets it to the formed state
+  const startZoomedIn = startWall === SIGNATURE_WALL
 
   // GSAP drives base + look; useFrame composes orbit/pitch/dolly on top each frame
   const base = useRef(
-    new Vector3(
-      startWall * WALL_SPACING + Math.sin(startAngle) * CAMERA_Z,
-      0,
-      Math.cos(startAngle) * CAMERA_Z,
-    ),
+    startZoomedIn
+      ? new Vector3(startWall * WALL_SPACING, HERO.position[1], HERO_ZOOM_Z)
+      : new Vector3(
+          startWall * WALL_SPACING + Math.sin(startAngle) * CAMERA_Z,
+          0,
+          Math.cos(startAngle) * CAMERA_Z,
+        ),
   )
-  const look = useRef(new Vector3(startWall * WALL_SPACING, 0, 0))
+  const look = useRef(
+    startZoomedIn
+      ? new Vector3(startWall * WALL_SPACING, HERO.position[1], 0)
+      : new Vector3(startWall * WALL_SPACING, 0, 0),
+  )
   // the signature wall's scroll scrub owns the camera only once it has settled
   // there, so an arriving wall-change transition isn't snapped over
   const scrubReady = useRef(startWall === SIGNATURE_WALL)
@@ -123,12 +132,12 @@ export function CameraController() {
     }
     const onWheel = (e: WheelEvent) => {
       e.preventDefault()
-      // signature wall: scroll scrubs the zoom — down zooms into the painting and
-      // the signature fades, up pulls back and reforms it (both directions, always)
+      // signature wall: scroll scrubs the zoom — down pulls back and forms the
+      // signature, up zooms into the painting and it fades (both ways, always)
       if (useGalleryStore.getState().currentWall === SIGNATURE_WALL) {
         introScrub.target = Math.max(
           0,
-          Math.min(1, introScrub.target - e.deltaY * 0.0009),
+          Math.min(1, introScrub.target + e.deltaY * 0.0009),
         )
         return
       }

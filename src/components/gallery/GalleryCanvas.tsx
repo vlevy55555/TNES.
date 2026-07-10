@@ -2,16 +2,27 @@ import { Canvas } from '@react-three/fiber'
 import { Suspense } from 'react'
 import { Loader } from '@react-three/drei'
 import { GalleryScene } from './GalleryScene'
-import { CAMERA_Z, WALL_SPACING, walls } from '../../data/artworks'
+import {
+  CAMERA_Z,
+  HERO,
+  HERO_ZOOM_Z,
+  SIGNATURE_WALL,
+  WALL_SPACING,
+  walls,
+} from '../../data/artworks'
 import { useGalleryStore } from '../../store/useGalleryStore'
 
 const startWall = useGalleryStore.getState().currentWall
-// the signature wall opens in its formed (resting) state, like any other wall
-const startPos: [number, number, number] = [
-  startWall * WALL_SPACING + Math.sin(walls[startWall].angle) * CAMERA_Z,
-  0,
-  Math.cos(walls[startWall].angle) * CAMERA_Z,
-]
+// first load on the signature wall opens zoomed into the hero (matches the scrub
+// default); the very first painted frame must already be zoomed in
+const startPos: [number, number, number] =
+  startWall === SIGNATURE_WALL
+    ? [startWall * WALL_SPACING, HERO.position[1], HERO_ZOOM_Z]
+    : [
+        startWall * WALL_SPACING + Math.sin(walls[startWall].angle) * CAMERA_Z,
+        0,
+        Math.cos(walls[startWall].angle) * CAMERA_Z,
+      ]
 
 export function GalleryCanvas() {
   return (
