@@ -1,6 +1,9 @@
 import { useEffect, useRef } from 'react'
 import {
-  SIGNATURE_FILL_D,
+  SIGNATURE_INK_H,
+  SIGNATURE_INK_HREF,
+  SIGNATURE_INK_TRANSFORM,
+  SIGNATURE_INK_W,
   SIGNATURE_REVEAL_LUT,
   SIGNATURE_STROKE_D,
   SIGNATURE_STROKE_WIDTH,
@@ -46,22 +49,41 @@ export function SignatureOverlay() {
     <div className={`signature-overlay ${onWall ? 'is-on' : ''}`} aria-hidden="true">
       <svg viewBox={SIGNATURE_VIEWBOX} preserveAspectRatio="xMidYMid meet">
         <defs>
+          {/* the ink shape: the original anti-aliased raster as a luminance mask */}
+          <mask id="sig-ink-shape" maskUnits="userSpaceOnUse" maskContentUnits="userSpaceOnUse">
+            <g transform={SIGNATURE_INK_TRANSFORM}>
+              <image
+                href={SIGNATURE_INK_HREF}
+                width={SIGNATURE_INK_W}
+                height={SIGNATURE_INK_H}
+                preserveAspectRatio="xMidYMid meet"
+              />
+            </g>
+          </mask>
+          {/* reveal = swept pen brush, clipped to the ink shape so only the real
+              glyph (not the fat brush) is uncovered as it is "written" */}
           <mask id="sig-reveal" maskUnits="userSpaceOnUse" maskContentUnits="userSpaceOnUse">
-            <path
-              ref={brush}
-              d={SIGNATURE_STROKE_D}
-              fill="none"
-              stroke="#fff"
-              strokeWidth={SIGNATURE_STROKE_WIDTH}
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              pathLength={1}
-              strokeDasharray="1 1"
-              style={{ strokeDashoffset: 1 }}
-            />
+            <g mask="url(#sig-ink-shape)">
+              <path
+                ref={brush}
+                d={SIGNATURE_STROKE_D}
+                fill="none"
+                stroke="#fff"
+                strokeWidth={SIGNATURE_STROKE_WIDTH}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                pathLength={1}
+                strokeDasharray="1 1"
+                style={{ strokeDashoffset: 1 }}
+              />
+            </g>
           </mask>
         </defs>
-        <path className="sig-ink" d={SIGNATURE_FILL_D} fillRule="evenodd" mask="url(#sig-reveal)" />
+        {/* solid ink colour, revealed through the reveal mask; the halo filter on
+            the group follows the masked glyph alpha (comes from .sig-ink) */}
+        <g className="sig-ink">
+          <rect x="0" y="0" width="1110" height="626.25" mask="url(#sig-reveal)" />
+        </g>
       </svg>
     </div>
   )
