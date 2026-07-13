@@ -33,7 +33,8 @@ function makeWoodTexture() {
 const woodTexture = makeWoodTexture()
 
 const centerX = ((walls.length - 1) * WALL_SPACING) / 2
-const WIDTH = 36
+// span every wall plus a margin, so floor/ceiling never fall short as walls grow
+const WIDTH = (walls.length - 1) * WALL_SPACING + 8
 const DEPTH = 20
 // matches the wall's top edge (Wall.tsx: bottom -2.2, height 4.93) so the
 // ceiling sits flush with the walls, only exposed once the camera pulls back
