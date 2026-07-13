@@ -273,12 +273,12 @@ export function CameraController() {
       const lz = -ax * sinA + 0.07 * cosA
       const ly = browse.position[1] - 0.18 // drop a touch so the plaque sits in view
 
-      gsap.to(look.current, { x: lx, y: ly, z: lz, duration: 0.8, ease: 'power2.inOut' })
+      gsap.to(look.current, { x: lx, y: ly, z: lz, duration: 1.4, ease: 'power2.inOut' })
       gsap.to(base.current, {
         x: lx + sinA * z,
         y: ly,
         z: lz + cosA * z,
-        duration: 1.1,
+        duration: 2.0,
         ease: 'power3.inOut',
       })
       return
