@@ -90,7 +90,7 @@ export function AboutWall() {
       </Text>
 
       {/* Victor's direct contacts — clickable, tucked under the portrait */}
-      <Html transform position={[-2.15, -1.2, 0.14]} scale={0.2} zIndexRange={[10, 0]} occlude={false}>
+      <Html transform position={[-2.15, -1.55, 0.14]} scale={0.2} zIndexRange={[10, 0]} occlude={false}>
         <div className="about-contact">
           <span className="about-contact-label">Contact</span>
           <a href={`mailto:${ABOUT.contact.email}`}>{ABOUT.contact.email}</a>
