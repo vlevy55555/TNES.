@@ -3,6 +3,7 @@ import { Wall } from './Wall'
 import { Room } from './Room'
 import { GalleryLights } from './GalleryLights'
 import { CameraController } from './CameraController'
+import { InquiryLetter } from '../ui/InquiryOverlay'
 
 export function GalleryScene() {
   return (
@@ -15,6 +16,9 @@ export function GalleryScene() {
       {walls.map((wall) => (
         <Wall key={wall.index} wall={wall} />
       ))}
+
+      {/* the inquiry letter renders as an overlay scene in this same canvas */}
+      <InquiryLetter />
     </>
   )
 }
