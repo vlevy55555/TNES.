@@ -2,6 +2,7 @@ import { Html, RoundedBox, Text } from '@react-three/drei'
 import { useEffect, useMemo, useState, type FormEvent } from 'react'
 import { CanvasTexture, RepeatWrapping, Shape } from 'three'
 import { FONT_SANS, FONT_SANS_MEDIUM, OPENING_DATE } from '../../data/artworks'
+import { useGalleryStore } from '../../store/useGalleryStore'
 
 const FRAME_BORDER = 0.15
 
@@ -416,19 +417,26 @@ function CountdownFrame({
 
 export function ComingSoonWall() {
   const parts = useCountdown()
+  const isMobile = useGalleryStore((s) => s.isMobile)
 
   return (
     <group position={[0, 0, 0.06]}>
       <CountdownFrame position={[0, 0.3, 0]} parts={parts} />
 
-      <PostSign x={-3.35} plateY={1.3} lines={['WORK', 'IN PROGRESS']} />
-      <PostSign x={3.35} plateY={0.1} lines={['COMING', 'SOON']} />
-      <AFrameSign position={[-3.1, 0, 0.4]} />
+      {/* mobile centres on just the countdown + notify; the street signage and
+          hazard tape live off-screen at the sides, so drop them to keep it clean */}
+      {!isMobile && (
+        <>
+          <PostSign x={-3.35} plateY={1.3} lines={['WORK', 'IN PROGRESS']} />
+          <PostSign x={3.35} plateY={0.1} lines={['COMING', 'SOON']} />
+          <AFrameSign position={[-3.1, 0, 0.4]} />
 
-      <CautionTape from={[-4.3, -0.392, 0.55]} to={[4.3, -1.168, 0.55]} variant="stripes" />
-      <CautionTape from={[-4.3, -1.344, 0.6]} to={[4.3, -0.696, 0.6]} variant="text" />
+          <CautionTape from={[-4.3, -0.392, 0.55]} to={[4.3, -1.168, 0.55]} variant="stripes" />
+          <CautionTape from={[-4.3, -1.344, 0.6]} to={[4.3, -0.696, 0.6]} variant="text" />
+        </>
+      )}
 
-      <WallSubscribe position={[0, -1.6, 0.22]} />
+      <WallSubscribe position={[0, isMobile ? -1.2 : -1.6, 0.22]} />
     </group>
   )
 }
