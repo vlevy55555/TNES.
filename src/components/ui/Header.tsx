@@ -20,9 +20,6 @@ export function Header() {
             {wall.name}
           </button>
         ))}
-        <a className="nav-link" href="#about">
-          About
-        </a>
       </nav>
       <span className="header-right">↗</span>
     </header>
