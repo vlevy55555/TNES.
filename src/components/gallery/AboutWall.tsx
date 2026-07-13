@@ -89,8 +89,8 @@ export function AboutWall() {
         {ABOUT.body}
       </Text>
 
-      {/* Victor's direct contacts — clickable */}
-      <Html transform position={[0.32, -0.52, 0.14]} scale={0.2} zIndexRange={[10, 0]} occlude={false}>
+      {/* Victor's direct contacts — clickable, tucked under the portrait */}
+      <Html transform position={[-2.15, -1.2, 0.14]} scale={0.2} zIndexRange={[10, 0]} occlude={false}>
         <div className="about-contact">
           <span className="about-contact-label">Contact</span>
           <a href={`mailto:${ABOUT.contact.email}`}>{ABOUT.contact.email}</a>
@@ -102,7 +102,7 @@ export function AboutWall() {
       </Html>
 
       {/* the doorway into VSL — a real outbound link, opens in a new tab */}
-      <Html transform position={[0.62, -1.28, 0.14]} scale={0.24} zIndexRange={[10, 0]} occlude={false}>
+      <Html transform position={[0.62, -0.7, 0.14]} scale={0.24} zIndexRange={[10, 0]} occlude={false}>
         <a className="about-cta" href={VSL_URL} target="_blank" rel="noopener noreferrer">
           <span className="about-cta-btn">
             {ABOUT.cta} <span className="about-cta-arrow">↗</span>
