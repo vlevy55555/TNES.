@@ -59,11 +59,13 @@ export function ArtworkFrame({ artwork }: { artwork: Artwork }) {
       position={[artwork.position[0], artwork.position[1], 0.07]}
       onClick={(e) => {
         e.stopPropagation()
-        if (dragState.moved) return
+        // the inquiry letter overlays the gallery — don't react to clicks behind it
+        if (useGalleryStore.getState().inquiryOpen || dragState.moved) return
         selectArtwork(artwork.id)
       }}
       onPointerOver={(e) => {
         e.stopPropagation()
+        if (useGalleryStore.getState().inquiryOpen) return
         setHovered(true)
       }}
       onPointerOut={() => setHovered(false)}
