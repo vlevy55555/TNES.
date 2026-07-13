@@ -59,7 +59,13 @@ export function Wall({ wall }: { wall: WallType }) {
           camera's frustum (CAMERA_Z * tan(17.5°) ≈ 2.49) plus a 1/20 margin,
           so the wall fills the screen at rest but the raised ceiling still
           peeks in once the camera dollies back for a wall-to-wall transition */}
-      <mesh position={[0, 0.265, 0]} onClick={() => !dragState.moved && closeArtwork()}>
+      <mesh
+        position={[0, 0.265, 0]}
+        onClick={() => {
+          if (useGalleryStore.getState().inquiryOpen || dragState.moved) return
+          closeArtwork()
+        }}
+      >
         <boxGeometry args={[9.4, 4.93, 0.1]} />
         <meshStandardMaterial color="#e8dfd2" />
       </mesh>
