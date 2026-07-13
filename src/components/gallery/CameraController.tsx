@@ -5,6 +5,7 @@ import gsap from 'gsap'
 import {
   artworks,
   CAMERA_Z,
+  COMING_SOON_WALL,
   FRAME_BORDER,
   HERO,
   HERO_ZOOM_Z,
@@ -39,6 +40,8 @@ export function CameraController() {
   const size = useThree((s) => s.size)
   const currentWall = useGalleryStore((s) => s.currentWall)
   const selectedArtworkId = useGalleryStore((s) => s.selectedArtworkId)
+  const focusArtworkId = useGalleryStore((s) => s.focusArtworkId)
+  const isMobile = useGalleryStore((s) => s.isMobile)
 
   const startWall = useGalleryStore.getState().currentWall
   const startAngle = walls[startWall].angle
@@ -250,10 +253,45 @@ export function CameraController() {
       return
     }
 
+    // mobile: browse one frame at a time — fit a single artwork to the whole
+    // screen (no side panel), leaving headroom below for its title plaque.
+    const browse = isMobile ? artworks.find((a) => a.id === focusArtworkId) : undefined
+    if (browse) {
+      scrubReady.current = false
+      const frameW = browse.size[0] + FRAME_BORDER * 2
+      // +0.6 so the label plaque under the frame stays inside the framing
+      const frameH = browse.size[1] + FRAME_BORDER * 2 + 0.6
+      const tanH = Math.tan((camera.fov * Math.PI) / 360)
+      const stripAspect = size.width / size.height
+      const z = Math.max(frameH / 2 / tanH, frameW / 2 / (tanH * stripAspect)) * 1.12 + 0.12
+
+      const bw = walls[browse.wallIndex]
+      const sinA = Math.sin(bw.angle)
+      const cosA = Math.cos(bw.angle)
+      const ax = browse.position[0]
+      const lx = browse.wallIndex * WALL_SPACING + ax * cosA + 0.07 * sinA
+      const lz = -ax * sinA + 0.07 * cosA
+      const ly = browse.position[1] - 0.18 // drop a touch so the plaque sits in view
+
+      gsap.to(look.current, { x: lx, y: ly, z: lz, duration: 0.8, ease: 'power2.inOut' })
+      gsap.to(base.current, {
+        x: lx + sinA * z,
+        y: ly,
+        z: lz + cosA * z,
+        duration: 1.1,
+        ease: 'power3.inOut',
+      })
+      return
+    }
+
     const wall = walls[currentWall]
     const sinW = Math.sin(wall.angle)
     const cosW = Math.cos(wall.angle)
     const cx = currentWall * WALL_SPACING
+    // mobile Coming Soon: drop the aim between the countdown card and the "Notify
+    // me" button so both centre in the portrait viewport (the side signage the
+    // ComingSoonWall drops on mobile already falls outside this framing)
+    const restY = isMobile && currentWall === COMING_SOON_WALL ? -0.42 : 0
 
     // signature wall: hand the camera to the scroll scrub. On a fresh mount it's
     // ready immediately; on a wall change let the room-travel transition play
@@ -275,10 +313,10 @@ export function CameraController() {
     scrubReady.current = false
     if (!wallChanged) {
       // closing a zoom (or first mount): pull back along the wall's normal
-      gsap.to(look.current, { x: cx, y: 0, z: 0, duration: 0.85, ease: 'power2.inOut' })
+      gsap.to(look.current, { x: cx, y: restY, z: 0, duration: 0.85, ease: 'power2.inOut' })
       gsap.to(base.current, {
         x: cx + sinW * wallZ,
-        y: 0,
+        y: restY,
         z: cosW * wallZ,
         duration: 1.25,
         ease: 'power3.inOut',
@@ -289,11 +327,11 @@ export function CameraController() {
     // wall change: the camera physically rides through the room — dolly OUT,
     // travel sideways, dolly back IN, the look point leading the direction of travel
     const tl = gsap.timeline()
-    tl.to(base.current, { z: wallZ + 4.2, y: 0, duration: 0.62, ease: 'power2.out' }, 0)
-      .to(look.current, { x: cx, y: 0, z: 0, duration: 1.05, ease: 'power2.inOut' }, 0.14)
+    tl.to(base.current, { z: wallZ + 4.2, y: restY, duration: 0.62, ease: 'power2.out' }, 0)
+      .to(look.current, { x: cx, y: restY, z: 0, duration: 1.05, ease: 'power2.inOut' }, 0.14)
       .to(base.current, { x: cx + sinW * wallZ, duration: 1.42, ease: 'power2.inOut' }, 0.14)
       .to(base.current, { z: cosW * wallZ, duration: 0.68, ease: 'power2.inOut' }, 1.1)
-  }, [currentWall, selectedArtworkId, camera, size])
+  }, [currentWall, selectedArtworkId, focusArtworkId, isMobile, camera, size])
 
   return null
 }
