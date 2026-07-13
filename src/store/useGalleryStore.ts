@@ -37,39 +37,86 @@ const initialWall =
     Math.max(Math.trunc(Number(params.get('wall')) || 0), 0),
     walls.length - 1,
   )
+
 type GalleryState = {
   currentWall: number
   selectedArtworkId: string | null
+  // the frame being browsed on mobile (camera focus); null on an art-less wall
+  focusArtworkId: string | null
+  isMobile: boolean
+  manifestoOpen: boolean
+  // inquiry form: which artwork it was opened from (null = general inquiry)
+  inquiryOpen: boolean
+  inquiryWorkId: string | null
+  openInquiry: (workId?: string | null) => void
+  closeInquiry: () => void
+  setIsMobile: (v: boolean) => void
   goToWall: (index: number) => void
   goToNextWall: () => void
   goToPreviousWall: () => void
   selectArtwork: (id: string) => void
   closeArtwork: () => void
+  openManifesto: () => void
+  closeManifesto: () => void
 }
 
-export const useGalleryStore = create<GalleryState>((set, get) => ({
-  currentWall: initialWall,
-  selectedArtworkId: initialArtwork,
-
-  goToWall: (index) =>
+export const useGalleryStore = create<GalleryState>((set, get) => {
+  // step the mobile reel by ±1 stop, clamped
+  const stepStop = (dir: 1 | -1) => {
+    const { currentWall, focusArtworkId } = get()
+    const idx = stopIndexOf(currentWall, focusArtworkId)
+    const next = Math.min(Math.max(idx + dir, 0), mobileStops.length - 1)
+    const stop = mobileStops[next]
     set({
-      currentWall: Math.min(Math.max(index, 0), walls.length - 1),
+      currentWall: stop.wall,
+      focusArtworkId: stop.artwork,
       selectedArtworkId: null,
-    }),
+    })
+  }
 
-  goToNextWall: () =>
-    set({
-      currentWall: Math.min(get().currentWall + 1, walls.length - 1),
-      selectedArtworkId: null,
-    }),
+  return {
+    currentWall: initialWall,
+    selectedArtworkId: initialArtwork,
+    focusArtworkId: deepLinked?.id ?? firstArtworkOf(initialWall),
+    isMobile: mqIsMobile(),
+    manifestoOpen: false,
+    inquiryOpen: false,
+    inquiryWorkId: null,
 
-  goToPreviousWall: () =>
-    set({
-      currentWall: Math.max(get().currentWall - 1, 0),
-      selectedArtworkId: null,
-    }),
+    // the letter just overlays the current view — leave the gallery framing untouched
+    openInquiry: (workId = null) => set({ inquiryOpen: true, inquiryWorkId: workId }),
+    closeInquiry: () => set({ inquiryOpen: false }),
 
-  selectArtwork: (id) => set({ selectedArtworkId: id }),
+    setIsMobile: (v) =>
+      set((s) => ({
+        isMobile: v,
+        // entering mobile with nothing focused on an art wall: focus its first
+        focusArtworkId: v && !s.focusArtworkId ? firstArtworkOf(s.currentWall) : s.focusArtworkId,
+      })),
 
-  closeArtwork: () => set({ selectedArtworkId: null }),
-}))
+    goToWall: (index) => {
+      const wall = Math.min(Math.max(index, 0), walls.length - 1)
+      set({ currentWall: wall, focusArtworkId: firstArtworkOf(wall), selectedArtworkId: null })
+    },
+
+    goToNextWall: () => {
+      if (get().isMobile) return stepStop(1)
+      const wall = Math.min(get().currentWall + 1, walls.length - 1)
+      set({ currentWall: wall, focusArtworkId: firstArtworkOf(wall), selectedArtworkId: null })
+    },
+
+    goToPreviousWall: () => {
+      if (get().isMobile) return stepStop(-1)
+      const wall = Math.max(get().currentWall - 1, 0)
+      set({ currentWall: wall, focusArtworkId: firstArtworkOf(wall), selectedArtworkId: null })
+    },
+
+    selectArtwork: (id) => set({ selectedArtworkId: id, focusArtworkId: id }),
+
+    closeArtwork: () => set({ selectedArtworkId: null }),
+
+    openManifesto: () => set({ manifestoOpen: true }),
+
+    closeManifesto: () => set({ manifestoOpen: false }),
+  }
+})
