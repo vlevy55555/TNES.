@@ -2,6 +2,7 @@ import { Suspense, useEffect, useRef } from 'react'
 import { Text } from '@react-three/drei'
 import type { Object3D, SpotLight } from 'three'
 import {
+  ABOUT_WALL,
   artworks,
   COMING_SOON_WALL,
   FONT_SANS,
@@ -12,7 +13,9 @@ import {
 import { useGalleryStore } from '../../store/useGalleryStore'
 import { ArtworkFrame } from './ArtworkFrame'
 import { HeroFrame } from './HeroFrame'
+import { ManifestoScroll } from './ManifestoScroll'
 import { ComingSoonWall } from './ComingSoonWall'
+import { AboutWall } from './AboutWall'
 import { dragState } from './CameraController'
 
 // one ceiling lamp: a downward wash that scallops the top of the wall,
@@ -91,7 +94,9 @@ export function Wall({ wall }: { wall: WallType }) {
       )}
 
       {wall.index === SIGNATURE_WALL && <HeroFrame />}
+      {wall.index === SIGNATURE_WALL && <ManifestoScroll />}
       {wall.index === COMING_SOON_WALL && <ComingSoonWall />}
+      {wall.index === ABOUT_WALL && <AboutWall />}
 
       {wallArtworks.map((artwork) => (
         // per-frame Suspense: one slow image never blanks the whole gallery
