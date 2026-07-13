@@ -779,3 +779,308 @@ body,
   background: var(--bg);
   padding: 10px;
 }
+
+/* ---------- About wall: link out to VSL ---------- */
+
+.about-cta {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.about-cta-btn {
+  position: relative;
+  overflow: hidden;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 20px 34px;
+  font-family: var(--sans);
+  font-weight: 600;
+  font-size: 13px;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: #2a2013;
+  /* brushed-gold, matching the gallery frames */
+  background: linear-gradient(135deg, #e3c877 0%, #c9a24b 45%, #a97f32 100%);
+  border: 1px solid #8f7c4e;
+  /* breathing glow draws the eye without motion sickness */
+  animation: about-glow 2.4s ease-in-out infinite;
+}
+
+/* sweeping shine that crosses the button on a loop */
+.about-cta-btn::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -60%;
+  width: 45%;
+  height: 100%;
+  background: linear-gradient(
+    100deg,
+    transparent 0%,
+    rgba(255, 248, 224, 0.75) 50%,
+    transparent 100%
+  );
+  transform: skewX(-18deg);
+  animation: about-shine 3.6s ease-in-out infinite;
+}
+
+@keyframes about-glow {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(201, 162, 75, 0);
+    transform: translateY(0);
+  }
+  50% {
+    box-shadow: 0 6px 26px 2px rgba(201, 162, 75, 0.55);
+    transform: translateY(-1px);
+  }
+}
+
+@keyframes about-shine {
+  0% {
+    left: -60%;
+  }
+  55%,
+  100% {
+    left: 130%;
+  }
+}
+
+.about-cta-arrow {
+  font-size: 15px;
+  transition: transform 0.25s ease;
+}
+
+.about-cta:hover .about-cta-btn {
+  background: linear-gradient(135deg, #efd489 0%, #d5ad55 45%, #b98c3c 100%);
+  box-shadow: 0 8px 30px 4px rgba(201, 162, 75, 0.65);
+}
+
+.about-cta:hover .about-cta-arrow {
+  transform: translate(3px, -3px);
+}
+
+.about-cta-sub {
+  font-family: var(--sans);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+  text-align: center;
+}
+
+/* Victor's direct contacts on the About wall */
+.about-contact {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  white-space: nowrap;
+}
+
+.about-contact-label {
+  font-family: var(--sans);
+  font-size: 10px;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 2px;
+}
+
+.about-contact a {
+  font-family: var(--sans);
+  font-size: 15px;
+  color: var(--ink);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition: border-color 0.2s ease;
+}
+
+.about-contact a:hover {
+  border-color: var(--ink);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .about-cta-btn,
+  .about-cta-btn::after {
+    animation: none;
+  }
+}
+
+/* ---------- Inquiry: the 3D letter (rendered in-canvas via drei <Hud>) ---------- */
+
+/* the form rides on a plane inside the 3D scene (drei <Html transform>) —
+   this is the letter's paper face */
+.letter3d-form {
+  box-sizing: border-box;
+  width: 340px;
+  display: flex;
+  flex-direction: column;
+  padding: 26px 26px 22px;
+  background: linear-gradient(180deg, #f8f3e8 0%, #f1e9d7 100%);
+  border: 1px solid rgba(47, 42, 36, 0.1);
+  box-shadow: 0 24px 50px rgba(34, 24, 10, 0.45);
+}
+
+.letter-close {
+  position: absolute;
+  top: 16px;
+  right: 18px;
+  width: 26px;
+  height: 26px;
+  border: none;
+  background: none;
+  color: var(--muted);
+  font-size: 13px;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.letter-close:hover {
+  color: var(--ink);
+}
+
+.letter-head {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  padding-bottom: 12px;
+  margin-bottom: 18px;
+  border-bottom: 1px solid rgba(182, 155, 94, 0.5);
+}
+
+.letter-mark {
+  font-family: var(--brand);
+  font-size: 20px;
+  letter-spacing: 0.06em;
+  color: var(--ink);
+}
+
+.letter-kicker {
+  font-family: var(--sans);
+  font-size: 9px;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.letter-fields {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  overflow-y: auto;
+}
+
+.letter-row {
+  display: flex;
+  gap: 18px;
+}
+
+.letter-row .letter-field {
+  flex: 1;
+  min-width: 0;
+}
+
+.letter-field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.letter-field > span {
+  font-family: var(--sans);
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #8a7f6d;
+}
+
+.letter-field > span em {
+  font-style: normal;
+  letter-spacing: 0.08em;
+  color: #b3a892;
+}
+
+.letter-field input,
+.letter-field select,
+.letter-field textarea {
+  width: 100%;
+  padding: 5px 0;
+  font-family: var(--sans);
+  font-size: 15px;
+  color: var(--ink);
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid rgba(47, 42, 36, 0.24);
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+
+.letter-field select {
+  appearance: none;
+  cursor: pointer;
+  text-transform: capitalize;
+}
+
+.letter-field textarea {
+  resize: none;
+  line-height: 1.5;
+}
+
+.letter-field input::placeholder,
+.letter-field textarea::placeholder {
+  color: #b3a892;
+}
+
+.letter-field input:focus,
+.letter-field select:focus,
+.letter-field textarea:focus {
+  border-color: #b69b5e;
+}
+
+.letter-error {
+  font-family: var(--sans);
+  font-size: 11px;
+  letter-spacing: 0.02em;
+  color: #a6543c;
+  margin-top: 10px;
+}
+
+.letter-send {
+  margin-top: 16px;
+  padding: 13px 20px;
+  font-family: var(--sans);
+  font-weight: 500;
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: #f6f1e7;
+  background: var(--ink);
+  border: 1px solid var(--ink);
+  cursor: pointer;
+  transition: opacity 0.25s ease;
+}
+
+.letter-send:hover:not(:disabled) {
+  opacity: 0.85;
+}
+
+.letter-send:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .letter3d-overlay {
+    animation: none;
+  }
+}
