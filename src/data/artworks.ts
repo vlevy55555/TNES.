@@ -28,16 +28,50 @@ export const walls: Wall[] = [
   { index: 1, name: 'Exhibition', roman: 'II', angle: -0.085 },
   { index: 2, name: 'Archive', roman: 'III', angle: 0.085 },
   { index: 3, name: 'Coming Soon', roman: 'IV', angle: -0.085 },
+  // the personal closer: the artist's portrait + a doorway into VSL, his mind
+  { index: 4, name: 'About', roman: 'V', angle: 0.085 },
 ]
 
 export const SIGNATURE_WALL = 0
 export const COMING_SOON_WALL = 3
+export const ABOUT_WALL = 4
 export const OPENING_DATE = new Date('2026-08-15T18:00:00')
+
+// the About wall: Victor's portrait, a wall-text, and a link out to VSL — the
+// immersive site that is the artist's mind behind this exhibition.
+export const VSL_URL = 'https://vsl-vux0.onrender.com/'
+
+// inquiries are composed client-side and handed to the visitor's mail app
+export const INQUIRY_EMAIL = 'vlevy@tnes.studio'
+export const INQUIRY_TYPES = [
+  'acquisition',
+  'commission',
+  'interiors',
+  'collaboration',
+  'private inquiry',
+] as const
+export const ABOUT = {
+  // Victor's B&W headshot — VSL's contact portrait, pre-cropped to 2:3 vertical
+  // and desaturated to match how vsl.studio renders it. Larger than an artwork.
+  portrait: '/victor-headshot-bw.webp',
+  portraitSize: [1.2, 1.8] as [number, number],
+  name: 'Victor Safdie Levy',
+  role: 'PHOTOGRAPHER · FOUNDER OF TNES',
+  body: `Every wall in this room is one pair of eyes. Victor makes photographs from the in-between — travel, memory, and the quiet geometry of a place. Here the work stands framed and still; to understand how it is seen, step inside his mind.`,
+  cta: 'Understand the artist’s mind',
+  ctaSub: 'Enter VSL — the immersive world behind the work',
+  contact: {
+    email: 'vlevy@tnes.studio',
+    phone: '+1 917 445 4067',
+    instagram: '@vlevy_',
+    instagramUrl: 'https://instagram.com/vlevy_',
+  },
+}
 
 // decorative hero on the signature wall: a single dimmed painting the VSL
 // signature is written over. Not a sellable artwork — never in `artworks`.
 export const HERO = {
-  image: '/artworks/coastal-run.jpg',
+  image: '/artworks/rio-runner.jpg',
   // z 0.07 seats the frame in front of the wall face (same as ArtworkFrame) —
   // at z 0 its front is coplanar with the wall and z-fights into dashes
   position: [0, 0.2, 0.07] as [number, number, number],
