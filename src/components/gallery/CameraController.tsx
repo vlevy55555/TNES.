@@ -92,6 +92,8 @@ export function CameraController() {
     let lastY = 0
 
     const onDown = (e: PointerEvent) => {
+      // the inquiry letter owns the screen — freeze gallery orbit/dolly under it
+      if (useGalleryStore.getState().inquiryOpen) return
       down = true
       startX = e.clientX
       startY = e.clientY
@@ -131,6 +133,7 @@ export function CameraController() {
       document.body.style.cursor = ''
     }
     const onWheel = (e: WheelEvent) => {
+      if (useGalleryStore.getState().inquiryOpen) return
       e.preventDefault()
       // signature wall: scroll scrubs the zoom — down pulls back and forms the
       // signature, up zooms into the painting and it fades (both ways, always)
