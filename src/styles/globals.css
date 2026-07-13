@@ -511,13 +511,190 @@ body,
   .panel-actions {
     margin-top: 8px;
   }
+}
 
-  .toast {
-    position: fixed;
-    bottom: auto;
-    top: 20px;
-    left: 22px;
-    right: 22px;
+/* ---------- manifesto: the unrolling scroll ---------- */
+
+.manifesto-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  background: rgba(26, 20, 12, 0.62);
+  backdrop-filter: blur(3px);
+  animation: manifesto-fade 0.4s ease;
+}
+
+@keyframes manifesto-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.manifesto-scroll {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: min(560px, 92vw);
+  /* the "big zoom" — the scroll rushes toward the viewer as it unrolls */
+  transform-origin: center top;
+  animation: manifesto-zoom 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes manifesto-zoom {
+  from {
+    transform: scale(0.62);
+    opacity: 0.5;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.manifesto-close {
+  position: absolute;
+  top: -34px;
+  right: 0;
+  border: none;
+  background: none;
+  color: rgba(246, 241, 231, 0.85);
+  font-family: var(--sans);
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.manifesto-close:hover {
+  color: #fff;
+}
+
+/* the rolled dowels at the top and bottom of the sheet */
+.scroll-roller {
+  width: calc(100% + 24px);
+  height: 22px;
+  flex: none;
+  border-radius: 11px;
+  background: linear-gradient(
+    180deg,
+    #efe6d3 0%,
+    #d8cbb0 42%,
+    #b7a684 100%
+  );
+  box-shadow: 0 3px 10px rgba(30, 20, 8, 0.35),
+    inset 0 1px 0 rgba(255, 252, 244, 0.6);
+}
+
+/* grid 0fr → 1fr unrolls the sheet top-to-bottom without distorting the text */
+.scroll-reveal {
+  display: grid;
+  grid-template-rows: 0fr;
+  width: 100%;
+  overflow: hidden;
+  animation: manifesto-unroll 1.1s cubic-bezier(0.22, 1, 0.36, 1) 0.15s both;
+}
+
+@keyframes manifesto-unroll {
+  from {
+    grid-template-rows: 0fr;
+  }
+  to {
+    grid-template-rows: 1fr;
+  }
+}
+
+.scroll-body {
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.scroll-sheet {
+  width: 100%;
+  max-height: calc(90vh - 120px);
+  overflow-y: auto;
+  padding: 48px 52px 44px;
+  background: linear-gradient(180deg, #f4ecdb 0%, #eee3cd 100%);
+  color: #3a3327;
+  box-shadow: inset 0 0 60px rgba(120, 96, 52, 0.18),
+    inset 14px 0 22px -18px rgba(90, 68, 34, 0.5),
+    inset -14px 0 22px -18px rgba(90, 68, 34, 0.5);
+}
+
+/* Body — Georgia Regular, 1.5 (02. secundária / 03. Body) */
+.scroll-sheet p {
+  font-family: var(--serif);
+  font-size: 15px;
+  line-height: 1.5;
+  color: #4a4234;
+  margin-bottom: 18px;
+}
+
+/* H1 Display Title — Manrope Média, 48/1.1 */
+.manifesto-title {
+  font-family: var(--sans);
+  font-weight: 500;
+  font-size: 54px;
+  line-height: 1.1;
+  letter-spacing: 0.01em;
+  text-align: center;
+  color: var(--ink);
+  margin-bottom: 10px;
+}
+
+.manifesto-mark {
+  color: #9a8757;
+  font-size: 0.62em;
+  vertical-align: 0.18em;
+  letter-spacing: 0.02em;
+}
+
+/* H3 Subheader — Playfair Display, 1.3, tracking +50 */
+.manifesto-pron {
+  font-family: var(--brand) !important;
+  font-size: 15px !important;
+  line-height: 1.3;
+  letter-spacing: 0.05em;
+  text-align: center;
+  color: var(--muted) !important;
+  margin-bottom: 34px !important;
+}
+
+/* authorship — Playfair Display (02. terciária: autorias e marcas) */
+.manifesto-sign {
+  font-family: var(--brand) !important;
+  font-style: italic;
+  letter-spacing: 0.03em;
+  margin-top: 30px;
+  margin-bottom: 2px !important;
+}
+
+.manifesto-author {
+  font-family: var(--brand) !important;
+  font-size: 14px !important;
+  line-height: 1.3;
+  letter-spacing: 0.05em;
+  color: var(--muted) !important;
+}
+
+@media (max-width: 700px) {
+  .scroll-sheet {
+    padding: 34px 28px 30px;
+  }
+  .manifesto-title {
+    font-size: 40px;
+  }
+  .scroll-sheet p {
+    font-size: 15px;
   }
 }
 
