@@ -21,6 +21,13 @@ export type Artwork = {
   size: [number, number]
   edition: string
   dimensions: string
+  /**
+   * Shopify product handle. Set = the work is purchasable: the panel shows live
+   * options and price and offers checkout. Unset = inquiry-only, the original
+   * behaviour. Only `runner` is mapped so far; the other five have no matching
+   * product in the tnes-3 store yet.
+   */
+  shopifyHandle?: string
 }
 
 export const walls: Wall[] = [
@@ -121,6 +128,11 @@ export const artworks: Artwork[] = [
     size: PORTRAIT,
     edition: EDITION,
     dimensions: DIMENSIONS,
+    // Sold as the store's "The Pool" — which is St. Peters Pool, Malta, NOT this
+    // Ischia frame. Linked on request despite the mismatch: the checkout will
+    // ship a different photograph than the wall shows. Remap when the Ischia
+    // frame gets its own product.
+    shopifyHandle: 'the-pool',
   },
   {
     id: 'runner',
@@ -133,8 +145,14 @@ export const artworks: Artwork[] = [
     wallIndex: 1,
     position: [0.1, -0.5, 0],
     size: LANDSCAPE,
-    edition: EDITION,
+    // Shopify sells this one as an open edition, so it contradicts the archive's
+    // "edition by inquiry" — the store is the truth for anything purchasable.
+    edition: 'Archival pigment print · open edition, framed ready to hang',
     dimensions: DIMENSIONS,
+    // Sold as "01.07 — corrida dourada". The handle is a chain of Shopify
+    // duplicate-copy suffixes, not a typo — it's the real, permanent handle.
+    // Renaming it in Shopify breaks this link; update here if you ever do.
+    shopifyHandle: 'bleed-copy-copy-copy-copy-copy-copy',
   },
   {
     id: 'wied-il-ghasri',

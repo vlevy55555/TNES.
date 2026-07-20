@@ -6,7 +6,9 @@ import { Header } from './components/ui/Header'
 import { Footer } from './components/ui/Footer'
 import { WallNavigation } from './components/ui/WallNavigation'
 import { ArtworkPanel } from './components/ui/ArtworkPanel'
+import { CartDrawer } from './components/ui/CartDrawer'
 import { useGalleryStore } from './store/useGalleryStore'
+import { useCartStore } from './store/useCartStore'
 
 export default function App() {
   const selectedArtworkId = useGalleryStore((s) => s.selectedArtworkId)
@@ -33,12 +35,14 @@ export default function App() {
         closeManifesto,
         closeInquiry,
       } = useGalleryStore.getState()
+      const cartOpen = useCartStore.getState().open
       if (e.key === 'Escape') {
+        if (cartOpen) return useCartStore.getState().setOpen(false)
         closeInquiry()
         closeManifesto()
         closeArtwork()
       }
-      if (inquiryOpen || manifestoOpen || selectedArtworkId) return
+      if (cartOpen || inquiryOpen || manifestoOpen || selectedArtworkId) return
       if (e.key === 'ArrowRight') goToNextWall()
       if (e.key === 'ArrowLeft') goToPreviousWall()
     }
@@ -56,6 +60,7 @@ export default function App() {
       <Header />
       <WallNavigation />
       <ArtworkPanel />
+      <CartDrawer />
       <Footer />
     </>
   )
