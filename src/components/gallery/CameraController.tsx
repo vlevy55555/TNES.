@@ -3,18 +3,18 @@ import { useEffect, useRef } from 'react'
 import { Vector3, type PerspectiveCamera } from 'three'
 import gsap from 'gsap'
 import {
+  ARCHIVE_POS,
   artworks,
   CAMERA_Z,
   COMING_SOON_WALL,
   FRAME_BORDER,
-  HERO,
-  HERO_ZOOM_Z,
   SIGNATURE_WALL,
+  SIGNATURE_ZOOM,
   WALL_SPACING,
   walls,
 } from '../../data/artworks'
 import { useGalleryStore } from '../../store/useGalleryStore'
-import { introScrub } from './introScrub'
+import { archiveScrub, SCRUB_FORMED, SCRUB_SHRUNK } from './archiveScrub'
 
 // set while the pointer is dragging so frame/wall clicks can ignore the release
 export const dragState = { moved: false }
@@ -24,6 +24,16 @@ const MAX_PITCH = 0.15 // ~8.5° up/down peek
 const DOLLY_RANGE: [number, number] = [-3.2, 4.5] // scroll dolly, world units
 const MIN_DIST = 0.9 // never cross the wall plane
 const SIG_X = SIGNATURE_WALL * WALL_SPACING
+// the intro zoom target: the central signed print
+const CENTRAL_Y = SIGNATURE_ZOOM[1]
+const ZOOM_Z = SIGNATURE_ZOOM[2]
+// the archive is off to the left (ARCHIVE_POS); scrub 1 pans the camera to it.
+// ARCHIVE_Z = the straight-on viewing distance (calibration knob)
+const ARCHIVE_Z = 12
+// reused each frame so the archive crane damps toward its target (no per-frame
+// alloc, and no hard cut when returning from a zoom opened inside the archive)
+const _archBase = new Vector3()
+const _archLook = new Vector3()
 
 // resting camera distance for the viewport: fits the wall, never crosses its edges
 function restingZ(size: { width: number; height: number }) {
@@ -45,14 +55,13 @@ export function CameraController() {
 
   const startWall = useGalleryStore.getState().currentWall
   const startAngle = walls[startWall].angle
-  // the very first load opens zoomed into the hero on the signature wall
-  // (introScrub starts at 0); every later arrival resets it to the formed state
+  // the opening wall loads zoomed into its central signed print (the intro)
   const startZoomedIn = startWall === SIGNATURE_WALL
 
   // GSAP drives base + look; useFrame composes orbit/pitch/dolly on top each frame
   const base = useRef(
     startZoomedIn
-      ? new Vector3(startWall * WALL_SPACING, HERO.position[1], HERO_ZOOM_Z)
+      ? new Vector3(SIGNATURE_ZOOM[0], SIGNATURE_ZOOM[1], SIGNATURE_ZOOM[2])
       : new Vector3(
           startWall * WALL_SPACING + Math.sin(startAngle) * CAMERA_Z,
           0,
@@ -61,10 +70,10 @@ export function CameraController() {
   )
   const look = useRef(
     startZoomedIn
-      ? new Vector3(startWall * WALL_SPACING, HERO.position[1], 0)
+      ? new Vector3(SIGNATURE_ZOOM[0], SIGNATURE_ZOOM[1], 0)
       : new Vector3(startWall * WALL_SPACING, 0, 0),
   )
-  // the signature wall's scroll scrub owns the camera only once it has settled
+  // on the opening wall the scroll scrub owns the camera only once it has settled
   // there, so an arriving wall-change transition isn't snapped over
   const scrubReady = useRef(startWall === SIGNATURE_WALL)
   const yaw = useRef(0)
@@ -106,17 +115,6 @@ export function CameraController() {
     }
     const onMove = (e: PointerEvent) => {
       if (!down) return
-      // signature wall: a vertical drag scrubs the zoom (down = zoom in and the
-      // signature fades; up = zoom out and it reforms) instead of orbiting
-      if (useGalleryStore.getState().currentWall === SIGNATURE_WALL) {
-        introScrub.target = Math.max(
-          0,
-          Math.min(1, introScrub.target + (lastY - e.clientY) * 0.004),
-        )
-        lastY = e.clientY
-        dragState.moved = true
-        return
-      }
       const dx = e.clientX - startX
       const dy = e.clientY - startY
       if (Math.abs(dx) + Math.abs(dy) > 6) dragState.moved = true
@@ -138,12 +136,11 @@ export function CameraController() {
     const onWheel = (e: WheelEvent) => {
       if (useGalleryStore.getState().inquiryOpen) return
       e.preventDefault()
-      // signature wall: scroll scrubs the zoom — down pulls back and forms the
-      // signature, up zooms into the painting and it fades (both ways, always)
+      // opening wall: scroll drives the intro (zoom out + signature) then the archive
       if (useGalleryStore.getState().currentWall === SIGNATURE_WALL) {
-        introScrub.target = Math.max(
+        archiveScrub.target = Math.max(
           0,
-          Math.min(1, introScrub.target + e.deltaY * 0.0009),
+          Math.min(1, archiveScrub.target + e.deltaY * 0.0009),
         )
         return
       }
@@ -168,17 +165,33 @@ export function CameraController() {
   }, [gl])
 
   useFrame((_, delta) => {
-    // signature wall (settled): the scroll scrub owns base/look.
-    //   progress 1 = formed — resting, zoomed out, signature written, art dimmed
-    //   progress 0 = zoomed into the painting, signature gone
+    // opening wall (settled): the scroll scrub owns base/look, in three phases —
+    //   [0, SCRUB_FORMED] zoom out of the central print (the signature writes on)
+    //   [SCRUB_FORMED, SCRUB_SHRUNK] hold at the wall rest (the signature shrinks away)
+    //   [SCRUB_SHRUNK, 1] pan left to the archive
     if (currentWall === SIGNATURE_WALL && scrubReady.current) {
       const d = Math.min(1, delta * 8)
-      introScrub.progress += (introScrub.target - introScrub.progress) * d
-      const t = introScrub.progress
+      archiveScrub.progress += (archiveScrub.target - archiveScrub.progress) * d
+      const p = archiveScrub.progress
       const wallZ = restingZ(size)
-      const y = HERO.position[1] * (1 - t)
-      base.current.set(SIG_X, y, HERO_ZOOM_Z + (wallZ - HERO_ZOOM_Z) * t)
-      look.current.set(SIG_X, y, 0)
+      let tx = SIG_X
+      let ty: number
+      let tz: number
+      if (p <= SCRUB_FORMED) {
+        const f = p / SCRUB_FORMED
+        ty = CENTRAL_Y * (1 - f)
+        tz = ZOOM_Z + (wallZ - ZOOM_Z) * f
+      } else if (p <= SCRUB_SHRUNK) {
+        ty = 0
+        tz = wallZ
+      } else {
+        const g = (p - SCRUB_SHRUNK) / (1 - SCRUB_SHRUNK)
+        tx = SIG_X + (ARCHIVE_POS[0] - SIG_X) * g
+        ty = ARCHIVE_POS[1] * g
+        tz = wallZ + (ARCHIVE_Z - wallZ) * g
+      }
+      base.current.lerp(_archBase.set(tx, ty, tz), d)
+      look.current.lerp(_archLook.set(tx, ty, 0), d)
     }
 
     const damp = Math.min(1, delta * 6)
@@ -202,10 +215,11 @@ export function CameraController() {
   useEffect(() => {
     const wallChanged = prevWall.current !== currentWall
     prevWall.current = currentWall
-    // every arrival at the signature wall starts from the formed state
+    // arriving at the opening wall from elsewhere lands at the formed state
+    // (zoomed out, signature shown) — the zoom-in intro only plays on first load
     if (wallChanged && currentWall === SIGNATURE_WALL) {
-      introScrub.progress = 1
-      introScrub.target = 1
+      archiveScrub.progress = SCRUB_FORMED
+      archiveScrub.target = SCRUB_FORMED
     }
 
     const artwork = artworks.find((a) => a.id === selectedArtworkId)

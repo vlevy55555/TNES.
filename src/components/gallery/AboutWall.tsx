@@ -76,27 +76,59 @@ export function AboutWall() {
         <meshBasicMaterial color="#c9bda6" />
       </mesh>
 
+      {/* gold accent bar standing in for a CSS left-border on the pull-quote */}
+      <mesh position={[-0.34, 0.36, 0.06]}>
+        <planeGeometry args={[0.012, 0.34]} />
+        <meshBasicMaterial color="#c9a24b" />
+      </mesh>
+
       <Text
         font={FONT_SERIF_ITALIC}
-        fontSize={0.112}
-        lineHeight={1.5}
+        fontSize={0.118}
+        lineHeight={1.45}
         color={INK}
         anchorX="left"
         anchorY="top"
+        maxWidth={2.85}
+        position={[-0.26, 0.5, 0.06]}
+      >
+        {ABOUT.quote}
+      </Text>
+
+      <Text
+        font={FONT_SANS}
+        fontSize={0.068}
+        lineHeight={1.6}
+        color={MUTED}
+        anchorX="left"
+        anchorY="top"
         maxWidth={3.05}
-        position={[-0.34, 0.5, 0.06]}
+        position={[-0.34, 0.08, 0.06]}
       >
         {ABOUT.body}
       </Text>
 
-      {/* Victor's direct contacts — clickable, tucked under the portrait */}
+      {/* Victor's direct contacts — icon row, clickable, tucked under the portrait */}
       <Html transform position={[-2.15, -1.55, 0.14]} scale={0.2} zIndexRange={[10, 0]} occlude={false}>
         <div className="about-contact">
-          <span className="about-contact-label">Contact</span>
-          <a href={`mailto:${ABOUT.contact.email}`}>{ABOUT.contact.email}</a>
-          <a href={`tel:${ABOUT.contact.phone.replace(/[^+\d]/g, '')}`}>{ABOUT.contact.phone}</a>
-          <a href={ABOUT.contact.instagramUrl} target="_blank" rel="noopener noreferrer">
-            Instagram {ABOUT.contact.instagram}
+          <a href={`mailto:${ABOUT.contact.email}`} title={ABOUT.contact.email} aria-label="Email">
+            ✉
+          </a>
+          <a
+            href={`tel:${ABOUT.contact.phone.replace(/[^+\d]/g, '')}`}
+            title={ABOUT.contact.phone}
+            aria-label="Phone"
+          >
+            ✆
+          </a>
+          <a
+            href={ABOUT.contact.instagramUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            title={`Instagram ${ABOUT.contact.instagram}`}
+            aria-label="Instagram"
+          >
+            ◎
           </a>
         </div>
       </Html>

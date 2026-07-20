@@ -74,6 +74,8 @@ body,
 .gallery-canvas {
   position: fixed;
   inset: 0;
+  /* the [O] brand mark itself as the room's cursor (brackets + O, not a ring) */
+  cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="34" height="22" viewBox="0 0 34 22"><text x="17" y="17" font-family="Georgia,serif" font-size="18" fill="%232f2a24" text-anchor="middle">[O]</text></svg>') 17 11, auto;
 }
 
 /* the ceiling lamps live in the 3D scene now — keep only a soft vignette */
@@ -103,10 +105,12 @@ body,
 }
 
 .signature-overlay svg {
-  width: min(54vw, 680px);
+  /* sized to sit over the central print of the opening wall (not a full hero) */
+  width: min(30vw, 380px);
   height: auto;
   transform: translateY(-3%);
   overflow: visible;
+  transform-origin: center center;
 }
 
 .sig-ink {
@@ -119,8 +123,8 @@ body,
 
 @media (max-width: 700px) {
   .signature-overlay svg {
-    width: 88vw;
-    transform: translateY(-6%);
+    width: min(58vw, 320px);
+    transform: translateY(-5%);
   }
 }
 
@@ -154,8 +158,9 @@ body,
 
 .logo {
   font-family: var(--brand);
-  font-size: 26px;
-  letter-spacing: 0.14em;
+  font-size: 44px;
+  letter-spacing: 0.12em;
+  line-height: 1;
 }
 
 .nav {
@@ -447,6 +452,10 @@ body,
 @media (max-width: 700px), (orientation: portrait) {
   .header {
     padding: 20px 22px;
+  }
+
+  .logo {
+    font-size: 32px;
   }
 
   .nav {

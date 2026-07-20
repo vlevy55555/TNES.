@@ -11,7 +11,7 @@ import {
 } from '../../data/signaturePath'
 import { SIGNATURE_WALL } from '../../data/artworks'
 import { useGalleryStore } from '../../store/useGalleryStore'
-import { introScrub } from './introScrub'
+import { archiveScrub, SCRUB_FORMED, SCRUB_SHRUNK } from './archiveScrub'
 
 // area-linear timing curve: map scroll progress -> fraction of stroke drawn
 const N = SIGNATURE_REVEAL_LUT.length
@@ -25,29 +25,38 @@ function drawnFraction(t: number) {
 export function SignatureOverlay() {
   const currentWall = useGalleryStore((s) => s.currentWall)
   const brush = useRef<SVGPathElement>(null)
+  const svg = useRef<SVGSVGElement>(null)
   const onWall = currentWall === SIGNATURE_WALL
 
   useEffect(() => {
     const el = brush.current
-    if (!el) return
-    // on the signature wall the signature tracks the scroll scrub every frame:
-    // formed at rest (progress 1), un-writing as the visitor scrolls in (→ 0)
+    const svgEl = svg.current
+    if (!el || !svgEl) return
+    // on the opening wall the signature tracks the scroll scrub every frame:
+    //   phase 1 [0, SCRUB_FORMED] — writes on as the visitor zooms out
+    //   phase 2 [SCRUB_FORMED, 1] — shrinks + fades as the camera cranes to the archive
     if (onWall) {
       let raf = 0
       const tick = () => {
-        el.style.strokeDashoffset = String(1 - drawnFraction(introScrub.progress))
+        const p = archiveScrub.progress
+        el.style.strokeDashoffset = String(1 - drawnFraction(Math.min(1, p / SCRUB_FORMED)))
+        const g = Math.max(0, Math.min(1, (p - SCRUB_FORMED) / (SCRUB_SHRUNK - SCRUB_FORMED)))
+        svgEl.style.transform = `translateY(-3%) scale(${1 - g * 0.72})`
+        svgEl.style.opacity = String(1 - g)
         raf = requestAnimationFrame(tick)
       }
       tick()
       return () => cancelAnimationFrame(raf)
     }
-    // off the signature wall: keep it whole (it fades out via opacity)
+    // off the opening wall: reset (the container fades out via its own opacity)
     el.style.strokeDashoffset = '0'
+    svgEl.style.transform = ''
+    svgEl.style.opacity = ''
   }, [onWall])
 
   return (
     <div className={`signature-overlay ${onWall ? 'is-on' : ''}`} aria-hidden="true">
-      <svg viewBox={SIGNATURE_VIEWBOX} preserveAspectRatio="xMidYMid meet">
+      <svg ref={svg} viewBox={SIGNATURE_VIEWBOX} preserveAspectRatio="xMidYMid meet">
         <defs>
           {/* the ink shape: the original anti-aliased raster as a luminance mask */}
           <mask id="sig-ink-shape" maskUnits="userSpaceOnUse" maskContentUnits="userSpaceOnUse">

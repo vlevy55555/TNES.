@@ -4,20 +4,19 @@ import { Loader } from '@react-three/drei'
 import { GalleryScene } from './GalleryScene'
 import {
   CAMERA_Z,
-  HERO,
-  HERO_ZOOM_Z,
   SIGNATURE_WALL,
+  SIGNATURE_ZOOM,
   WALL_SPACING,
   walls,
 } from '../../data/artworks'
 import { useGalleryStore } from '../../store/useGalleryStore'
 
 const startWall = useGalleryStore.getState().currentWall
-// first load on the signature wall opens zoomed into the hero (matches the scrub
-// default); the very first painted frame must already be zoomed in
+// the opening wall loads zoomed into its central signed print (the intro); other
+// walls open at their resting straight-on framing
 const startPos: [number, number, number] =
   startWall === SIGNATURE_WALL
-    ? [startWall * WALL_SPACING, HERO.position[1], HERO_ZOOM_Z]
+    ? SIGNATURE_ZOOM
     : [
         startWall * WALL_SPACING + Math.sin(walls[startWall].angle) * CAMERA_Z,
         0,

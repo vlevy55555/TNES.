@@ -12,8 +12,7 @@ import {
 } from '../../data/artworks'
 import { useGalleryStore } from '../../store/useGalleryStore'
 import { ArtworkFrame } from './ArtworkFrame'
-import { HeroFrame } from './HeroFrame'
-import { ManifestoScroll } from './ManifestoScroll'
+import { SignatureExhibition } from './SignatureExhibition'
 import { ComingSoonWall } from './ComingSoonWall'
 import { AboutWall } from './AboutWall'
 import { dragState } from './CameraController'
@@ -93,8 +92,7 @@ export function Wall({ wall }: { wall: WallType }) {
         </Text>
       )}
 
-      {wall.index === SIGNATURE_WALL && <HeroFrame />}
-      {wall.index === SIGNATURE_WALL && <ManifestoScroll />}
+      {wall.index === SIGNATURE_WALL && <SignatureExhibition />}
       {wall.index === COMING_SOON_WALL && <ComingSoonWall />}
       {wall.index === ABOUT_WALL && <AboutWall />}
 

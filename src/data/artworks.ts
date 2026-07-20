@@ -25,8 +25,8 @@ export type Artwork = {
 
 export const walls: Wall[] = [
   { index: 0, name: 'Signature', roman: 'I', angle: 0 },
-  { index: 1, name: 'Exhibition', roman: 'II', angle: -0.085 },
-  { index: 2, name: 'Archive', roman: 'III', angle: 0.085 },
+  { index: 1, name: 'Moments 1', roman: 'II', angle: -0.085 },
+  { index: 2, name: 'Moments 2', roman: 'III', angle: 0.085 },
   { index: 3, name: 'Coming Soon', roman: 'IV', angle: -0.085 },
   // the personal closer: the artist's portrait + a doorway into VSL, his mind
   { index: 4, name: 'About', roman: 'V', angle: 0.085 },
@@ -36,6 +36,17 @@ export const SIGNATURE_WALL = 0
 export const COMING_SOON_WALL = 3
 export const ABOUT_WALL = 4
 export const OPENING_DATE = new Date('2026-08-15T18:00:00')
+
+// the opening (Signature) wall's one-line brand statement
+export const BRAND_STATEMENT = 'An artifact of time made from the in betweens'
+
+// the opening wall loads zoomed into its central signed print [x, y, z camera];
+// scrolling out reveals the wall while the signature writes on
+export const SIGNATURE_ZOOM: [number, number, number] = [0, 0.3, 2.3]
+
+// the archive sits to the LEFT of the opening wall (the exhibition walls run to
+// the right); the opening-wall scroll pans the camera here after the signature shrinks
+export const ARCHIVE_POS: [number, number, number] = [-13, 0, 0]
 
 // the About wall: Victor's portrait, a wall-text, and a link out to VSL — the
 // immersive site that is the artist's mind behind this exhibition.
@@ -57,6 +68,8 @@ export const ABOUT = {
   portraitSize: [1.2, 1.8] as [number, number],
   name: 'Victor Safdie Levy',
   role: 'PHOTOGRAPHER · FOUNDER OF TNES',
+  // pull-quote grounded in the six works on these walls
+  quote: `Six coastlines, one recurring subject — a single figure, small against the water.`,
   body: `Every wall in this room is one pair of eyes. Victor makes photographs from the in-between — travel, memory, and the quiet geometry of a place. Here the work stands framed and still; to understand how it is seen, step inside his mind.`,
   cta: 'Understand the artist’s mind',
   ctaSub: 'Enter VSL — the immersive world behind the work',

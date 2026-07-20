@@ -32,9 +32,11 @@ function makeWoodTexture() {
 }
 const woodTexture = makeWoodTexture()
 
-const centerX = ((walls.length - 1) * WALL_SPACING) / 2
-// span every wall plus a margin, so floor/ceiling never fall short as walls grow
-const WIDTH = (walls.length - 1) * WALL_SPACING + 8
+// centred to span from the archive (left of the opening wall, world x ≈ -13) to
+// past the last wall, so the floor/ceiling/backdrop stay continuous during the
+// scroll-left pan — no void or seam behind the archive
+const centerX = 10
+const WIDTH = (walls.length - 1) * WALL_SPACING + 28
 const DEPTH = 20
 // matches the wall's top edge (Wall.tsx: bottom -2.2, height 4.93) so the
 // ceiling sits flush with the walls, only exposed once the camera pulls back

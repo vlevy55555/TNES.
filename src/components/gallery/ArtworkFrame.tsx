@@ -29,7 +29,15 @@ const shadowTexture = makeShadowTexture()
 
 artworks.forEach((a) => useTexture.preload(a.image))
 
-export function ArtworkFrame({ artwork }: { artwork: Artwork }) {
+export function ArtworkFrame({
+  artwork,
+  position,
+}: {
+  artwork: Artwork
+  // override the on-wall placement (used by the archive grid); defaults to the
+  // artwork's own wall position
+  position?: [number, number, number]
+}) {
   const texture = useTexture(artwork.image, (t) => {
     t.colorSpace = SRGBColorSpace
   })
@@ -56,7 +64,7 @@ export function ArtworkFrame({ artwork }: { artwork: Artwork }) {
   return (
     <group
       ref={group}
-      position={[artwork.position[0], artwork.position[1], 0.07]}
+      position={position ?? [artwork.position[0], artwork.position[1], 0.07]}
       onClick={(e) => {
         e.stopPropagation()
         // the inquiry letter overlays the gallery — don't react to clicks behind it
@@ -97,6 +105,19 @@ export function ArtworkFrame({ artwork }: { artwork: Artwork }) {
         <planeGeometry args={[w, h]} />
         <meshBasicMaterial map={texture} toneMapped={false} />
       </mesh>
+
+      {/* the [O] brand mark, quietly stamped in the lower corner of the print */}
+      <Text
+        font={FONT_BRAND}
+        fontSize={0.1}
+        color="#f2ead9"
+        fillOpacity={0.4}
+        anchorX="right"
+        anchorY="bottom"
+        position={[w / 2 - 0.09, -h / 2 + 0.09, 0.075]}
+      >
+        [O]
+      </Text>
 
       {/* label plaque under the frame */}
       {/* work title — Playfair (gallery identification) */}
