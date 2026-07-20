@@ -1,6 +1,6 @@
 import { Text, useCursor, useTexture } from '@react-three/drei'
 import { useEffect, useRef, useState } from 'react'
-import { CanvasTexture, SRGBColorSpace, type Group } from 'three'
+import { CanvasTexture, SRGBColorSpace, Vector3, type Group } from 'three'
 import gsap from 'gsap'
 import {
   artworks,
@@ -29,14 +29,25 @@ const shadowTexture = makeShadowTexture()
 
 artworks.forEach((a) => useTexture.preload(a.image))
 
+// reused by the click handler — world transform reads need a target vector
+const _worldPos = new Vector3()
+const _worldScale = new Vector3()
+
 export function ArtworkFrame({
   artwork,
   position,
+  zoomInPlace = false,
 }: {
   artwork: Artwork
   // override the on-wall placement (used by the archive grid); defaults to the
   // artwork's own wall position
   position?: [number, number, number]
+  /**
+   * Zoom to where this frame actually hangs instead of to the work's place on
+   * its wall. Set by the archive, which hangs the same work at several slots and
+   * scales — the artwork id alone can't say which copy was clicked.
+   */
+  zoomInPlace?: boolean
 }) {
   const texture = useTexture(artwork.image, (t) => {
     t.colorSpace = SRGBColorSpace
@@ -69,6 +80,19 @@ export function ArtworkFrame({
         e.stopPropagation()
         // the inquiry letter overlays the gallery — don't react to clicks behind it
         if (useGalleryStore.getState().inquiryOpen || dragState.moved) return
+        if (zoomInPlace && group.current) {
+          group.current.getWorldPosition(_worldPos)
+          // divide out this group's own hover scale (1 or 1.02) so the framing
+          // doesn't shift by 2% depending on whether the pointer was over it
+          const scale = group.current.getWorldScale(_worldScale).x / group.current.scale.x
+          selectArtwork(artwork.id, {
+            x: _worldPos.x,
+            y: _worldPos.y,
+            z: _worldPos.z,
+            scale,
+          })
+          return
+        }
         selectArtwork(artwork.id)
       }}
       onPointerOver={(e) => {

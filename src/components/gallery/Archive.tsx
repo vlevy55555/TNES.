@@ -129,7 +129,8 @@ export function Archive() {
         return (
           <Suspense key={`frame-${i}`} fallback={null}>
             <group position={[slot.x, slot.y, 0]} scale={slot.s}>
-              <ArtworkFrame artwork={artwork} position={[0, 0, 0.07]} />
+              {/* zoom into the slot itself — never fly off to the Moments wall */}
+              <ArtworkFrame artwork={artwork} position={[0, 0, 0.07]} zoomInPlace />
             </group>
           </Suspense>
         )

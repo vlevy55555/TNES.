@@ -6,6 +6,7 @@ export function WallNavigation() {
   const selectedArtworkId = useGalleryStore((s) => s.selectedArtworkId)
   const focusArtworkId = useGalleryStore((s) => s.focusArtworkId)
   const isMobile = useGalleryStore((s) => s.isMobile)
+  const inArchive = useGalleryStore((s) => s.inArchive)
   const goToPreviousWall = useGalleryStore((s) => s.goToPreviousWall)
   const goToNextWall = useGalleryStore((s) => s.goToNextWall)
   const selectArtwork = useGalleryStore((s) => s.selectArtwork)
@@ -17,6 +18,8 @@ export function WallNavigation() {
   const total = isMobile ? mobileStops.length : walls.length
   const focusArtwork = artworks.find((a) => a.id === focusArtworkId)
   const label = isMobile && focusArtwork ? focusArtwork.title : walls[currentWall].name
+  // the archive sits before the first wall: ← reaches it, → comes back out
+  const atLastStop = pos === total - 1
 
   return (
     <div className={`wall-nav ${hidden ? 'wall-nav-hidden' : ''}`}>
@@ -33,21 +36,21 @@ export function WallNavigation() {
       <button
         className="wall-nav-arrow wall-nav-prev"
         onClick={goToPreviousWall}
-        disabled={pos === 0}
-        aria-label={isMobile ? 'Previous' : 'Previous wall'}
+        disabled={inArchive}
+        aria-label={inArchive ? 'Previous' : pos === 0 ? 'To the archive' : 'Previous wall'}
       >
         ←
       </button>
       <button
         className="wall-nav-arrow wall-nav-next"
         onClick={goToNextWall}
-        disabled={pos === total - 1}
-        aria-label={isMobile ? 'Next' : 'Next wall'}
+        disabled={!inArchive && atLastStop}
+        aria-label={inArchive ? 'Leave the archive' : isMobile ? 'Next' : 'Next wall'}
       >
         →
       </button>
       <div className="wall-nav-indicator">
-        {label} · {pos + 1} / {total}
+        {inArchive ? 'Archive' : `${label} · ${pos + 1} / ${total}`}
       </div>
     </div>
   )

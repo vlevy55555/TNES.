@@ -52,6 +52,8 @@ export function CameraController() {
   const selectedArtworkId = useGalleryStore((s) => s.selectedArtworkId)
   const focusArtworkId = useGalleryStore((s) => s.focusArtworkId)
   const isMobile = useGalleryStore((s) => s.isMobile)
+  const inArchive = useGalleryStore((s) => s.inArchive)
+  const zoomAt = useGalleryStore((s) => s.zoomAt)
 
   const startWall = useGalleryStore.getState().currentWall
   const startAngle = walls[startWall].angle
@@ -83,6 +85,9 @@ export function CameraController() {
   const dolly = useRef(0)
   const dollyTarget = useRef(0)
   const prevWall = useRef(useGalleryStore.getState().currentWall)
+  // last archive state pushed to the store from the scrub, so wheel-scrolling
+  // into the archive updates the header/arrows without setting state per frame
+  const archiveFlag = useRef(useGalleryStore.getState().inArchive)
 
   // portrait screens: keep a 35° HORIZONTAL fov so the wall never overflows
   useEffect(() => {
@@ -192,6 +197,15 @@ export function CameraController() {
       }
       base.current.lerp(_archBase.set(tx, ty, tz), d)
       look.current.lerp(_archLook.set(tx, ty, 0), d)
+
+      // scrolling past the pan boundary IS entering the archive — mirror it into
+      // the store (once per crossing) so the header and arrows agree with the view
+      const nowInArchive = p > SCRUB_SHRUNK + 0.15
+      if (nowInArchive !== archiveFlag.current) {
+        archiveFlag.current = nowInArchive
+        const s = useGalleryStore.getState()
+        nowInArchive ? s.enterArchive() : s.exitArchive()
+      }
     }
 
     const damp = Math.min(1, delta * 6)
@@ -231,6 +245,33 @@ export function CameraController() {
     gsap.killTweensOf(base.current)
     gsap.killTweensOf(look.current)
     dollyTarget.current = 0 // each scene starts freshly framed
+
+    // a frame clicked in the archive zooms WHERE IT HANGS. It reported its own
+    // world transform, so we frame that point instead of the work's on-wall
+    // placement — which would fly the camera off to the Moments wall and lose
+    // the archive entirely. The archive wall is flat (no yaw), so no sin/cos.
+    if (artwork && zoomAt) {
+      scrubReady.current = false
+      const frameW = (artwork.size[0] + FRAME_BORDER * 2) * zoomAt.scale
+      const frameH = (artwork.size[1] + FRAME_BORDER * 2) * zoomAt.scale
+      const tanH = Math.tan((camera.fov * Math.PI) / 360)
+      const panelPx = mobile ? 0 : Math.min(400, size.width * 0.92)
+      const stripAspect = (size.width - panelPx) / size.height
+      const z = Math.max(frameH / 2 / tanH, frameW / 2 / (tanH * stripAspect)) * 1.28 + 0.15
+      const shift = (panelPx / 2) * ((2 * z * tanH) / size.height)
+      const lx = zoomAt.x + shift
+      const ly = zoomAt.y - (mobile ? 0.7 : 0)
+
+      gsap.to(look.current, { x: lx, y: ly, z: zoomAt.z, duration: 0.8, ease: 'power2.inOut' })
+      gsap.to(base.current, {
+        x: lx,
+        y: ly,
+        z: zoomAt.z + z,
+        duration: 1.25,
+        ease: 'power3.inOut',
+      })
+      return
+    }
 
     if (artwork) {
       scrubReady.current = false
@@ -345,7 +386,23 @@ export function CameraController() {
       .to(look.current, { x: cx, y: restY, z: 0, duration: 1.05, ease: 'power2.inOut' }, 0.14)
       .to(base.current, { x: cx + sinW * wallZ, duration: 1.42, ease: 'power2.inOut' }, 0.14)
       .to(base.current, { z: cosW * wallZ, duration: 0.68, ease: 'power2.inOut' }, 1.1)
-  }, [currentWall, selectedArtworkId, focusArtworkId, isMobile, camera, size])
+  }, [currentWall, selectedArtworkId, zoomAt, focusArtworkId, isMobile, camera, size])
+
+  // Header / arrows drive the archive by moving the same scrub the wheel moves —
+  // one source of truth for where the camera sits. Declared after the effect
+  // above so that on a wall change into the archive this target wins.
+  useEffect(() => {
+    if (currentWall !== SIGNATURE_WALL) return
+    const wasFlag = archiveFlag.current
+    archiveFlag.current = inArchive
+    // If the scrub already agrees, this change CAME FROM the wheel — leave the
+    // target alone. Forcing it here would yank a scroll in progress back to the
+    // phase boundary the moment it crossed.
+    if (wasFlag === inArchive) return
+    archiveScrub.target = inArchive ? 1 : SCRUB_FORMED
+    // arriving from another wall, start the pan from the end of the hold phase
+    if (!scrubReady.current && inArchive) archiveScrub.progress = SCRUB_SHRUNK
+  }, [inArchive, currentWall])
 
   return null
 }
