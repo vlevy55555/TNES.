@@ -35,6 +35,23 @@ const ARCHIVE_Z = 12
 const _archBase = new Vector3()
 const _archLook = new Vector3()
 
+// the opening-wall scroll framing at scrub progress p (base target [x,y,z]; the
+// look point is the same x,y at z 0). Shared by the live scrub and by the eased
+// return that plays after closing an archive-frame zoom.
+function scrubFraming(p: number, wallZ: number): [number, number, number] {
+  if (p <= SCRUB_FORMED) {
+    const f = p / SCRUB_FORMED
+    return [SIG_X, CENTRAL_Y * (1 - f), ZOOM_Z + (wallZ - ZOOM_Z) * f]
+  }
+  if (p <= SCRUB_SHRUNK) return [SIG_X, 0, wallZ]
+  const g = (p - SCRUB_SHRUNK) / (1 - SCRUB_SHRUNK)
+  return [
+    SIG_X + (ARCHIVE_POS[0] - SIG_X) * g,
+    ARCHIVE_POS[1] * g,
+    wallZ + (ARCHIVE_Z - wallZ) * g,
+  ]
+}
+
 // resting camera distance for the viewport: fits the wall, never crosses its edges
 function restingZ(size: { width: number; height: number }) {
   const aspect = size.width / size.height
@@ -85,6 +102,7 @@ export function CameraController() {
   const dolly = useRef(0)
   const dollyTarget = useRef(0)
   const prevWall = useRef(useGalleryStore.getState().currentWall)
+  const prevSelected = useRef<string | null>(useGalleryStore.getState().selectedArtworkId)
   // last archive state pushed to the store from the scrub, so wheel-scrolling
   // into the archive updates the header/arrows without setting state per frame
   const archiveFlag = useRef(useGalleryStore.getState().inArchive)
@@ -178,23 +196,7 @@ export function CameraController() {
       const d = Math.min(1, delta * 8)
       archiveScrub.progress += (archiveScrub.target - archiveScrub.progress) * d
       const p = archiveScrub.progress
-      const wallZ = restingZ(size)
-      let tx = SIG_X
-      let ty: number
-      let tz: number
-      if (p <= SCRUB_FORMED) {
-        const f = p / SCRUB_FORMED
-        ty = CENTRAL_Y * (1 - f)
-        tz = ZOOM_Z + (wallZ - ZOOM_Z) * f
-      } else if (p <= SCRUB_SHRUNK) {
-        ty = 0
-        tz = wallZ
-      } else {
-        const g = (p - SCRUB_SHRUNK) / (1 - SCRUB_SHRUNK)
-        tx = SIG_X + (ARCHIVE_POS[0] - SIG_X) * g
-        ty = ARCHIVE_POS[1] * g
-        tz = wallZ + (ARCHIVE_Z - wallZ) * g
-      }
+      const [tx, ty, tz] = scrubFraming(p, restingZ(size))
       base.current.lerp(_archBase.set(tx, ty, tz), d)
       look.current.lerp(_archLook.set(tx, ty, 0), d)
 
@@ -229,6 +231,9 @@ export function CameraController() {
   useEffect(() => {
     const wallChanged = prevWall.current !== currentWall
     prevWall.current = currentWall
+    // closing an archive-frame zoom: selectedArtworkId went from set -> null
+    const closingZoom = prevSelected.current !== null && selectedArtworkId === null
+    prevSelected.current = selectedArtworkId
     // arriving at the opening wall from elsewhere lands at the formed state
     // (zoomed out, signature shown) — the zoom-in intro only plays on first load
     if (wallChanged && currentWall === SIGNATURE_WALL) {
@@ -353,7 +358,18 @@ export function CameraController() {
     // first, then enable the scrub at the formed (resting) view.
     if (currentWall === SIGNATURE_WALL) {
       if (!wallChanged) {
-        scrubReady.current = true
+        // returning from an archive-frame zoom: ease back to the scrub framing
+        // the same way the other frames do, then hand control to the scroll scrub
+        if (closingZoom) {
+          scrubReady.current = false
+          const [tx, ty, tz] = scrubFraming(archiveScrub.progress, wallZ)
+          gsap
+            .timeline({ onComplete: () => (scrubReady.current = true) })
+            .to(look.current, { x: tx, y: ty, z: 0, duration: 0.85, ease: 'power2.inOut' }, 0)
+            .to(base.current, { x: tx, y: ty, z: tz, duration: 1.25, ease: 'power3.inOut' }, 0)
+        } else {
+          scrubReady.current = true
+        }
         return
       }
       scrubReady.current = false
