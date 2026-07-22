@@ -10,7 +10,9 @@ import {
   FRAME_BORDER,
   SIGNATURE_WALL,
   SIGNATURE_ZOOM,
+  WALL_HEIGHT,
   WALL_SPACING,
+  WALL_WIDTH,
   walls,
 } from '../../data/artworks'
 import { useGalleryStore } from '../../store/useGalleryStore'
@@ -52,13 +54,16 @@ function scrubFraming(p: number, wallZ: number): [number, number, number] {
   ]
 }
 
-// resting camera distance for the viewport: fits the wall, never crosses its edges
+// resting camera distance for the viewport: the wall (both edges) fills 90% of
+// the frame on whichever axis is tighter, at every aspect ratio — desktop,
+// tablet, or phone, portrait or landscape — so every frame on it stays in view
+const WALL_FILL = 0.9
 function restingZ(size: { width: number; height: number }) {
   const aspect = size.width / size.height
   const tanH = Math.tan((35 * Math.PI) / 360)
-  return aspect >= 1
-    ? Math.min(Math.max(CAMERA_Z, 6.9 / (2 * tanH * aspect)), 9.2 / (2 * tanH * aspect))
-    : CAMERA_Z
+  const fitH = WALL_HEIGHT / 2 / tanH
+  const fitW = WALL_WIDTH / 2 / (tanH * aspect)
+  return Math.max(fitH, fitW) / WALL_FILL
 }
 
 export function CameraController() {
@@ -67,7 +72,6 @@ export function CameraController() {
   const size = useThree((s) => s.size)
   const currentWall = useGalleryStore((s) => s.currentWall)
   const selectedArtworkId = useGalleryStore((s) => s.selectedArtworkId)
-  const focusArtworkId = useGalleryStore((s) => s.focusArtworkId)
   const isMobile = useGalleryStore((s) => s.isMobile)
   const inArchive = useGalleryStore((s) => s.inArchive)
   const zoomAt = useGalleryStore((s) => s.zoomAt)
@@ -106,16 +110,6 @@ export function CameraController() {
   // last archive state pushed to the store from the scrub, so wheel-scrolling
   // into the archive updates the header/arrows without setting state per frame
   const archiveFlag = useRef(useGalleryStore.getState().inArchive)
-
-  // portrait screens: keep a 35° HORIZONTAL fov so the wall never overflows
-  useEffect(() => {
-    const aspect = size.width / size.height
-    camera.fov =
-      aspect < 1
-        ? (2 * Math.atan(Math.tan((35 * Math.PI) / 360) / aspect) * 180) / Math.PI
-        : 35
-    camera.updateProjectionMatrix()
-  }, [size, camera])
 
   // drag to angle the view around the wall (both axes) + wheel to dolly in/out —
   // except on the signature wall, where both scrub the signature zoom
@@ -313,37 +307,6 @@ export function CameraController() {
       return
     }
 
-    // mobile: browse one frame at a time — fit a single artwork to the whole
-    // screen (no side panel), leaving headroom below for its title plaque.
-    const browse = isMobile ? artworks.find((a) => a.id === focusArtworkId) : undefined
-    if (browse) {
-      scrubReady.current = false
-      const frameW = browse.size[0] + FRAME_BORDER * 2
-      // +0.6 so the label plaque under the frame stays inside the framing
-      const frameH = browse.size[1] + FRAME_BORDER * 2 + 0.6
-      const tanH = Math.tan((camera.fov * Math.PI) / 360)
-      const stripAspect = size.width / size.height
-      const z = Math.max(frameH / 2 / tanH, frameW / 2 / (tanH * stripAspect)) * 1.12 + 0.12
-
-      const bw = walls[browse.wallIndex]
-      const sinA = Math.sin(bw.angle)
-      const cosA = Math.cos(bw.angle)
-      const ax = browse.position[0]
-      const lx = browse.wallIndex * WALL_SPACING + ax * cosA + 0.07 * sinA
-      const lz = -ax * sinA + 0.07 * cosA
-      const ly = browse.position[1] - 0.18 // drop a touch so the plaque sits in view
-
-      gsap.to(look.current, { x: lx, y: ly, z: lz, duration: 1.4, ease: 'power2.inOut' })
-      gsap.to(base.current, {
-        x: lx + sinA * z,
-        y: ly,
-        z: lz + cosA * z,
-        duration: 2.0,
-        ease: 'power3.inOut',
-      })
-      return
-    }
-
     const wall = walls[currentWall]
     const sinW = Math.sin(wall.angle)
     const cosW = Math.cos(wall.angle)
@@ -402,7 +365,7 @@ export function CameraController() {
       .to(look.current, { x: cx, y: restY, z: 0, duration: 1.05, ease: 'power2.inOut' }, 0.14)
       .to(base.current, { x: cx + sinW * wallZ, duration: 1.42, ease: 'power2.inOut' }, 0.14)
       .to(base.current, { z: cosW * wallZ, duration: 0.68, ease: 'power2.inOut' }, 1.1)
-  }, [currentWall, selectedArtworkId, zoomAt, focusArtworkId, isMobile, camera, size])
+  }, [currentWall, selectedArtworkId, zoomAt, isMobile, camera, size])
 
   // Header / arrows drive the archive by moving the same scrub the wheel moves —
   // one source of truth for where the camera sits. Declared after the effect

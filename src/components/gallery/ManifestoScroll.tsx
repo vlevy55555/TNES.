@@ -67,7 +67,7 @@ export function ManifestoScroll() {
         font={FONT_SANS}
         fontSize={0.062}
         letterSpacing={0.3}
-        color={hovered ? '#6f6455' : '#a99d8a'}
+        color={hovered ? '#6f6455' : '#6b6151'}
         anchorX="center"
         anchorY="bottom"
         position={[0, R + 0.13, 0]}
@@ -79,7 +79,7 @@ export function ManifestoScroll() {
       <Text
         font={FONT_SERIF_ITALIC}
         fontSize={0.062}
-        color="#7a6f5e"
+        color="#6b6151"
         anchorX="center"
         anchorY="top"
         maxWidth={1.6}

@@ -7,7 +7,7 @@ import { useGalleryStore } from '../../store/useGalleryStore'
 const FRAME_BORDER = 0.15
 
 const INK = '#2f2a24'
-const MUTED = '#8a7f6d'
+const MUTED = '#6b6151'
 const GOLD = '#b69b5e'
 const PLATE = '#dcd5c3'
 const RIVET = '#6b6152'

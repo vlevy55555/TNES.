@@ -108,7 +108,7 @@ export function Archive() {
         font={FONT_SANS}
         fontSize={0.072}
         letterSpacing={0.34}
-        color="#a99d8a"
+        color="#6b6151"
         anchorX="left"
         anchorY="middle"
         position={[-4.8, 2.55, 0.06]}

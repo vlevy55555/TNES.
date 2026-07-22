@@ -122,7 +122,7 @@ export function SignatureExhibition() {
         font={FONT_SANS}
         fontSize={0.058}
         letterSpacing={0.34}
-        color="#a99d8a"
+        color="#6b6151"
         anchorX="center"
         anchorY="middle"
         position={[0, -1.62, 0.06]}

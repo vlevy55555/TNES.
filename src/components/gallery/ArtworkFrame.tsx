@@ -160,7 +160,7 @@ export function ArtworkFrame({
         font={FONT_SANS}
         fontSize={0.058}
         letterSpacing={0.22}
-        color="#9a8f7f"
+        color="#6b6151"
         anchorX="left"
         anchorY="top"
         position={[-frameW / 2, -frameH / 2 - 0.36, 0]}

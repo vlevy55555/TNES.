@@ -5,9 +5,12 @@ import {
   ABOUT_WALL,
   artworks,
   COMING_SOON_WALL,
+  FONT_BRAND,
   FONT_SANS,
   SIGNATURE_WALL,
+  WALL_HEIGHT,
   WALL_SPACING,
+  WALL_WIDTH,
   type Wall as WallType,
 } from '../../data/artworks'
 import { useGalleryStore } from '../../store/useGalleryStore'
@@ -68,7 +71,7 @@ export function Wall({ wall }: { wall: WallType }) {
           closeArtwork()
         }}
       >
-        <boxGeometry args={[9.4, 4.93, 0.1]} />
+        <boxGeometry args={[WALL_WIDTH, WALL_HEIGHT, 0.1]} />
         <meshStandardMaterial color="#e8dfd2" />
       </mesh>
 
@@ -82,7 +85,7 @@ export function Wall({ wall }: { wall: WallType }) {
           font={FONT_SANS}
           fontSize={0.072}
           letterSpacing={0.34}
-          color="#a99d8a"
+          color="#6b6151"
           anchorX="left"
           anchorY="middle"
           position={[-2.95, 1.72, 0.06]}
@@ -90,6 +93,36 @@ export function Wall({ wall }: { wall: WallType }) {
         >
           {`${wall.name.toUpperCase()} — ${wall.roman}`}
         </Text>
+      )}
+
+      {/* Moments walls only (the two with a real hang) — a wall-level heading
+          sitting in the gap the salon composition leaves above the frames */}
+      {wallArtworks.length > 0 && (
+        <>
+          <Text
+            font={FONT_BRAND}
+            fontSize={0.32}
+            color="#2f2a24"
+            anchorX="center"
+            anchorY="middle"
+            position={[0, 1.64, 0.06]}
+            fillOpacity={zoomed ? 0 : 1}
+          >
+            Event title
+          </Text>
+          <Text
+            font={FONT_SANS}
+            fontSize={0.12}
+            letterSpacing={0.02}
+            color="#6b6151"
+            anchorX="center"
+            anchorY="middle"
+            position={[0, 1.32, 0.06]}
+            fillOpacity={zoomed ? 0 : 1}
+          >
+            One sentence of context
+          </Text>
+        </>
       )}
 
       {wall.index === SIGNATURE_WALL && <SignatureExhibition />}

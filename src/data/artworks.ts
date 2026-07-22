@@ -1,5 +1,8 @@
 export const WALL_SPACING = 10
 export const CAMERA_Z = 7.9
+// physical wall panel size, world units — must match Wall.tsx's boxGeometry
+export const WALL_WIDTH = 9.4
+export const WALL_HEIGHT = 4.93
 
 export type Wall = {
   index: number

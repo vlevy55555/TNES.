@@ -11,7 +11,7 @@ import {
 } from '../../data/artworks'
 
 const INK = '#2f2a24'
-const MUTED = '#8a7f6d'
+const MUTED = '#6b6151'
 const GOLD = '#8f7c4e'
 
 // Victor's portrait, framed like the artworks on the other walls (gold + mat)
@@ -53,7 +53,7 @@ export function AboutWall() {
         color={INK}
         anchorX="left"
         anchorY="middle"
-        position={[-0.35, 1.15, 0.06]}
+        position={[-0.6, 1.15, 0.06]}
       >
         {ABOUT.name}
       </Text>
@@ -65,19 +65,19 @@ export function AboutWall() {
         color={MUTED}
         anchorX="left"
         anchorY="middle"
-        position={[-0.33, 0.82, 0.06]}
+        position={[-0.58, 0.82, 0.06]}
       >
         {ABOUT.role}
       </Text>
 
       {/* thin rule under the heading */}
-      <mesh position={[0.63, 0.66, 0.06]}>
+      <mesh position={[0.38, 0.66, 0.06]}>
         <planeGeometry args={[2.95, 0.006]} />
         <meshBasicMaterial color="#c9bda6" />
       </mesh>
 
       {/* gold accent bar standing in for a CSS left-border on the pull-quote */}
-      <mesh position={[-0.34, 0.36, 0.06]}>
+      <mesh position={[-0.59, 0.36, 0.06]}>
         <planeGeometry args={[0.012, 0.34]} />
         <meshBasicMaterial color="#c9a24b" />
       </mesh>
@@ -90,7 +90,7 @@ export function AboutWall() {
         anchorX="left"
         anchorY="top"
         maxWidth={2.85}
-        position={[-0.26, 0.5, 0.06]}
+        position={[-0.51, 0.5, 0.06]}
       >
         {ABOUT.quote}
       </Text>
@@ -103,7 +103,7 @@ export function AboutWall() {
         anchorX="left"
         anchorY="top"
         maxWidth={3.05}
-        position={[-0.34, 0.08, 0.06]}
+        position={[-0.59, 0.08, 0.06]}
       >
         {ABOUT.body}
       </Text>
