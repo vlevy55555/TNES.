@@ -1,5 +1,13 @@
 import { CanvasTexture, RepeatWrapping, SRGBColorSpace } from 'three'
-import { walls, WALL_SPACING } from '../../data/artworks'
+import {
+  walls,
+  WALL_BOTTOM_Y,
+  WALL_CENTER_Y,
+  WALL_HEIGHT,
+  MANIFESTO_ROOM_X,
+  WALL_SPACING,
+} from '../../data/artworks'
+import { MarbleWallSurface } from './MarbleWallSurface'
 
 // ponytail: procedural plank texture on a canvas — no image asset, no loader
 function makeWoodTexture() {
@@ -32,35 +40,27 @@ function makeWoodTexture() {
 }
 const woodTexture = makeWoodTexture()
 
-// centred to span from the archive (left of the opening wall, world x ≈ -13) to
-// past the last wall, so the floor/ceiling/backdrop stay continuous during the
-// scroll-left pan — no void or seam behind the archive
-const centerX = 10
-const WIDTH = (walls.length - 1) * WALL_SPACING + 28
+// Includes the side Manifesto room as well as the four visible navigation walls.
+const minRoomX = MANIFESTO_ROOM_X
+const maxRoomX = (walls.length - 1) * WALL_SPACING
+const centerX = (minRoomX + maxRoomX) / 2
+const WIDTH = maxRoomX - minRoomX + 18
 const DEPTH = 20
-// matches the wall's top edge (Wall.tsx: bottom -2.2, height 4.93) so the
-// ceiling sits flush with the walls, only exposed once the camera pulls back
-const CEILING_Y = 2.73
 
 export function Room() {
   return (
     <group position={[centerX, 0, 0]}>
       {/* wooden floor */}
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -2.2, DEPTH / 2 - 1]}>
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, WALL_BOTTOM_Y, DEPTH / 2 - 1]}>
         <planeGeometry args={[WIDTH, DEPTH]} />
         <meshStandardMaterial map={woodTexture} />
       </mesh>
-      {/* white ceiling — unlit and deliberately brighter than the lit walls,
-          so it still reads clearly once tone-mapped and exposed */}
-      <mesh rotation={[Math.PI / 2, 0, 0]} position={[0, CEILING_Y, DEPTH / 2 - 1]}>
-        <planeGeometry args={[WIDTH, DEPTH]} />
-        <meshBasicMaterial color="#faf8f2" />
-      </mesh>
       {/* backdrop closing the gap behind/between the angled walls */}
-      <mesh position={[0, 0, -0.55]}>
-        <planeGeometry args={[WIDTH, 6]} />
-        <meshStandardMaterial color="#e3d9c9" />
-      </mesh>
+      <MarbleWallSurface
+        width={WIDTH}
+        height={WALL_HEIGHT}
+        position={[0, WALL_CENTER_Y, -0.55]}
+      />
     </group>
   )
 }

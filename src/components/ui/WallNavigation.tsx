@@ -1,26 +1,26 @@
-import { artworks, walls } from '../../data/artworks'
+import { ARCHIVE_WALL, artworks, walls } from '../../data/artworks'
 import { useGalleryStore } from '../../store/useGalleryStore'
 
 export function WallNavigation() {
   const currentWall = useGalleryStore((s) => s.currentWall)
   const selectedArtworkId = useGalleryStore((s) => s.selectedArtworkId)
-  const inArchive = useGalleryStore((s) => s.inArchive)
   const goToPreviousWall = useGalleryStore((s) => s.goToPreviousWall)
   const goToNextWall = useGalleryStore((s) => s.goToNextWall)
   const selectArtwork = useGalleryStore((s) => s.selectArtwork)
+  const manifestoRoomOpen = useGalleryStore((s) => s.manifestoRoomOpen)
+  const closeManifestoRoom = useGalleryStore((s) => s.closeManifestoRoom)
+  const openManifestoRoom = useGalleryStore((s) => s.openManifestoRoom)
 
   const hidden = selectedArtworkId !== null
 
-  const label = walls[currentWall].name
-  // the archive sits before the first wall: ← reaches it, → comes back out
+  const label = manifestoRoomOpen ? 'Manifesto' : walls[currentWall].name
   const atLastWall = currentWall === walls.length - 1
 
   return (
     <div className={`wall-nav ${hidden ? 'wall-nav-hidden' : ''}`}>
       {/* keyboard/screen-reader path to the canvas-only artworks */}
       <nav className="sr-only" aria-label="Artworks on this wall">
-        {artworks
-          .filter((a) => a.wallIndex === currentWall)
+        {(currentWall === ARCHIVE_WALL ? artworks : [])
           .map((a) => (
             <button key={a.id} onClick={() => selectArtwork(a.id)}>
               View “{a.title}” — {a.subtitle}
@@ -29,22 +29,22 @@ export function WallNavigation() {
       </nav>
       <button
         className="wall-nav-arrow wall-nav-prev"
-        onClick={goToPreviousWall}
-        disabled={inArchive}
-        aria-label={inArchive ? 'Previous' : currentWall === 0 ? 'To the archive' : 'Previous wall'}
+        onClick={currentWall === 0 ? openManifestoRoom : goToPreviousWall}
+        disabled={manifestoRoomOpen}
+        aria-label="Previous wall"
       >
         ←
       </button>
       <button
         className="wall-nav-arrow wall-nav-next"
-        onClick={goToNextWall}
-        disabled={!inArchive && atLastWall}
-        aria-label={inArchive ? 'Leave the archive' : 'Next wall'}
+        onClick={manifestoRoomOpen ? closeManifestoRoom : goToNextWall}
+        disabled={!manifestoRoomOpen && atLastWall}
+        aria-label="Next wall"
       >
         →
       </button>
       <div className="wall-nav-indicator">
-        {inArchive ? 'Archive' : `${label} · ${currentWall + 1} / ${walls.length}`}
+        {manifestoRoomOpen ? 'MANIFESTO · ADJACENT ROOM' : `${label} · ${currentWall + 1} / ${walls.length}`}
       </div>
     </div>
   )

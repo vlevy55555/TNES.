@@ -1,24 +1,23 @@
-import { Suspense, useEffect, useRef } from 'react'
+import { useEffect, useRef } from 'react'
 import { Text } from '@react-three/drei'
 import type { Object3D, SpotLight } from 'three'
 import {
   ABOUT_WALL,
-  artworks,
   COMING_SOON_WALL,
-  FONT_BRAND,
   FONT_SANS,
   SIGNATURE_WALL,
+  WALL_CENTER_Y,
   WALL_HEIGHT,
   WALL_SPACING,
   WALL_WIDTH,
   type Wall as WallType,
 } from '../../data/artworks'
 import { useGalleryStore } from '../../store/useGalleryStore'
-import { ArtworkFrame } from './ArtworkFrame'
 import { SignatureExhibition } from './SignatureExhibition'
 import { ComingSoonWall } from './ComingSoonWall'
 import { AboutWall } from './AboutWall'
 import { dragState } from './CameraController'
+import { MarbleWallSurface } from './MarbleWallSurface'
 
 // one ceiling lamp: a downward wash that scallops the top of the wall,
 // matching the TNES reference (three per wall)
@@ -50,10 +49,7 @@ function WallLamp({ x }: { x: number }) {
 export function Wall({ wall }: { wall: WallType }) {
   const closeArtwork = useGalleryStore((s) => s.closeArtwork)
   const zoomed = useGalleryStore((s) => s.selectedArtworkId !== null)
-  const wallArtworks = artworks.filter((a) => a.wallIndex === wall.index)
-  // one lamp per frame, centered directly over it — not an even generic spread
-  const lampX =
-    wallArtworks.length > 0 ? wallArtworks.map((a) => a.position[0]) : [-3.13, 0, 3.13]
+  const lampX = [-3.13, 0, 3.13]
 
   return (
     <group
@@ -64,16 +60,19 @@ export function Wall({ wall }: { wall: WallType }) {
           camera's frustum (CAMERA_Z * tan(17.5°) ≈ 2.49) plus a 1/20 margin,
           so the wall fills the screen at rest but the raised ceiling still
           peeks in once the camera dollies back for a wall-to-wall transition */}
-      <mesh
-        position={[0, 0.265, 0]}
+      <group
         onClick={() => {
           if (useGalleryStore.getState().inquiryOpen || dragState.moved) return
           closeArtwork()
         }}
       >
-        <boxGeometry args={[WALL_WIDTH, WALL_HEIGHT, 0.1]} />
-        <meshStandardMaterial color="#e8dfd2" />
-      </mesh>
+        <MarbleWallSurface
+          width={WALL_WIDTH}
+          height={WALL_HEIGHT}
+          position={[0, WALL_CENTER_Y, 0]}
+          depth={0.1}
+        />
+      </group>
 
       {lampX.map((x) => (
         <WallLamp key={x} x={x} />
@@ -95,46 +94,9 @@ export function Wall({ wall }: { wall: WallType }) {
         </Text>
       )}
 
-      {/* Moments walls only (the two with a real hang) — a wall-level heading
-          sitting in the gap the salon composition leaves above the frames */}
-      {wallArtworks.length > 0 && (
-        <>
-          <Text
-            font={FONT_BRAND}
-            fontSize={0.32}
-            color="#2f2a24"
-            anchorX="center"
-            anchorY="middle"
-            position={[0, 1.64, 0.06]}
-            fillOpacity={zoomed ? 0 : 1}
-          >
-            Event title
-          </Text>
-          <Text
-            font={FONT_SANS}
-            fontSize={0.12}
-            letterSpacing={0.02}
-            color="#6b6151"
-            anchorX="center"
-            anchorY="middle"
-            position={[0, 1.32, 0.06]}
-            fillOpacity={zoomed ? 0 : 1}
-          >
-            One sentence of context
-          </Text>
-        </>
-      )}
-
       {wall.index === SIGNATURE_WALL && <SignatureExhibition />}
       {wall.index === COMING_SOON_WALL && <ComingSoonWall />}
       {wall.index === ABOUT_WALL && <AboutWall />}
-
-      {wallArtworks.map((artwork) => (
-        // per-frame Suspense: one slow image never blanks the whole gallery
-        <Suspense key={artwork.id} fallback={null}>
-          <ArtworkFrame artwork={artwork} />
-        </Suspense>
-      ))}
     </group>
   )
 }

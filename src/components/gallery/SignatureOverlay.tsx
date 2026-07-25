@@ -11,7 +11,7 @@ import {
 } from '../../data/signaturePath'
 import { SIGNATURE_WALL } from '../../data/artworks'
 import { useGalleryStore } from '../../store/useGalleryStore'
-import { archiveScrub, SCRUB_FORMED, SCRUB_SHRUNK } from './archiveScrub'
+import { archiveScrub, SCRUB_FORMED } from './archiveScrub'
 
 // area-linear timing curve: map scroll progress -> fraction of stroke drawn
 const N = SIGNATURE_REVEAL_LUT.length
@@ -24,25 +24,25 @@ function drawnFraction(t: number) {
 
 export function SignatureOverlay() {
   const currentWall = useGalleryStore((s) => s.currentWall)
+  const manifestoRoomOpen = useGalleryStore((s) => s.manifestoRoomOpen)
   const brush = useRef<SVGPathElement>(null)
   const svg = useRef<SVGSVGElement>(null)
-  const onWall = currentWall === SIGNATURE_WALL
+  const onWall = currentWall === SIGNATURE_WALL && !manifestoRoomOpen
 
   useEffect(() => {
     const el = brush.current
     const svgEl = svg.current
     if (!el || !svgEl) return
-    // on the opening wall the signature tracks the scroll scrub every frame:
-    //   phase 1 [0, SCRUB_FORMED] — writes on as the visitor zooms out
-    //   phase 2 [SCRUB_FORMED, 1] — shrinks + fades as the camera cranes to the archive
+    // The signature writes on until the intro has formed. It then remains fully
+    // visible for further downward scroll; scrolling back upward below that
+    // threshold is the only action that retraces it.
     if (onWall) {
       let raf = 0
       const tick = () => {
         const p = archiveScrub.progress
         el.style.strokeDashoffset = String(1 - drawnFraction(Math.min(1, p / SCRUB_FORMED)))
-        const g = Math.max(0, Math.min(1, (p - SCRUB_FORMED) / (SCRUB_SHRUNK - SCRUB_FORMED)))
-        svgEl.style.transform = `translateY(-3%) scale(${1 - g * 0.72})`
-        svgEl.style.opacity = String(1 - g)
+        svgEl.style.transform = 'translateY(-3%)'
+        svgEl.style.opacity = '1'
         raf = requestAnimationFrame(tick)
       }
       tick()

@@ -1,7 +1,6 @@
 import { useEffect } from 'react'
 import { GalleryCanvas } from './components/gallery/GalleryCanvas'
 import { SignatureOverlay } from './components/gallery/SignatureOverlay'
-import { Manifesto } from './components/gallery/Manifesto'
 import { Header } from './components/ui/Header'
 import { Footer } from './components/ui/Footer'
 import { WallNavigation } from './components/ui/WallNavigation'
@@ -28,11 +27,14 @@ export default function App() {
       const {
         selectedArtworkId,
         manifestoOpen,
+        manifestoRoomOpen,
         inquiryOpen,
         goToNextWall,
         goToPreviousWall,
         closeArtwork,
         closeManifesto,
+        closeManifestoRoom,
+        openManifestoRoom,
         closeInquiry,
       } = useGalleryStore.getState()
       const cartOpen = useCartStore.getState().open
@@ -40,11 +42,19 @@ export default function App() {
         if (cartOpen) return useCartStore.getState().setOpen(false)
         closeInquiry()
         closeManifesto()
+        if (manifestoRoomOpen) closeManifestoRoom()
         closeArtwork()
       }
       if (cartOpen || inquiryOpen || manifestoOpen || selectedArtworkId) return
+      if (manifestoRoomOpen) {
+        if (e.key === 'ArrowRight') closeManifestoRoom()
+        return
+      }
       if (e.key === 'ArrowRight') goToNextWall()
-      if (e.key === 'ArrowLeft') goToPreviousWall()
+      if (e.key === 'ArrowLeft') {
+        if (useGalleryStore.getState().currentWall === 0) openManifestoRoom()
+        else goToPreviousWall()
+      }
     }
     window.addEventListener('keydown', onKeyDown)
     return () => window.removeEventListener('keydown', onKeyDown)
@@ -55,7 +65,6 @@ export default function App() {
       <GalleryCanvas />
       <div className="light-overlay" />
       <SignatureOverlay />
-      <Manifesto />
       <div className={`dim ${selectedArtworkId && !inquiryOpen ? 'dim-on' : ''}`} />
       <Header />
       <WallNavigation />

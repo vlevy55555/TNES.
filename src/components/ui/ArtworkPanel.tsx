@@ -7,6 +7,8 @@ import { checkoutUrl, defaultSelection, findVariant, money } from '../../lib/sho
 
 export function ArtworkPanel() {
   const selectedArtworkId = useGalleryStore((s) => s.selectedArtworkId)
+  const selectedFrameStyle = useGalleryStore((s) => s.selectedFrameStyle)
+  const setSelectedFrameStyle = useGalleryStore((s) => s.setSelectedFrameStyle)
   const closeArtwork = useGalleryStore((s) => s.closeArtwork)
   const openInquiry = useGalleryStore((s) => s.openInquiry)
   const inquiryOpen = useGalleryStore((s) => s.inquiryOpen)
@@ -31,6 +33,19 @@ export function ArtworkPanel() {
 
   const variant = product ? findVariant(product, selection) : null
   const buyable = !!variant?.available
+  const frameOption = product?.options.find((option) => /^(frame|frame color|framing)$/i.test(option.name))
+  const nonFrameOptions = product?.options.filter((option) => option !== frameOption)
+
+  const selectFrame = (style: 'black' | 'white') => {
+    setSelectedFrameStyle(style)
+    setAdded(false)
+    // If the Shopify catalogue later exposes a Black/White frame option, keep
+    // its real purchasable variant in sync with the live gallery preview.
+    const value = frameOption?.values.find((item) => item.toLowerCase() === style)
+    if (frameOption && value) {
+      setSelection((current) => ({ ...current, [frameOption.name]: value }))
+    }
+  }
 
   const buy = () => {
     if (!variant) return
@@ -65,7 +80,24 @@ export function ArtworkPanel() {
       {/* Shopify drives the options when the work is purchasable. Option names
           differ per product in this store (Size / Frame / Frame Color / Framing),
           so render whatever the API reports rather than assuming a schema. */}
-      {product?.options.map((option) => (
+      <div className="panel-option">
+        <p className="panel-option-name">Frame</p>
+        <div className="panel-option-values">
+          {(['black', 'white'] as const).map((style) => (
+            <button
+              type="button"
+              key={style}
+              className={`opt ${selectedFrameStyle === style ? 'opt-on' : ''}`}
+              aria-pressed={selectedFrameStyle === style}
+              onClick={() => selectFrame(style)}
+            >
+              {style}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {product && nonFrameOptions?.map((option) => (
         <div className="panel-option" key={option.name}>
           <p className="panel-option-name">{option.name}</p>
           <div className="panel-option-values">

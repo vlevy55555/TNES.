@@ -1,8 +1,19 @@
 export const WALL_SPACING = 10
+// The Manifesto is a physical side room off the Signature wall, deliberately
+// absent from `walls` so it never becomes a top-level navigation destination.
+export const MANIFESTO_ROOM_X = -WALL_SPACING
 export const CAMERA_Z = 7.9
-// physical wall panel size, world units — must match Wall.tsx's boxGeometry
+// The marble slab starts at the floor and deliberately continues well above the
+// resting camera frame.  This keeps the room reading as a continuous wall, not
+// a wall capped by a visible ceiling.
 export const WALL_WIDTH = 9.4
-export const WALL_HEIGHT = 4.93
+export const WALL_BOTTOM_Y = -2.2
+export const WALL_HEIGHT = 6.27
+export const WALL_CENTER_Y = WALL_BOTTOM_Y + WALL_HEIGHT / 2
+export const WALL_TOP_Y = WALL_BOTTOM_Y + WALL_HEIGHT
+// Framing stays based on the original exhibition field so the works do not
+// shrink merely because the marble surface is taller.
+export const WALL_VIEW_HEIGHT = 4.93
 
 export type Wall = {
   index: number
@@ -24,39 +35,44 @@ export type Artwork = {
   size: [number, number]
   edition: string
   dimensions: string
+  frameStyle: FrameStyle
   /**
    * Shopify product handle. Set = the work is purchasable: the panel shows live
    * options and price and offers checkout. Unset = inquiry-only, the original
-   * behaviour. Only `runner` is mapped so far; the other five have no matching
-   * product in the tnes-3 store yet.
+   * behaviour. A missing or unmatched handle keeps the work inquiry-only.
    */
   shopifyHandle?: string
 }
 
+export type FrameStyle = 'gold' | 'white' | 'black'
+
 export const walls: Wall[] = [
   { index: 0, name: 'Signature', roman: 'I', angle: 0 },
-  { index: 1, name: 'Moments 1', roman: 'II', angle: -0.085 },
-  { index: 2, name: 'Moments 2', roman: 'III', angle: 0.085 },
-  { index: 3, name: 'Coming Soon', roman: 'IV', angle: -0.085 },
+  { index: 1, name: 'Archive', roman: 'II', angle: 0 },
+  { index: 2, name: 'Countdown', roman: 'III', angle: -0.085 },
   // the personal closer: the artist's portrait + a doorway into VSL, his mind
-  { index: 4, name: 'About', roman: 'V', angle: 0.085 },
+  { index: 3, name: 'About', roman: 'IV', angle: 0.085 },
 ]
 
+// Preserved for a future release. These sections must not be added to `walls`
+// or rendered by the current gallery.
+export const MOMENTS = [
+  { name: 'Moments 1', roman: 'II', angle: -0.085 },
+  { name: 'Moments 2', roman: 'III', angle: 0.085 },
+] as const
+
 export const SIGNATURE_WALL = 0
-export const COMING_SOON_WALL = 3
-export const ABOUT_WALL = 4
+export const ARCHIVE_WALL = 1
+export const COMING_SOON_WALL = 2
+export const ABOUT_WALL = 3
 export const OPENING_DATE = new Date('2026-08-15T18:00:00')
 
 // the opening (Signature) wall's one-line brand statement
-export const BRAND_STATEMENT = 'An artifact of time made from the in betweens'
+export const BRAND_STATEMENT = 'Nothing Happens Twice'
 
 // the opening wall loads zoomed into its central signed print [x, y, z camera];
 // scrolling out reveals the wall while the signature writes on
 export const SIGNATURE_ZOOM: [number, number, number] = [0, 0.3, 2.3]
-
-// the archive sits to the LEFT of the opening wall (the exhibition walls run to
-// the right); the opening-wall scroll pans the camera here after the signature shrinks
-export const ARCHIVE_POS: [number, number, number] = [-13, 0, 0]
 
 // the About wall: Victor's portrait, a wall-text, and a link out to VSL — the
 // immersive site that is the artist's mind behind this exhibition.
@@ -94,7 +110,7 @@ export const ABOUT = {
 // decorative hero on the signature wall: a single dimmed painting the VSL
 // signature is written over. Not a sellable artwork — never in `artworks`.
 export const HERO = {
-  image: '/artworks/rio-runner.jpg',
+  image: '/artworks/v1/ipanema_riorunner_2025_v1.webp',
   // z 0.07 seats the frame in front of the wall face (same as ArtworkFrame) —
   // at z 0 its front is coplanar with the wall and z-fights into dashes
   position: [0, 0.2, 0.07] as [number, number, number],
@@ -104,7 +120,7 @@ export const HERO = {
 // before it dollies back to the resting wall view
 export const HERO_ZOOM_Z = 1.65
 
-// ---- Artifacts of Time: the six works from the TNES. archive ----
+// ---- V1 products: the twelve works currently shown in the TNES. archive ----
 // Data sourced from tnes.studio/artifacts (title, location, year) and the
 // tnes-3 store (medium + made-to-order print sizes). The archive publishes no
 // public price or edition count — both are "available by inquiry" — so those
@@ -116,74 +132,74 @@ const DIMENSIONS = '60 × 84 · 42 × 60 · 30 × 42 cm'
 const PRICE = 'Price on request'
 const LANDSCAPE: [number, number] = [1.42, 0.95]
 const PORTRAIT: [number, number] = [0.95, 1.42]
+const FOUR_BY_FIVE: [number, number] = [1, 1.25]
 
 export const artworks: Artwork[] = [
   {
     id: 'the-pool',
-    title: 'The Pool',
-    subtitle: 'Ischia, Italy · 2025',
+    title: 'St Peter’s Pool',
+    subtitle: 'Malta · 2025',
     description:
-      'Blue-and-white striped umbrellas over a clifftop pool, a lone swimmer below, the Tyrrhenian opening beyond the rocks.',
+      'A limestone cove opening to the Mediterranean, held in the clear stillness of a summer afternoon.',
     price: PRICE,
-    image: '/artworks/ischia-pool.jpg',
-    wallIndex: 1,
+    image: '/artworks/v1/stpeterspool_hero_2025_v1.webp',
+    wallIndex: ARCHIVE_WALL,
     position: [-2.5, 0.3, 0],
     size: PORTRAIT,
     edition: EDITION,
     dimensions: DIMENSIONS,
-    // Sold as the store's "The Pool" — which is St. Peters Pool, Malta, NOT this
-    // Ischia frame. Linked on request despite the mismatch: the checkout will
-    // ship a different photograph than the wall shows. Remap when the Ischia
-    // frame gets its own product.
-    shopifyHandle: 'the-pool',
+    frameStyle: 'black',
+    shopifyHandle: 'st-peters-pool-v1',
   },
   {
     id: 'runner',
-    title: 'Runner',
+    title: 'Rio Runner',
     subtitle: 'Ipanema, Rio de Janeiro, Brazil · 2025',
     description:
       'A lone runner mid-stride along the wet Ipanema shoreline, Dois Irmãos and the city dissolving into backlit sea haze.',
     price: PRICE,
-    image: '/artworks/rio-runner.jpg',
-    wallIndex: 1,
+    image: '/artworks/v1/ipanema_riorunner_2025_v1.webp',
+    wallIndex: ARCHIVE_WALL,
     position: [0.1, -0.5, 0],
     size: LANDSCAPE,
     // Shopify sells this one as an open edition, so it contradicts the archive's
     // "edition by inquiry" — the store is the truth for anything purchasable.
     edition: 'Archival pigment print · open edition, framed ready to hang',
     dimensions: DIMENSIONS,
-    // Sold as "01.07 — corrida dourada". The handle is a chain of Shopify
-    // duplicate-copy suffixes, not a typo — it's the real, permanent handle.
-    // Renaming it in Shopify breaks this link; update here if you ever do.
-    shopifyHandle: 'bleed-copy-copy-copy-copy-copy-copy',
+    frameStyle: 'black',
+    shopifyHandle: 'rio-runner',
   },
   {
     id: 'wied-il-ghasri',
-    title: 'Wied il-Għasri',
+    title: 'Gozo Cave Girl',
     subtitle: 'Gozo, Malta · 2025',
     description:
-      'A single swimmer in the emerald channel cut between sheer limestone cliffs — the sea reaching inland through stone.',
+      'A figure at the water’s edge, held between the dark of a sea cave and the open Mediterranean.',
     price: PRICE,
-    image: '/artworks/wied-il-ghasri.jpg',
-    wallIndex: 1,
+    image: '/artworks/v1/gozo_cavegirl_2025_v1.webp',
+    wallIndex: ARCHIVE_WALL,
     position: [2.45, 0.45, 0],
     size: LANDSCAPE,
     edition: EDITION,
     dimensions: DIMENSIONS,
+    frameStyle: 'black',
+    shopifyHandle: 'gozo-cave-girl',
   },
   {
     id: 'lauterbrunnen',
-    title: 'Lauterbrunnen',
-    subtitle: 'Lauterbrunnen, Switzerland · 2025',
+    title: 'Mürren Foggy Cows',
+    subtitle: 'Mürren, Switzerland · 2025',
     description:
       'Two cattle on a wet gravel track high in the Bernese Oberland, the alpine slope and the herd dissolving into fog.',
     price: PRICE,
-    image: '/artworks/lauterbrunnen.jpg',
-    wallIndex: 2,
+    image: '/artworks/v1/murren_foggycows_2025_v1.webp',
+    wallIndex: ARCHIVE_WALL,
     position: [-2.4, 0.2, 0],
     size: PORTRAIT,
     edition: EDITION,
     dimensions: DIMENSIONS,
+    frameStyle: 'white',
+    shopifyHandle: 'murren-foggy-cows',
   },
   {
     id: 'praia-da-baleia',
@@ -192,26 +208,120 @@ export const artworks: Artwork[] = [
     description:
       'A surfer cycling the empty morning beach, longboard under one arm, a forested island rising offshore.',
     price: PRICE,
-    image: '/artworks/praia-da-baleia.jpg',
-    wallIndex: 2,
+    image: '/artworks/v1/baleia_biker_2025_v1.webp',
+    wallIndex: ARCHIVE_WALL,
     position: [0, -0.2, 0],
     size: LANDSCAPE,
     edition: EDITION,
     dimensions: DIMENSIONS,
+    frameStyle: 'black',
+    shopifyHandle: 'praia-da-baleia',
   },
   {
     id: 'playa-roja',
-    title: 'Playa Roja',
+    title: 'Paracas Flat Dunes',
     subtitle: 'Paracas, Peru · 2025',
     description:
-      'Red volcanic sand meeting turquoise water beneath the desert cliffs of the Paracas reserve.',
+      'Flat desert dunes meeting the Pacific at Paracas, Peru.',
     price: PRICE,
-    image: '/artworks/playa-roja.jpg',
-    wallIndex: 2,
+    image: '/artworks/v1/paracas_flatdunes_2025_v1.webp',
+    wallIndex: ARCHIVE_WALL,
     position: [2.45, 0.3, 0],
     size: LANDSCAPE,
     edition: EDITION,
     dimensions: DIMENSIONS,
+    frameStyle: 'black',
+    shopifyHandle: 'paracas-flat-dunes',
+  },
+  {
+    id: 'calpe-muralla-roja',
+    title: 'Calpe Muralla Roja',
+    subtitle: 'Calpe, Spain · 2025',
+    description: 'The saturated geometry of La Muralla Roja in Calpe.',
+    price: PRICE,
+    image: '/artworks/v1/calpe_murallaroja_2025_v1.webp',
+    wallIndex: ARCHIVE_WALL,
+    position: [-2.4, 0.2, 0],
+    size: PORTRAIT,
+    edition: EDITION,
+    dimensions: DIMENSIONS,
+    frameStyle: 'white',
+    shopifyHandle: 'calpe-muralla-roja',
+  },
+  {
+    id: 'moreira-crowded-beach',
+    title: 'Moreira Crowded Beach',
+    subtitle: 'Moreira, Portugal · 2025',
+    description: 'A dense summer beach scene on the Portuguese coast.',
+    price: PRICE,
+    image: '/artworks/v1/moreira_crowdedbeach_2025_v1.webp',
+    wallIndex: ARCHIVE_WALL,
+    position: [0, -0.2, 0],
+    size: FOUR_BY_FIVE,
+    edition: EDITION,
+    dimensions: DIMENSIONS,
+    frameStyle: 'white',
+    shopifyHandle: 'moreira-crowded-beach',
+  },
+  {
+    id: 'florence-dogman',
+    title: 'Florence Dog Man',
+    subtitle: 'Florence, Italy · 2025',
+    description: 'A quiet street portrait from Florence.',
+    price: PRICE,
+    image: '/artworks/v1/florence_dogman_2025_v1.webp',
+    wallIndex: ARCHIVE_WALL,
+    position: [2.45, 0.3, 0],
+    size: PORTRAIT,
+    edition: EDITION,
+    dimensions: DIMENSIONS,
+    frameStyle: 'white',
+    shopifyHandle: 'florence-dog-man',
+  },
+  {
+    id: 'ischia-mezzatorre',
+    title: 'Ischia Mezzatorre',
+    subtitle: 'Ischia, Italy · 2025',
+    description: 'A view across Mezzatorre on the island of Ischia.',
+    price: PRICE,
+    image: '/artworks/v1/ischia_mezzatorre_2025_v1.webp',
+    wallIndex: ARCHIVE_WALL,
+    position: [-2.5, 0.3, 0],
+    size: PORTRAIT,
+    edition: EDITION,
+    dimensions: DIMENSIONS,
+    frameStyle: 'white',
+    shopifyHandle: 'ischia-mezzatorre',
+  },
+  {
+    id: 'ditch-plains-far',
+    title: 'Ditch Plains Far',
+    subtitle: 'Ditch Plains, New York · 2026',
+    description: 'A distant view at Ditch Plains.',
+    price: PRICE,
+    image: '/artworks/v1/ditchplains_far_2026_v1.webp',
+    wallIndex: ARCHIVE_WALL,
+    position: [0, -0.2, 0],
+    size: PORTRAIT,
+    edition: EDITION,
+    dimensions: DIMENSIONS,
+    frameStyle: 'white',
+    shopifyHandle: 'ditch-plains-far',
+  },
+  {
+    id: 'appenzell-alpine-lake',
+    title: 'Appenzell Alpine Lake',
+    subtitle: 'Appenzell, Switzerland · 2025',
+    description: 'An alpine lake in Appenzell.',
+    price: PRICE,
+    image: '/artworks/v1/appenzell_alpinelake_2025_v1.webp',
+    wallIndex: ARCHIVE_WALL,
+    position: [2.45, 0.3, 0],
+    size: LANDSCAPE,
+    edition: EDITION,
+    dimensions: DIMENSIONS,
+    frameStyle: 'black',
+    shopifyHandle: 'appenzell-alpine-lake',
   },
 ]
 

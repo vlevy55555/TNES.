@@ -1,8 +1,10 @@
-import { Html, RoundedBox, Text } from '@react-three/drei'
-import { useEffect, useMemo, useState, type FormEvent } from 'react'
-import { CanvasTexture, RepeatWrapping, Shape } from 'three'
+import { Html, RoundedBox, Text, useCursor } from '@react-three/drei'
+import { useFrame } from '@react-three/fiber'
+import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react'
+import { BufferAttribute, BufferGeometry, CanvasTexture, DoubleSide, RepeatWrapping, Shape, SRGBColorSpace } from 'three'
 import { FONT_SANS, FONT_SANS_MEDIUM, OPENING_DATE } from '../../data/artworks'
 import { useGalleryStore } from '../../store/useGalleryStore'
+import { INTERACTIVE_CURSOR } from './interactiveCursor'
 
 const FRAME_BORDER = 0.15
 
@@ -12,6 +14,7 @@ const GOLD = '#b69b5e'
 const PLATE = '#dcd5c3'
 const RIVET = '#6b6152'
 const FLOOR_Y = -2.2
+const TAPE_SEGMENTS = 18
 
 function useCountdown() {
   const [parts, setParts] = useState(() => split(OPENING_DATE.getTime() - Date.now()))
@@ -56,10 +59,40 @@ function makeCautionTexture() {
   }
   ctx.putImageData(img, 0, 0)
   const texture = new CanvasTexture(canvas)
+  texture.colorSpace = SRGBColorSpace
   texture.wrapS = texture.wrapT = RepeatWrapping
   return texture
 }
 const cautionBase = makeCautionTexture()
+
+// The wording is painted into the tape texture, not laid over it as separate
+// type. It therefore bends with every control point of the ribbon.
+function makeCautionTextTexture() {
+  // Match the ribbon's long, thin proportions. A square-ish canvas would be
+  // stretched several times along its length and distort every letter.
+  const width = 2400
+  const height = 56
+  const canvas = document.createElement('canvas')
+  canvas.width = width
+  canvas.height = height
+  const ctx = canvas.getContext('2d')!
+  // Leave the background transparent: this texture is an ink layer painted
+  // over the yellow vinyl, so dark lettering can never turn the whole tape dark.
+  ctx.clearRect(0, 0, width, height)
+  ctx.fillStyle = '#171310'
+  ctx.font = '600 30px Arial, sans-serif'
+  ctx.textBaseline = 'middle'
+  const label = 'PLEASE STAY AWAY   —   '
+  const labelWidth = ctx.measureText(label).width
+  for (let x = -labelWidth * 0.25; x < width + labelWidth; x += labelWidth) {
+    ctx.fillText(label, x, height / 2)
+  }
+  const texture = new CanvasTexture(canvas)
+  texture.colorSpace = SRGBColorSpace
+  texture.wrapS = texture.wrapT = RepeatWrapping
+  return texture
+}
+const cautionTextBase = makeCautionTextTexture()
 
 // a vertical stake planted on the floor, tape tied to it at height — sits past
 // the resting camera's framing, so it's only revealed mid-transition
@@ -95,48 +128,158 @@ function CautionTape({
 }) {
   const dx = to[0] - from[0]
   const dy = to[1] - from[1]
-  const length = Math.hypot(dx, dy)
-  const rotation = Math.atan2(dy, dx)
-  const mid: [number, number, number] = [
-    (from[0] + to[0]) / 2,
-    (from[1] + to[1]) / 2,
-    (from[2] + to[2]) / 2,
+  const dz = to[2] - from[2]
+  const sag = 0.15
+  const pointAt = (t: number): [number, number, number] => [
+    from[0] + dx * t,
+    from[1] + dy * t - Math.sin(Math.PI * t) * sag,
+    from[2] + dz * t + Math.sin(Math.PI * t * 2) * 0.025,
   ]
-
+  const endpoints = Array.from({ length: TAPE_SEGMENTS + 1 }, (_, index) => pointAt(index / TAPE_SEGMENTS))
+  const totalLength = endpoints.slice(1).reduce(
+    (sum, point, index) =>
+      sum + Math.hypot(point[0] - endpoints[index][0], point[1] - endpoints[index][1], point[2] - endpoints[index][2]),
+    0,
+  )
   const texture = useMemo(() => {
     if (variant !== 'stripes') return null
     const t = cautionBase.clone()
     t.wrapS = t.wrapT = RepeatWrapping
-    t.repeat.set(length * 4.5, 1)
+    t.repeat.set(Math.max(0.18, totalLength / TAPE_SEGMENTS * 0.45), 1)
     t.needsUpdate = true
     return t
-  }, [length, variant])
+  }, [totalLength, variant])
+  const textTexture = useMemo(() => {
+    if (variant !== 'text') return null
+    const t = cautionTextBase.clone()
+    t.wrapS = t.wrapT = RepeatWrapping
+    t.repeat.set(1, 1)
+    t.needsUpdate = true
+    return t
+  }, [variant])
+
+  const hoverIndex = useRef<number | null>(null)
+  const motion = useRef(
+    Array.from({ length: TAPE_SEGMENTS + 1 }, () => ({
+      y: 0,
+      z: 0,
+      yVelocity: 0,
+      zVelocity: 0,
+    })),
+  )
+  const [hovered, setHovered] = useState(false)
+  useCursor(hovered, INTERACTIVE_CURSOR)
+  const ribbon = useMemo(() => {
+    const geometry = new BufferGeometry()
+    const positions = new Float32Array((TAPE_SEGMENTS + 1) * 2 * 3)
+    const uvs = new Float32Array((TAPE_SEGMENTS + 1) * 2 * 2)
+    const indices: number[] = []
+
+    endpoints.forEach((point, index) => {
+      const before = endpoints[Math.max(0, index - 1)]
+      const after = endpoints[Math.min(TAPE_SEGMENTS, index + 1)]
+      const tangentLength = Math.hypot(after[0] - before[0], after[1] - before[1]) || 1
+      const normalX = -(after[1] - before[1]) / tangentLength
+      const normalY = (after[0] - before[0]) / tangentLength
+      const vertex = index * 2
+      positions.set([point[0] + normalX * 0.1, point[1] + normalY * 0.1, point[2]], vertex * 3)
+      positions.set([point[0] - normalX * 0.1, point[1] - normalY * 0.1, point[2]], (vertex + 1) * 3)
+      uvs.set([index / TAPE_SEGMENTS, 1], vertex * 2)
+      uvs.set([index / TAPE_SEGMENTS, 0], (vertex + 1) * 2)
+    })
+
+    for (let index = 0; index < TAPE_SEGMENTS; index++) {
+      const current = index * 2
+      const next = current + 2
+      indices.push(current, current + 1, next, current + 1, next + 1, next)
+    }
+
+    geometry.setAttribute('position', new BufferAttribute(positions, 3))
+    geometry.setAttribute('uv', new BufferAttribute(uvs, 2))
+    geometry.setIndex(indices)
+    geometry.computeVertexNormals()
+    return geometry
+  }, [endpoints])
+
+  useEffect(() => () => ribbon.dispose(), [ribbon])
+
+  // A single ribbon is deformed through its internal control points. This keeps
+  // the vinyl visually continuous while preserving fixed tie points and a low
+  // per-frame cost.
+  useFrame((_, delta) => {
+    const dt = Math.min(delta, 1 / 30)
+    const active = hoverIndex.current
+    const positions = ribbon.getAttribute('position') as BufferAttribute
+
+    endpoints.forEach((point, index) => {
+      const isTiedEnd = index === 0 || index === TAPE_SEGMENTS
+      const distance = active === null ? Infinity : Math.abs(index - active)
+      const influence = isTiedEnd ? 0 : Math.exp(-(distance * distance) / 3.2)
+      const targetY = -influence * 0.085
+      const targetZ = influence * 0.06
+      const state = motion.current[index]
+
+      state.yVelocity += (targetY - state.y) * 58 * dt
+      state.zVelocity += (targetZ - state.z) * 58 * dt
+      const damping = Math.exp(-11 * dt)
+      state.yVelocity *= damping
+      state.zVelocity *= damping
+      state.y += state.yVelocity * dt
+      state.z += state.zVelocity * dt
+
+      const before = endpoints[Math.max(0, index - 1)]
+      const after = endpoints[Math.min(TAPE_SEGMENTS, index + 1)]
+      const tangentLength = Math.hypot(after[0] - before[0], after[1] - before[1]) || 1
+      const normalX = -(after[1] - before[1]) / tangentLength
+      const normalY = (after[0] - before[0]) / tangentLength
+      const vertex = index * 2
+      positions.setXYZ(vertex, point[0] + normalX * 0.1, point[1] + normalY * 0.1 + state.y, point[2] + state.z)
+      positions.setXYZ(vertex + 1, point[0] - normalX * 0.1, point[1] - normalY * 0.1 + state.y, point[2] + state.z)
+    })
+    positions.needsUpdate = true
+    ribbon.computeVertexNormals()
+  })
 
   return (
     <>
-      <group position={mid} rotation={[0, 0, rotation]}>
-        <mesh>
-          <planeGeometry args={[length, 0.2]} />
-          {variant === 'stripes' ? (
-            <meshBasicMaterial map={texture} toneMapped={false} />
-          ) : (
-            <meshBasicMaterial color="#f0c02e" toneMapped={false} />
-          )}
-        </mesh>
-        {variant === 'text' && (
-          <Text
-            font={FONT_SANS}
-            fontSize={0.082}
-            letterSpacing={0.2}
-            color="#171310"
-            anchorX="center"
-            anchorY="middle"
-            position={[0, 0, 0.004]}
-          >
-            {'PLEASE STAY AWAY   —   PLEASE STAY AWAY   —   PLEASE STAY AWAY   —   PLEASE STAY AWAY'}
-          </Text>
+      <mesh
+        geometry={ribbon}
+        castShadow
+        receiveShadow
+        onPointerOver={(event) => {
+          event.stopPropagation()
+          hoverIndex.current = Math.round((event.uv?.x ?? 0.5) * TAPE_SEGMENTS)
+          setHovered(true)
+        }}
+        onPointerMove={(event) => {
+          event.stopPropagation()
+          hoverIndex.current = Math.round((event.uv?.x ?? 0.5) * TAPE_SEGMENTS)
+        }}
+        onPointerOut={(event) => {
+          event.stopPropagation()
+          hoverIndex.current = null
+          setHovered(false)
+        }}
+      >
+        {variant === 'stripes' ? (
+          <meshStandardMaterial map={texture} metalness={0.28} roughness={0.3} side={DoubleSide} />
+        ) : (
+          <meshStandardMaterial color="#e5af25" metalness={0.28} roughness={0.3} side={DoubleSide} />
         )}
-      </group>
+      </mesh>
+      {variant === 'text' && textTexture && (
+        <mesh geometry={ribbon} renderOrder={1}>
+          <meshBasicMaterial
+            map={textTexture}
+            transparent
+            side={DoubleSide}
+            depthWrite={false}
+            polygonOffset
+            polygonOffsetFactor={-1}
+            polygonOffsetUnits={-1}
+          />
+        </mesh>
+      )}
       <TapeAnchor x={from[0]} y={from[1]} depth={from[2]} />
       <TapeAnchor x={to[0]} y={to[1]} depth={to[2]} />
     </>
@@ -362,13 +505,41 @@ function CountdownFrame({
 
   return (
     <group position={position}>
-      <mesh>
-        <boxGeometry args={[frameW, frameH, 0.12]} />
-        <meshStandardMaterial color={GOLD} metalness={0.35} roughness={0.45} />
+      {/* Warm metallic base plus raised highlight rails: a reflective gilt frame. */}
+      <mesh castShadow receiveShadow>
+        <boxGeometry args={[frameW, frameH, 0.14]} />
+        <meshPhysicalMaterial
+          color="#a97927"
+          metalness={0.82}
+          roughness={0.2}
+          clearcoat={0.72}
+          clearcoatRoughness={0.12}
+        />
       </mesh>
-      <mesh position={[0, 0, 0.065]}>
-        <boxGeometry args={[w, h, 0.03]} />
-        <meshStandardMaterial color="#f6f1e7" />
+      <mesh position={[0, 0, 0.078]} receiveShadow>
+        <boxGeometry args={[w, h, 0.035]} />
+        <meshStandardMaterial color="#f5f0e5" roughness={0.72} />
+      </mesh>
+      {[
+        [0, frameH / 2 - 0.045, frameW - 0.1, 0.045],
+        [0, -frameH / 2 + 0.045, frameW - 0.1, 0.045],
+        [-frameW / 2 + 0.045, 0, 0.045, frameH - 0.1],
+        [frameW / 2 - 0.045, 0, 0.045, frameH - 0.1],
+      ].map(([x, y, railW, railH], index) => (
+        <mesh key={index} position={[x, y, 0.091]}>
+          <boxGeometry args={[railW, railH, 0.028]} />
+          <meshPhysicalMaterial
+            color="#f0cf78"
+            metalness={0.9}
+            roughness={0.12}
+            clearcoat={0.9}
+            clearcoatRoughness={0.08}
+          />
+        </mesh>
+      ))}
+      <mesh position={[0, frameH / 2 - 0.082, 0.108]}>
+        <planeGeometry args={[frameW - 0.24, 0.026]} />
+        <meshBasicMaterial color="#fff3bd" transparent opacity={0.5} depthWrite={false} />
       </mesh>
 
       <Text
@@ -377,13 +548,13 @@ function CountdownFrame({
         letterSpacing={0.22}
         color={MUTED}
         anchorX="center"
-        position={[0, h / 2 - 0.32, 0.085]}
+        position={[0, h / 2 - 0.32, 0.115]}
       >
         TNES FULL LAUNCH IN
       </Text>
 
       {parts.map((value, i) => (
-        <group key={UNITS[i]} position={[UNIT_X[i], -0.05, 0.085]}>
+        <group key={UNITS[i]} position={[UNIT_X[i], -0.05, 0.115]}>
           <Text font={FONT_SANS_MEDIUM} fontSize={0.54} color={INK} anchorX="center">
             {value}
           </Text>
@@ -406,7 +577,7 @@ function CountdownFrame({
           fontSize={0.34}
           color={MUTED}
           anchorX="center"
-          position={[x, -0.04, 0.085]}
+          position={[x, -0.04, 0.115]}
         >
           :
         </Text>
@@ -436,7 +607,7 @@ export function ComingSoonWall() {
         </>
       )}
 
-      <WallSubscribe position={[0, isMobile ? -1.2 : -1.6, 0.22]} />
+      <WallSubscribe position={[0, isMobile ? -0.4 : -0.48, 0.22]} />
     </group>
   )
 }

@@ -3,14 +3,14 @@ import { useEffect, useRef } from 'react'
 import { Vector3, type PerspectiveCamera } from 'three'
 import gsap from 'gsap'
 import {
-  ARCHIVE_POS,
   artworks,
   CAMERA_Z,
   COMING_SOON_WALL,
   FRAME_BORDER,
+  MANIFESTO_ROOM_X,
   SIGNATURE_WALL,
   SIGNATURE_ZOOM,
-  WALL_HEIGHT,
+  WALL_VIEW_HEIGHT,
   WALL_SPACING,
   WALL_WIDTH,
   walls,
@@ -29,29 +29,18 @@ const SIG_X = SIGNATURE_WALL * WALL_SPACING
 // the intro zoom target: the central signed print
 const CENTRAL_Y = SIGNATURE_ZOOM[1]
 const ZOOM_Z = SIGNATURE_ZOOM[2]
-// the archive is off to the left (ARCHIVE_POS); scrub 1 pans the camera to it.
-// ARCHIVE_Z = the straight-on viewing distance (calibration knob)
-const ARCHIVE_Z = 12
-// reused each frame so the archive crane damps toward its target (no per-frame
-// alloc, and no hard cut when returning from a zoom opened inside the archive)
+// Reused each frame so the signature-intro framing does not allocate vectors.
 const _archBase = new Vector3()
 const _archLook = new Vector3()
 
 // the opening-wall scroll framing at scrub progress p (base target [x,y,z]; the
-// look point is the same x,y at z 0). Shared by the live scrub and by the eased
-// return that plays after closing an archive-frame zoom.
+// look point is the same x,y at z 0). It reveals the signature, then rests.
 function scrubFraming(p: number, wallZ: number): [number, number, number] {
   if (p <= SCRUB_FORMED) {
     const f = p / SCRUB_FORMED
     return [SIG_X, CENTRAL_Y * (1 - f), ZOOM_Z + (wallZ - ZOOM_Z) * f]
   }
-  if (p <= SCRUB_SHRUNK) return [SIG_X, 0, wallZ]
-  const g = (p - SCRUB_SHRUNK) / (1 - SCRUB_SHRUNK)
-  return [
-    SIG_X + (ARCHIVE_POS[0] - SIG_X) * g,
-    ARCHIVE_POS[1] * g,
-    wallZ + (ARCHIVE_Z - wallZ) * g,
-  ]
+  return [SIG_X, 0, wallZ]
 }
 
 // resting camera distance for the viewport: the wall (both edges) fills 90% of
@@ -61,7 +50,7 @@ const WALL_FILL = 0.9
 function restingZ(size: { width: number; height: number }) {
   const aspect = size.width / size.height
   const tanH = Math.tan((35 * Math.PI) / 360)
-  const fitH = WALL_HEIGHT / 2 / tanH
+  const fitH = WALL_VIEW_HEIGHT / 2 / tanH
   const fitW = WALL_WIDTH / 2 / (tanH * aspect)
   return Math.max(fitH, fitW) / WALL_FILL
 }
@@ -73,8 +62,8 @@ export function CameraController() {
   const currentWall = useGalleryStore((s) => s.currentWall)
   const selectedArtworkId = useGalleryStore((s) => s.selectedArtworkId)
   const isMobile = useGalleryStore((s) => s.isMobile)
-  const inArchive = useGalleryStore((s) => s.inArchive)
   const zoomAt = useGalleryStore((s) => s.zoomAt)
+  const manifestoRoomOpen = useGalleryStore((s) => s.manifestoRoomOpen)
 
   const startWall = useGalleryStore.getState().currentWall
   const startAngle = walls[startWall].angle
@@ -107,9 +96,7 @@ export function CameraController() {
   const dollyTarget = useRef(0)
   const prevWall = useRef(useGalleryStore.getState().currentWall)
   const prevSelected = useRef<string | null>(useGalleryStore.getState().selectedArtworkId)
-  // last archive state pushed to the store from the scrub, so wheel-scrolling
-  // into the archive updates the header/arrows without setting state per frame
-  const archiveFlag = useRef(useGalleryStore.getState().inArchive)
+  const prevManifestoRoom = useRef(useGalleryStore.getState().manifestoRoomOpen)
 
   // drag to angle the view around the wall (both axes) + wheel to dolly in/out —
   // except on the signature wall, where both scrub the signature zoom
@@ -153,11 +140,12 @@ export function CameraController() {
     const onWheel = (e: WheelEvent) => {
       if (useGalleryStore.getState().inquiryOpen) return
       e.preventDefault()
-      // opening wall: scroll drives the intro (zoom out + signature) then the archive
+      if (useGalleryStore.getState().manifestoRoomOpen) return
+      // opening wall: scroll drives the signature intro, without changing sections
       if (useGalleryStore.getState().currentWall === SIGNATURE_WALL) {
         archiveScrub.target = Math.max(
           0,
-          Math.min(1, archiveScrub.target + e.deltaY * 0.0009),
+          Math.min(SCRUB_SHRUNK, archiveScrub.target + e.deltaY * 0.0009),
         )
         return
       }
@@ -181,12 +169,11 @@ export function CameraController() {
     }
   }, [gl])
 
-  useFrame((_, delta) => {
-    // opening wall (settled): the scroll scrub owns base/look, in three phases —
+  useFrame((state, delta) => {
+    // opening wall (settled): the scroll scrub owns base/look in two phases —
     //   [0, SCRUB_FORMED] zoom out of the central print (the signature writes on)
     //   [SCRUB_FORMED, SCRUB_SHRUNK] hold at the wall rest (the signature shrinks away)
-    //   [SCRUB_SHRUNK, 1] pan left to the archive
-    if (currentWall === SIGNATURE_WALL && scrubReady.current) {
+    if (!manifestoRoomOpen && currentWall === SIGNATURE_WALL && scrubReady.current) {
       const d = Math.min(1, delta * 8)
       archiveScrub.progress += (archiveScrub.target - archiveScrub.progress) * d
       const p = archiveScrub.progress
@@ -194,14 +181,6 @@ export function CameraController() {
       base.current.lerp(_archBase.set(tx, ty, tz), d)
       look.current.lerp(_archLook.set(tx, ty, 0), d)
 
-      // scrolling past the pan boundary IS entering the archive — mirror it into
-      // the store (once per crossing) so the header and arrows agree with the view
-      const nowInArchive = p > SCRUB_SHRUNK + 0.15
-      if (nowInArchive !== archiveFlag.current) {
-        archiveFlag.current = nowInArchive
-        const s = useGalleryStore.getState()
-        nowInArchive ? s.enterArchive() : s.exitArchive()
-      }
     }
 
     const damp = Math.min(1, delta * 6)
@@ -218,14 +197,19 @@ export function CameraController() {
     const y1 = oz * Math.sin(pitch.current)
     const cos = Math.cos(yaw.current)
     const sin = Math.sin(yaw.current)
-    camera.position.set(l.x + ox * cos + z1 * sin, b.y + y1, l.z - ox * sin + z1 * cos)
-    camera.lookAt(l)
+    // Once inside the manifesto room, the camera breathes almost imperceptibly
+    // with the light — enough to keep the material reflections alive.
+    const roomDrift = manifestoRoomOpen ? Math.sin(state.clock.elapsedTime * 0.12) * 0.035 : 0
+    camera.position.set(l.x + ox * cos + z1 * sin + roomDrift, b.y + y1, l.z - ox * sin + z1 * cos)
+    camera.lookAt(l.x + roomDrift * 0.3, l.y, l.z)
   })
 
   useEffect(() => {
     const wallChanged = prevWall.current !== currentWall
     prevWall.current = currentWall
-    // closing an archive-frame zoom: selectedArtworkId went from set -> null
+    const leftManifestoRoom = prevManifestoRoom.current && !manifestoRoomOpen
+    prevManifestoRoom.current = manifestoRoomOpen
+    // closing an Archive-frame zoom: selectedArtworkId went from set -> null
     const closingZoom = prevSelected.current !== null && selectedArtworkId === null
     prevSelected.current = selectedArtworkId
     // arriving at the opening wall from elsewhere lands at the formed state
@@ -245,10 +229,28 @@ export function CameraController() {
     gsap.killTweensOf(look.current)
     dollyTarget.current = 0 // each scene starts freshly framed
 
+    if (manifestoRoomOpen) {
+      scrubReady.current = false
+      gsap.to(look.current, {
+        x: MANIFESTO_ROOM_X,
+        y: 0.05,
+        z: 0,
+        duration: 1.1,
+        ease: 'power2.inOut',
+      })
+      gsap.to(base.current, {
+        x: MANIFESTO_ROOM_X,
+        y: 0.05,
+        z: wallZ,
+        duration: 1.5,
+        ease: 'power3.inOut',
+      })
+      return
+    }
+
     // a frame clicked in the archive zooms WHERE IT HANGS. It reported its own
     // world transform, so we frame that point instead of the work's on-wall
-    // placement — which would fly the camera off to the Moments wall and lose
-    // the archive entirely. The archive wall is flat (no yaw), so no sin/cos.
+    // placement — the Archive has multiple copies of each work at distinct slots.
     if (artwork && zoomAt) {
       scrubReady.current = false
       const frameW = (artwork.size[0] + FRAME_BORDER * 2) * zoomAt.scale
@@ -256,7 +258,7 @@ export function CameraController() {
       const tanH = Math.tan((camera.fov * Math.PI) / 360)
       const panelPx = mobile ? 0 : Math.min(400, size.width * 0.92)
       const stripAspect = (size.width - panelPx) / size.height
-      const z = Math.max(frameH / 2 / tanH, frameW / 2 / (tanH * stripAspect)) * 1.28 + 0.15
+      const z = Math.max(frameH / 2 / tanH, frameW / 2 / (tanH * stripAspect)) * 1.4 + 0.25
       const shift = (panelPx / 2) * ((2 * z * tanH) / size.height)
       const lx = zoomAt.x + shift
       const ly = zoomAt.y - (mobile ? 0.7 : 0)
@@ -284,7 +286,7 @@ export function CameraController() {
       const stripAspect = (size.width - panelPx) / size.height
       const fitH = frameH / 2 / tanH
       const fitW = frameW / 2 / (tanH * stripAspect)
-      const z = Math.max(fitH, fitW) * 1.28 + 0.15
+      const z = Math.max(fitH, fitW) * 1.4 + 0.25
       const shift = (panelPx / 2) * ((2 * z * tanH) / size.height)
 
       const aw = walls[artwork.wallIndex]
@@ -320,8 +322,19 @@ export function CameraController() {
     // ready immediately; on a wall change let the room-travel transition play
     // first, then enable the scrub at the formed (resting) view.
     if (currentWall === SIGNATURE_WALL) {
+      if (leftManifestoRoom) {
+        scrubReady.current = false
+        archiveScrub.progress = SCRUB_FORMED
+        archiveScrub.target = SCRUB_FORMED
+        const [tx, ty, tz] = scrubFraming(SCRUB_FORMED, wallZ)
+        gsap
+          .timeline({ onComplete: () => (scrubReady.current = true) })
+          .to(look.current, { x: tx, y: ty, z: 0, duration: 0.95, ease: 'power2.inOut' }, 0)
+          .to(base.current, { x: tx, y: ty, z: tz, duration: 1.35, ease: 'power3.inOut' }, 0)
+        return
+      }
       if (!wallChanged) {
-        // returning from an archive-frame zoom: ease back to the scrub framing
+        // returning from a zoom: ease back to the scrub framing
         // the same way the other frames do, then hand control to the scroll scrub
         if (closingZoom) {
           scrubReady.current = false
@@ -365,23 +378,7 @@ export function CameraController() {
       .to(look.current, { x: cx, y: restY, z: 0, duration: 1.05, ease: 'power2.inOut' }, 0.14)
       .to(base.current, { x: cx + sinW * wallZ, duration: 1.42, ease: 'power2.inOut' }, 0.14)
       .to(base.current, { z: cosW * wallZ, duration: 0.68, ease: 'power2.inOut' }, 1.1)
-  }, [currentWall, selectedArtworkId, zoomAt, isMobile, camera, size])
-
-  // Header / arrows drive the archive by moving the same scrub the wheel moves —
-  // one source of truth for where the camera sits. Declared after the effect
-  // above so that on a wall change into the archive this target wins.
-  useEffect(() => {
-    if (currentWall !== SIGNATURE_WALL) return
-    const wasFlag = archiveFlag.current
-    archiveFlag.current = inArchive
-    // If the scrub already agrees, this change CAME FROM the wheel — leave the
-    // target alone. Forcing it here would yank a scroll in progress back to the
-    // phase boundary the moment it crossed.
-    if (wasFlag === inArchive) return
-    archiveScrub.target = inArchive ? 1 : SCRUB_FORMED
-    // arriving from another wall, start the pan from the end of the hold phase
-    if (!scrubReady.current && inArchive) archiveScrub.progress = SCRUB_SHRUNK
-  }, [inArchive, currentWall])
+  }, [currentWall, selectedArtworkId, zoomAt, isMobile, manifestoRoomOpen, camera, size])
 
   return null
 }

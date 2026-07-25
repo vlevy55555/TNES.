@@ -26,7 +26,7 @@ const startPos: [number, number, number] =
 export function GalleryCanvas() {
   return (
     <div className="gallery-canvas">
-      <Canvas camera={{ position: startPos, fov: 35 }} dpr={[1, 1.5]}>
+      <Canvas camera={{ position: startPos, fov: 35 }} dpr={[1, 1.5]} shadows>
         <Suspense fallback={null}>
           <GalleryScene />
         </Suspense>

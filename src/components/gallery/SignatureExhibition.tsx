@@ -1,22 +1,21 @@
-import { Text, useTexture } from '@react-three/drei'
+import { Text, useCursor, useTexture } from '@react-three/drei'
+import { useState } from 'react'
 import { SRGBColorSpace } from 'three'
 import {
-  ARCHIVE_POS,
   BRAND_STATEMENT,
   FONT_BRAND,
   FONT_SANS,
-  FONT_SERIF_ITALIC,
-  FRAME_BORDER,
-  MAT_BORDER,
+  FONT_SERIF,
+  type FrameStyle,
 } from '../../data/artworks'
-import { ManifestoScroll } from './ManifestoScroll'
-import { Archive } from './Archive'
-
-const GOLD = '#b69b5e'
-const MAT = '#f6f1e7'
+import { FrameLayers, framePhotoDimensions } from './ArtworkFrame'
+import { useGalleryStore } from '../../store/useGalleryStore'
+import { dragState } from './CameraController'
+import { INTERACTIVE_CURSOR } from './interactiveCursor'
 
 // the quiet [O] brand mark stamped in a print's corner (matches ArtworkFrame)
-function OMark({ w, h }: { w: number; h: number }) {
+function OMark({ w, h, style }: { w: number; h: number; style: FrameStyle }) {
+  const [photoW, photoH] = framePhotoDimensions(w, h, style)
   return (
     <Text
       font={FONT_BRAND}
@@ -25,7 +24,7 @@ function OMark({ w, h }: { w: number; h: number }) {
       fillOpacity={0.4}
       anchorX="right"
       anchorY="bottom"
-      position={[w / 2 - 0.09, -h / 2 + 0.09, 0.075]}
+      position={[photoW / 2 - 0.09, -photoH / 2 + 0.09, 0.145]}
     >
       [O]
     </Text>
@@ -38,10 +37,12 @@ function DecoFrame({
   image,
   size,
   position,
+  style,
 }: {
   image: string
   size: [number, number]
   position: [number, number, number]
+  style: FrameStyle
 }) {
   const tex = useTexture(image, (t) => {
     t.colorSpace = SRGBColorSpace
@@ -49,19 +50,8 @@ function DecoFrame({
   const [w, h] = size
   return (
     <group position={position}>
-      <mesh>
-        <boxGeometry args={[w + FRAME_BORDER * 2, h + FRAME_BORDER * 2, 0.1]} />
-        <meshStandardMaterial color={GOLD} metalness={0.35} roughness={0.45} />
-      </mesh>
-      <mesh position={[0, 0, 0.055]}>
-        <boxGeometry args={[w + MAT_BORDER * 2, h + MAT_BORDER * 2, 0.03]} />
-        <meshStandardMaterial color={MAT} />
-      </mesh>
-      <mesh position={[0, 0, 0.072]}>
-        <planeGeometry args={[w, h]} />
-        <meshBasicMaterial map={tex} toneMapped={false} />
-      </mesh>
-      <OMark w={w} h={h} />
+      <FrameLayers texture={tex} w={w} h={h} style={style} />
+      <OMark w={w} h={h} style={style} />
     </group>
   )
 }
@@ -69,73 +59,81 @@ function DecoFrame({
 // the central print, signed by V Levy — same frame, plus the hand-drawn mark
 // composited onto the photograph itself (the signature-ink PNG as an alpha mask)
 function SignedCentral({ position }: { position: [number, number, number] }) {
-  const tex = useTexture('/artworks/rio-runner.jpg', (t) => {
+  const tex = useTexture('/artworks/v1/ipanema_riorunner_2025_v1.webp', (t) => {
     t.colorSpace = SRGBColorSpace
   })
   const w = 1.5
   const h = 1.0
   return (
     <group position={position}>
-      <mesh>
-        <boxGeometry args={[w + FRAME_BORDER * 2, h + FRAME_BORDER * 2, 0.11]} />
-        <meshStandardMaterial color={GOLD} metalness={0.4} roughness={0.42} />
-      </mesh>
-      <mesh position={[0, 0, 0.06]}>
-        <boxGeometry args={[w + MAT_BORDER * 2, h + MAT_BORDER * 2, 0.03]} />
-        <meshStandardMaterial color={MAT} />
-      </mesh>
-      <mesh position={[0, 0, 0.078]}>
-        <planeGeometry args={[w, h]} />
-        <meshBasicMaterial map={tex} toneMapped={false} />
-      </mesh>
-      <OMark w={w} h={h} />
+      <FrameLayers texture={tex} w={w} h={h} style="gold" />
+      <OMark w={w} h={h} style="gold" />
     </group>
   )
 }
 
+function ManifestoLink() {
+  const openManifestoRoom = useGalleryStore((s) => s.openManifestoRoom)
+  const [hovered, setHovered] = useState(false)
+  useCursor(hovered, INTERACTIVE_CURSOR)
+
+  return (
+    <Text
+      font={FONT_SANS}
+      fontSize={0.07}
+      letterSpacing={0.11}
+      color={hovered ? '#4a453d' : '#777064'}
+      anchorX="center"
+      anchorY="middle"
+      position={[0, -0.58, 0.14]}
+      onClick={(event) => {
+        event.stopPropagation()
+        if (!dragState.moved) openManifestoRoom()
+      }}
+      onPointerOver={(event) => {
+        event.stopPropagation()
+        setHovered(true)
+      }}
+      onPointerOut={() => setHovered(false)}
+    >
+      read the manifesto →
+    </Text>
+  )
+}
+
 // the opening (Signature) wall, re-cast as an exhibition: a central signed print
-// flanked by two works, the brand statement, and — reached by scrolling down —
-// the 3D Archive of every work, seated below.
+// flanked by two works and the brand statement.
 export function SignatureExhibition() {
   return (
     <group>
       {/* one-line brand statement, above the hang */}
       <Text
-        font={FONT_SERIF_ITALIC}
-        fontSize={0.135}
-        color="#6f6455"
+        font={FONT_SERIF}
+        fontSize={0.16}
+        color="#392f27"
         anchorX="center"
         anchorY="middle"
         maxWidth={6}
         textAlign="center"
-        position={[0, 1.78, 0.06]}
+        position={[0, 1.8, 0.08]}
       >
         {BRAND_STATEMENT}
       </Text>
 
       <SignedCentral position={[0, 0.3, 0.07]} />
-      <DecoFrame image="/artworks/wied-il-ghasri.jpg" size={[1.16, 0.78]} position={[-2.78, 0.32, 0.07]} />
-      <DecoFrame image="/artworks/praia-da-baleia.jpg" size={[1.16, 0.78]} position={[2.78, 0.32, 0.07]} />
-
-      {/* scroll cue toward the archive below */}
-      <Text
-        font={FONT_SANS}
-        fontSize={0.058}
-        letterSpacing={0.34}
-        color="#6b6151"
-        anchorX="center"
-        anchorY="middle"
-        position={[0, -1.62, 0.06]}
-      >
-        SCROLL DOWN — THE ARCHIVE ↓
-      </Text>
-
-      <ManifestoScroll />
-
-      {/* the archive, seated to the left of the opening wall (scroll pans here) */}
-      <group position={ARCHIVE_POS}>
-        <Archive />
-      </group>
+      <DecoFrame
+        image="/artworks/v1/ischia_mezzatorre_2025_v1.webp"
+        size={[0.78, 1.16]}
+        position={[-2.78, 0.32, 0.07]}
+        style="white"
+      />
+      <DecoFrame
+        image="/artworks/v1/stpeterspool_hero_2025_v1.webp"
+        size={[1.16, 0.78]}
+        position={[2.78, 0.32, 0.07]}
+        style="black"
+      />
+      <ManifestoLink />
     </group>
   )
 }

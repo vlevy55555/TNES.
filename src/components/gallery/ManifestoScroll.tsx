@@ -5,6 +5,7 @@ import type { Group } from 'three'
 import { FONT_SANS, FONT_SERIF_ITALIC } from '../../data/artworks'
 import { useGalleryStore } from '../../store/useGalleryStore'
 import { dragState } from './CameraController'
+import { INTERACTIVE_CURSOR } from './interactiveCursor'
 
 // a rolled scroll resting below the hero on the signature wall — click it to
 // unroll the manifesto (the DOM overlay in Manifesto.tsx handles the reveal)
@@ -13,7 +14,7 @@ export function ManifestoScroll() {
   const zoomed = useGalleryStore((s) => s.selectedArtworkId !== null)
   const group = useRef<Group>(null)
   const [hovered, setHovered] = useState(false)
-  useCursor(hovered)
+  useCursor(hovered, INTERACTIVE_CURSOR)
 
   useEffect(() => {
     if (!group.current) return
