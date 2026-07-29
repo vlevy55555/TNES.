@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { GalleryCanvas } from './components/gallery/GalleryCanvas'
 import { SignatureOverlay } from './components/gallery/SignatureOverlay'
+import { VslExitOverlay } from './components/gallery/VslExitOverlay'
 import { Header } from './components/ui/Header'
 import { Footer } from './components/ui/Footer'
 import { WallNavigation } from './components/ui/WallNavigation'
@@ -71,6 +72,7 @@ export default function App() {
       <ArtworkPanel />
       <CartDrawer />
       <Footer />
+      <VslExitOverlay />
     </>
   )
 }

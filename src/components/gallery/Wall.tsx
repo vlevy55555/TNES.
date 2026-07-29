@@ -20,8 +20,9 @@ import { dragState } from './CameraController'
 import { MarbleWallSurface } from './MarbleWallSurface'
 
 // one ceiling lamp: a downward wash that scallops the top of the wall,
-// matching the TNES reference (three per wall)
-function WallLamp({ x }: { x: number }) {
+// matching the TNES reference (three per wall). The fixture itself is a small
+// black track-spot cylinder tilted at the wall, like the reference ceiling.
+export function WallLamp({ x }: { x: number }) {
   const spot = useRef<SpotLight>(null)
   const target = useRef<Object3D>(null)
 
@@ -31,17 +32,24 @@ function WallLamp({ x }: { x: number }) {
 
   return (
     <>
+      {/* visible track-spot housing the light appears to come from — hung away
+          from the wall so the beam hits it frontally, washing it evenly like
+          the reference instead of raking down and scalloping the top */}
+      <mesh position={[x, 3.15, 2.25]} rotation={[-0.75, 0, 0]}>
+        <cylinderGeometry args={[0.055, 0.055, 0.2, 16]} />
+        <meshStandardMaterial color="#181512" roughness={0.6} metalness={0.4} />
+      </mesh>
       <spotLight
         ref={spot}
-        position={[x, 2.55, 1.05]}
+        position={[x, 3.05, 2.2]}
         color="#fff1d6"
-        intensity={26}
-        angle={0.6}
-        penumbra={0.55}
+        intensity={30}
+        angle={0.62}
+        penumbra={0.7}
         decay={1.6}
-        distance={9}
+        distance={10}
       />
-      <object3D ref={target} position={[x, 0.4, 0.05]} />
+      <object3D ref={target} position={[x, 0.6, 0.05]} />
     </>
   )
 }
@@ -66,12 +74,15 @@ export function Wall({ wall }: { wall: WallType }) {
           closeArtwork()
         }}
       >
-        <MarbleWallSurface
-          width={WALL_WIDTH}
-          height={WALL_HEIGHT}
-          position={[0, WALL_CENTER_Y, 0]}
-          depth={0.1}
-        />
+        {/* the About wall renders its own slab — it needs a real doorway hole */}
+        {wall.index !== ABOUT_WALL && (
+          <MarbleWallSurface
+            width={WALL_WIDTH}
+            height={WALL_HEIGHT}
+            position={[0, WALL_CENTER_Y, 0]}
+            depth={0.1}
+          />
+        )}
       </group>
 
       {lampX.map((x) => (

@@ -107,8 +107,15 @@ function frameSpec(style: FrameStyle): FrameSpec {
 }
 
 export function frameOuterDimensions(w: number, h: number, style: FrameStyle) {
-  const border = frameSpec(style).outerBorder
-  return [w + border * 2, h + border * 2] as const
+  const { outerBorder, mat, imageScale } = frameSpec(style)
+  // Uniform moulding on all four sides. With imageScale > 1 the photo grows
+  // proportionally to w/h while outerBorder is fixed, so the long axis used
+  // to end up with a thinner band than the short one — standardize every
+  // side on that thin value instead of letting each axis differ.
+  const band = outerBorder - mat - (Math.max(w, h) * (imageScale - 1)) / 2
+  const frameW = w * imageScale + 2 * (mat + band)
+  const frameH = h * imageScale + 2 * (mat + band)
+  return [frameW, frameH] as const
 }
 
 export function framePhotoDimensions(w: number, h: number, style: FrameStyle) {
@@ -289,7 +296,6 @@ export function ArtworkFrame({
   const resolvedFrameStyle =
     selectedArtworkId === artwork.id ? selectedFrameStyle : frameStyle ?? artwork.frameStyle
   const [frameW, frameH] = frameOuterDimensions(w, h, resolvedFrameStyle)
-  const [photoW, photoH] = framePhotoDimensions(w, h, resolvedFrameStyle)
 
   return (
     <group
@@ -322,19 +328,6 @@ export function ArtworkFrame({
       onPointerOut={() => setHovered(false)}
     >
       <FrameLayers texture={texture} w={w} h={h} style={resolvedFrameStyle} />
-
-      {/* the [O] brand mark, quietly stamped in the lower corner of the print */}
-      <Text
-        font={FONT_BRAND}
-        fontSize={0.1}
-        color="#f2ead9"
-        fillOpacity={0.4}
-        anchorX="right"
-        anchorY="bottom"
-        position={[photoW / 2 - 0.09, -photoH / 2 + 0.09, 0.145]}
-      >
-        [O]
-      </Text>
 
       {/* label plaque under the frame */}
       {/* work title — Playfair (gallery identification) */}

@@ -10,7 +10,7 @@ export function Header() {
 
   return (
     <header className="header">
-      <span className="logo">TNES</span>
+      <span className="logo">TNES.</span>
       <nav className="nav">
         {walls.map((wall) => (
           <button

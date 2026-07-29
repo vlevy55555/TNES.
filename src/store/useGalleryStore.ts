@@ -49,6 +49,9 @@ type GalleryState = {
   closeManifestoRoom: () => void
   openManifesto: () => void
   closeManifesto: () => void
+  // leaving for VSL: the signature writes itself, then the site navigates
+  vslExitActive: boolean
+  startVslExit: () => void
 }
 
 export const useGalleryStore = create<GalleryState>((set, get) => ({
@@ -103,4 +106,7 @@ export const useGalleryStore = create<GalleryState>((set, get) => ({
   openManifesto: () => set({ manifestoOpen: true }),
 
   closeManifesto: () => set({ manifestoOpen: false }),
+
+  vslExitActive: false,
+  startVslExit: () => set({ vslExitActive: true }),
 }))

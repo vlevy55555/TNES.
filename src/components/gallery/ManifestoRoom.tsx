@@ -1,15 +1,19 @@
 import { useTexture } from '@react-three/drei'
 import { useFrame } from '@react-three/fiber'
 import { useEffect, useRef } from 'react'
-import { Object3D, RepeatWrapping, SRGBColorSpace, type SpotLight } from 'three'
+import { MirroredRepeatWrapping, Object3D, SRGBColorSpace, type SpotLight } from 'three'
 import { WALL_CENTER_Y, WALL_HEIGHT, WALL_WIDTH } from '../../data/artworks'
 
 /** The manifesto is a room, not a page: concrete, an aluminium slab and daylight. */
 export function ManifestoRoom({ position }: { position: [number, number, number] }) {
-  const concreteTexture = useTexture('/materials/manifesto-concrete.png', (texture) => {
+  const concreteTexture = useTexture('/materials/concrete.png', (texture) => {
     texture.colorSpace = SRGBColorSpace
-    texture.wrapS = texture.wrapT = RepeatWrapping
-    texture.repeat.set(1.5, 1)
+  })
+  const floorTexture = useTexture('/materials/floor.png', (texture) => {
+    texture.colorSpace = SRGBColorSpace
+    texture.wrapS = texture.wrapT = MirroredRepeatWrapping
+    texture.repeat.set(2, 1)
+    texture.anisotropy = 16
   })
   const panelTexture = useTexture('/materials/manifesto-panel.webp', (texture) => {
     texture.colorSpace = SRGBColorSpace
@@ -40,7 +44,7 @@ export function ManifestoRoom({ position }: { position: [number, number, number]
       </mesh>
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -2.194, 3.2]} receiveShadow>
         <planeGeometry args={[WALL_WIDTH + 4, 7]} />
-        <meshStandardMaterial map={concreteTexture} color="#e0ddd3" roughness={0.96} />
+        <meshStandardMaterial map={floorTexture} color="#e0ddd3" roughness={0.96} />
       </mesh>
 
       <mesh position={[0.09, 0.22, 0.008]}>

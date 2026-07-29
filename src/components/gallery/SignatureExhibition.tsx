@@ -3,33 +3,14 @@ import { useState } from 'react'
 import { SRGBColorSpace } from 'three'
 import {
   BRAND_STATEMENT,
-  FONT_BRAND,
   FONT_SANS,
   FONT_SERIF,
   type FrameStyle,
 } from '../../data/artworks'
-import { FrameLayers, framePhotoDimensions } from './ArtworkFrame'
+import { FrameLayers } from './ArtworkFrame'
 import { useGalleryStore } from '../../store/useGalleryStore'
 import { dragState } from './CameraController'
 import { INTERACTIVE_CURSOR } from './interactiveCursor'
-
-// the quiet [O] brand mark stamped in a print's corner (matches ArtworkFrame)
-function OMark({ w, h, style }: { w: number; h: number; style: FrameStyle }) {
-  const [photoW, photoH] = framePhotoDimensions(w, h, style)
-  return (
-    <Text
-      font={FONT_BRAND}
-      fontSize={0.1}
-      color="#f2ead9"
-      fillOpacity={0.4}
-      anchorX="right"
-      anchorY="bottom"
-      position={[photoW / 2 - 0.09, -photoH / 2 + 0.09, 0.145]}
-    >
-      [O]
-    </Text>
-  )
-}
 
 // a framed print on the opening wall (decorative — the browsable copies live on
 // the Exhibition/Archive walls and in the scroll-down Archive)
@@ -51,7 +32,6 @@ function DecoFrame({
   return (
     <group position={position}>
       <FrameLayers texture={tex} w={w} h={h} style={style} />
-      <OMark w={w} h={h} style={style} />
     </group>
   )
 }
@@ -66,8 +46,7 @@ function SignedCentral({ position }: { position: [number, number, number] }) {
   const h = 1.0
   return (
     <group position={position}>
-      <FrameLayers texture={tex} w={w} h={h} style="gold" />
-      <OMark w={w} h={h} style="gold" />
+      <FrameLayers texture={tex} w={w} h={h} style="white" />
     </group>
   )
 }
@@ -82,7 +61,7 @@ function ManifestoLink() {
       font={FONT_SANS}
       fontSize={0.07}
       letterSpacing={0.11}
-      color={hovered ? '#4a453d' : '#777064'}
+      color={hovered ? '#ffffff' : '#f2efe8'}
       anchorX="center"
       anchorY="middle"
       position={[0, -0.58, 0.14]}
@@ -131,7 +110,7 @@ export function SignatureExhibition() {
         image="/artworks/v1/stpeterspool_hero_2025_v1.webp"
         size={[1.16, 0.78]}
         position={[2.78, 0.32, 0.07]}
-        style="black"
+        style="white"
       />
       <ManifestoLink />
     </group>

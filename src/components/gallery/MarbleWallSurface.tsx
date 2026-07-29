@@ -1,32 +1,34 @@
 import { useTexture } from '@react-three/drei'
 import { useMemo } from 'react'
 import { RepeatWrapping, SRGBColorSpace } from 'three'
-import marbleWall from '../../../ChatGPT Image Jul 24, 2026, 11_01_07 AM.png'
 
-const MARBLE_ASPECT = 1720 / 914
+const CONCRETE_ASPECT = 7680 / 2970
 
-/** The shared marble finish used by every exhibition wall. */
+/** The shared concrete finish used by every exhibition wall (and ceiling, its upper crop). */
 export function MarbleWallSurface({
   width,
   height,
   position,
   depth = 0,
+  unlit = false,
 }: {
   width: number
   height: number
   position: [number, number, number]
   /** Gives a wall slab the same marble finish on its visible edges. */
   depth?: number
+  /** Skip scene lighting entirely — the texture renders flat and literal, no sheen/shadow. */
+  unlit?: boolean
 }) {
-  const texture = useTexture(marbleWall, (image) => {
+  const texture = useTexture('/materials/concrete.png', (image) => {
     image.colorSpace = SRGBColorSpace
   })
   // A wall panel and the long room backdrop have different proportions. Clone
   // the cached map so each surface can crop or repeat it independently instead
-  // of stretching the marble veins.
+  // of stretching the concrete grain.
   const map = useMemo(() => {
     const next = texture.clone()
-    const repeatX = width / height / MARBLE_ASPECT
+    const repeatX = width / height / CONCRETE_ASPECT
     next.colorSpace = SRGBColorSpace
     next.wrapS = RepeatWrapping
     next.repeat.set(repeatX, 1)
@@ -36,13 +38,17 @@ export function MarbleWallSurface({
   }, [texture, width, height])
 
   return (
-    <mesh position={position} receiveShadow>
+    <mesh position={position} receiveShadow={!unlit}>
       {depth > 0 ? (
         <boxGeometry args={[width, height, depth]} />
       ) : (
         <planeGeometry args={[width, height]} />
       )}
-      <meshStandardMaterial map={map} roughness={0.88} metalness={0} />
+      {unlit ? (
+        <meshBasicMaterial map={map} />
+      ) : (
+        <meshStandardMaterial map={map} roughness={0.88} metalness={0} />
+      )}
     </mesh>
   )
 }

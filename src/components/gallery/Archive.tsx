@@ -6,14 +6,20 @@ import {
   FONT_SANS,
   WALL_CENTER_Y,
   WALL_HEIGHT,
-  WALL_WIDTH,
   type Artwork,
 } from '../../data/artworks'
 import { ArtworkFrame } from './ArtworkFrame'
 import { MarbleWallSurface } from './MarbleWallSurface'
 
+// slightly wider backdrop than the single-artwork walls, but capped under
+// WALL_SPACING (10) so it never bleeds into the neighboring wall's space —
+// the resting camera framing (fitW, CameraController) is tuned to WALL_WIDTH
+// and isn't wall-aware, so the artwork grid itself keeps the standard spread
+const ARCHIVE_WALL_WIDTH = 9.8
+
 // GENERAL archive lighting — a broad, soft ceiling wash, NOT one lamp per frame.
-// A few overlap into an even glow across the whole wall.
+// Pulled closer to the wall/frames so the pools of light read tight, like the
+// reference, instead of a flat even glow.
 function WallWash({ x }: { x: number }) {
   const spot = useRef<SpotLight>(null)
   const target = useRef<Object3D>(null)
@@ -22,22 +28,30 @@ function WallWash({ x }: { x: number }) {
   }, [])
   return (
     <>
+      {/* visible track-spot housing, matching the reference ceiling fixtures —
+          pulled off the wall so the wash lands frontally and evenly */}
+      <mesh position={[x, 3.68, 2.4]} rotation={[-0.75, 0, 0]}>
+        <cylinderGeometry args={[0.055, 0.055, 0.2, 16]} />
+        <meshStandardMaterial color="#181512" roughness={0.6} metalness={0.4} />
+      </mesh>
       <spotLight
         ref={spot}
-        position={[x, 2.55, 1.5]}
+        position={[x, 3.6, 2.35]}
         color="#fff3e0"
-        intensity={7}
-        angle={0.82}
-        penumbra={0.8}
-        decay={1.3}
+        intensity={13}
+        angle={0.7}
+        penumbra={0.85}
+        decay={1.5}
         distance={11}
       />
-      <object3D ref={target} position={[x, 0.2, 0.05]} />
+      <object3D ref={target} position={[x, 0.3, 0.05]} />
     </>
   )
 }
 
 // Hand-authored salon hang: one slot for each V1 product, across three rows.
+// x spread matches the standard wall framing (unchanged from before the
+// backdrop widened) so the whole grid still fits the resting camera zoom.
 type Slot = { id: string; x: number; y: number; s: number }
 const SLOTS: Slot[] = [
   // top row
@@ -64,7 +78,7 @@ export function Archive({ position }: { position: [number, number, number] }) {
     <group position={position}>
       {/* Archive is a section in the room: the backing panel matches each wall. */}
       <MarbleWallSurface
-        width={WALL_WIDTH}
+        width={ARCHIVE_WALL_WIDTH}
         height={WALL_HEIGHT}
         position={[0, WALL_CENTER_Y, -0.1]}
         depth={0.2}
@@ -83,8 +97,8 @@ export function Archive({ position }: { position: [number, number, number] }) {
         ARCHIVE — II
       </Text>
 
-      {/* general wall wash (not per-frame) */}
-      {[-3, 0, 3].map((x) => (
+      {/* general wall wash (not per-frame) — one per column, tight and close */}
+      {[-3.8, -1.25, 1.25, 3.8].map((x) => (
         <WallWash key={x} x={x} />
       ))}
 

@@ -47,7 +47,7 @@ export type Artwork = {
 export type FrameStyle = 'gold' | 'white' | 'black'
 
 export const walls: Wall[] = [
-  { index: 0, name: 'Signature', roman: 'I', angle: 0 },
+  { index: 0, name: 'Home', roman: 'I', angle: 0 },
   { index: 1, name: 'Archive', roman: 'II', angle: 0 },
   { index: 2, name: 'Countdown', roman: 'III', angle: -0.085 },
   // the personal closer: the artist's portrait + a doorway into VSL, his mind
@@ -65,6 +65,11 @@ export const SIGNATURE_WALL = 0
 export const ARCHIVE_WALL = 1
 export const COMING_SOON_WALL = 2
 export const ABOUT_WALL = 3
+// doorway cut into the About wall (x relative to that wall's center) — shared
+// with Room so the long backdrop panel can leave a gap behind the opening
+export const ABOUT_DOOR_X = 2.95
+export const ABOUT_DOOR_W = 1.9
+export const ABOUT_DOOR_H = 3.5
 export const OPENING_DATE = new Date('2026-08-15T18:00:00')
 
 // the opening (Signature) wall's one-line brand statement
@@ -96,9 +101,8 @@ export const ABOUT = {
   role: 'PHOTOGRAPHER · FOUNDER OF TNES',
   // pull-quote grounded in the six works on these walls
   quote: `Six coastlines, one recurring subject — a single figure, small against the water.`,
-  body: `Every wall in this room is one pair of eyes. Victor makes photographs from the in-between — travel, memory, and the quiet geometry of a place. Here the work stands framed and still; to understand how it is seen, step inside his mind.`,
-  cta: 'Understand the artist’s mind',
-  ctaSub: 'Enter VSL — the immersive world behind the work',
+  body: `Victor Safdie Levy photographs the space between memory and place, observation and instinct. TNES. gives selected moments from that wider practice a physical form.`,
+  cta: 'Enter the artist’s mind',
   contact: {
     email: 'vlevy@tnes.studio',
     phone: '+1 917 445 4067',
@@ -337,3 +341,5 @@ export const FONT_SERIF = '/fonts/Gelasio-Regular.ttf'
 export const FONT_SERIF_ITALIC = '/fonts/Gelasio-Italic.ttf'
 export const FONT_BRAND = '/fonts/PlayfairDisplay-Regular.ttf'
 export const FONT_BRAND_ITALIC = '/fonts/PlayfairDisplay-Italic.ttf'
+// the [O] mark is always Helvetica, never the brand serif or the UI sans
+export const FONT_HELVETICA = '/fonts/Helvetica-Regular.otf'
