@@ -1,8 +1,9 @@
-import { ARCHIVE_WALL, artworks, walls } from '../../data/artworks'
+import { ARCHIVE_WALL, artworks, SIGNATURE_WALL, walls } from '../../data/artworks'
 import { useGalleryStore } from '../../store/useGalleryStore'
 
 export function WallNavigation() {
   const currentWall = useGalleryStore((s) => s.currentWall)
+  const goToWall = useGalleryStore((s) => s.goToWall)
   const selectedArtworkId = useGalleryStore((s) => s.selectedArtworkId)
   const goToPreviousWall = useGalleryStore((s) => s.goToPreviousWall)
   const goToNextWall = useGalleryStore((s) => s.goToNextWall)
@@ -18,8 +19,14 @@ export function WallNavigation() {
 
   return (
     <div className={`wall-nav ${hidden ? 'wall-nav-hidden' : ''}`}>
-      {/* keyboard/screen-reader path to the canvas-only artworks */}
+      {/* keyboard/screen-reader path to the canvas-only artworks and CTAs */}
       <nav className="sr-only" aria-label="Artworks on this wall">
+        {currentWall === SIGNATURE_WALL && (
+          <>
+            <button onClick={() => goToWall(ARCHIVE_WALL)}>Shop prints</button>
+            <button onClick={openManifestoRoom}>Enter studio</button>
+          </>
+        )}
         {(currentWall === ARCHIVE_WALL ? artworks : [])
           .map((a) => (
             <button key={a.id} onClick={() => selectArtwork(a.id)}>

@@ -5,6 +5,9 @@ import { useCartStore } from '../../store/useCartStore'
 import { useProduct } from '../../lib/useProduct'
 import { checkoutUrl, defaultSelection, findVariant, money } from '../../lib/shopify'
 
+/** how much the hung print grows or shrinks per step away from the middle size */
+const PREVIEW_STEP = 0.16
+
 export function ArtworkPanel() {
   const selectedArtworkId = useGalleryStore((s) => s.selectedArtworkId)
   const selectedFrameStyle = useGalleryStore((s) => s.selectedFrameStyle)
@@ -15,17 +18,35 @@ export function ArtworkPanel() {
   const addToCart = useCartStore((s) => s.add)
   const openCart = useCartStore((s) => s.setOpen)
 
+  const setPreviewScale = useGalleryStore((s) => s.setPreviewScale)
+
   const artwork = artworks.find((a) => a.id === selectedArtworkId)
   const product = useProduct(artwork?.shopifyHandle)
 
   const [selection, setSelection] = useState<Record<string, string>>({})
   const [added, setAdded] = useState(false)
 
-  // open on the first in-stock combination whenever a new product loads
+  // open on the middle size whenever a new product loads
   useEffect(() => {
     setSelection(product ? defaultSelection(product) : {})
     setAdded(false)
   }, [product])
+
+  const frameOption = product?.options.find((option) => /^(frame|frame color|framing)$/i.test(option.name))
+  const nonFrameOptions = product?.options.filter((option) => option !== frameOption)
+  // whichever option isn't the frame is the size axis — that's the one the
+  // print's physical scale should follow
+  const sizeOption = nonFrameOptions?.[0]
+  const sizeName = sizeOption?.name
+  const sizeValues = sizeOption?.values
+  const chosenSize = sizeName ? selection[sizeName] : undefined
+
+  // the chosen size, made physical: one step either side of the middle
+  useEffect(() => {
+    const index = sizeValues?.indexOf(chosenSize ?? '') ?? -1
+    if (!sizeValues || index < 0 || sizeValues.length < 2) return setPreviewScale(1)
+    setPreviewScale(1 + (index - Math.floor((sizeValues.length - 1) / 2)) * PREVIEW_STEP)
+  }, [sizeValues, chosenSize, setPreviewScale])
 
   // the letter overlays the same view — hide the panel behind it, but keep the
   // artwork selected so the 3D camera framing never moves
@@ -33,8 +54,6 @@ export function ArtworkPanel() {
 
   const variant = product ? findVariant(product, selection) : null
   const buyable = !!variant?.available
-  const frameOption = product?.options.find((option) => /^(frame|frame color|framing)$/i.test(option.name))
-  const nonFrameOptions = product?.options.filter((option) => option !== frameOption)
 
   const selectFrame = (style: 'black' | 'white') => {
     setSelectedFrameStyle(style)

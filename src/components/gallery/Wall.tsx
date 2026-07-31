@@ -13,7 +13,7 @@ import {
   type Wall as WallType,
 } from '../../data/artworks'
 import { useGalleryStore } from '../../store/useGalleryStore'
-import { SignatureExhibition } from './SignatureExhibition'
+import { HomeWall } from './HomeWall'
 import { ComingSoonWall } from './ComingSoonWall'
 import { AboutWall } from './AboutWall'
 import { dragState } from './CameraController'
@@ -22,7 +22,11 @@ import { MarbleWallSurface } from './MarbleWallSurface'
 // one ceiling lamp: a downward wash that scallops the top of the wall,
 // matching the TNES reference (three per wall). The fixture itself is a small
 // black track-spot cylinder tilted at the wall, like the reference ceiling.
-export function WallLamp({ x }: { x: number }) {
+/** the standard exhibition lamp; the About wall runs its three turned down */
+const LAMP_INTENSITY = 30
+const ABOUT_LAMP_INTENSITY = 14
+
+export function WallLamp({ x, intensity = LAMP_INTENSITY }: { x: number; intensity?: number }) {
   const spot = useRef<SpotLight>(null)
   const target = useRef<Object3D>(null)
 
@@ -43,7 +47,7 @@ export function WallLamp({ x }: { x: number }) {
         ref={spot}
         position={[x, 3.05, 2.2]}
         color="#fff1d6"
-        intensity={30}
+        intensity={intensity}
         angle={0.62}
         penumbra={0.7}
         decay={1.6}
@@ -74,8 +78,9 @@ export function Wall({ wall }: { wall: WallType }) {
           closeArtwork()
         }}
       >
-        {/* the About wall renders its own slab — it needs a real doorway hole */}
-        {wall.index !== ABOUT_WALL && (
+        {/* About and Countdown render their own slabs — both need a real hole
+            cut in them (a doorway, and the countdown's recessed niche) */}
+        {wall.index !== ABOUT_WALL && wall.index !== COMING_SOON_WALL && (
           <MarbleWallSurface
             width={WALL_WIDTH}
             height={WALL_HEIGHT}
@@ -85,17 +90,27 @@ export function Wall({ wall }: { wall: WallType }) {
         )}
       </group>
 
-      {lampX.map((x) => (
-        <WallLamp key={x} x={x} />
-      ))}
+      {/* Home and Countdown light themselves — a key wash with narrow accents,
+          and four vertical cones respectively — not this even three-lamp band */}
+      {wall.index !== SIGNATURE_WALL &&
+        wall.index !== COMING_SOON_WALL &&
+        lampX.map((x) => (
+          <WallLamp
+            key={x}
+            x={x}
+            intensity={wall.index === ABOUT_WALL ? ABOUT_LAMP_INTENSITY : LAMP_INTENSITY}
+          />
+        ))}
 
-      {/* the signature IS the title on the hero wall — no text label there */}
-      {wall.index !== SIGNATURE_WALL && (
+      {/* no section label on Home (the statement is the title) or About (it
+          landed directly over Victor's portrait) */}
+      {wall.index !== SIGNATURE_WALL && wall.index !== ABOUT_WALL && (
         <Text
           font={FONT_SANS}
           fontSize={0.072}
           letterSpacing={0.34}
-          color="#6b6151"
+          // was #6b6151 — measured at ~1.2:1 against the lit concrete, invisible
+          color="#413a30"
           anchorX="left"
           anchorY="middle"
           position={[-2.95, 1.72, 0.06]}
@@ -105,7 +120,7 @@ export function Wall({ wall }: { wall: WallType }) {
         </Text>
       )}
 
-      {wall.index === SIGNATURE_WALL && <SignatureExhibition />}
+      {wall.index === SIGNATURE_WALL && <HomeWall />}
       {wall.index === COMING_SOON_WALL && <ComingSoonWall />}
       {wall.index === ABOUT_WALL && <AboutWall />}
     </group>

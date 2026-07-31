@@ -48,7 +48,7 @@ export type FrameStyle = 'gold' | 'white' | 'black'
 
 export const walls: Wall[] = [
   { index: 0, name: 'Home', roman: 'I', angle: 0 },
-  { index: 1, name: 'Archive', roman: 'II', angle: 0 },
+  { index: 1, name: 'Prints', roman: 'II', angle: 0 },
   { index: 2, name: 'Countdown', roman: 'III', angle: -0.085 },
   // the personal closer: the artist's portrait + a doorway into VSL, his mind
   { index: 3, name: 'About', roman: 'IV', angle: 0.085 },
@@ -72,12 +72,11 @@ export const ABOUT_DOOR_W = 1.9
 export const ABOUT_DOOR_H = 3.5
 export const OPENING_DATE = new Date('2026-08-15T18:00:00')
 
-// the opening (Signature) wall's one-line brand statement
-export const BRAND_STATEMENT = 'Nothing Happens Twice'
+// the opening (Signature) wall's one-line brand statement, cut into the concrete
+export const BRAND_STATEMENT = 'nothing happens twice.'
 
-// the opening wall loads zoomed into its central signed print [x, y, z camera];
-// scrolling out reveals the wall while the signature writes on
-export const SIGNATURE_ZOOM: [number, number, number] = [0, 0.3, 2.3]
+// the single work hung on the opening wall
+export const HERO_ID = 'the-pool'
 
 // the About wall: Victor's portrait, a wall-text, and a link out to VSL — the
 // immersive site that is the artist's mind behind this exhibition.
@@ -96,13 +95,14 @@ export const ABOUT = {
   // Victor's B&W headshot — VSL's contact portrait, pre-cropped to 2:3 vertical
   // and desaturated to match how vsl.studio renders it. Larger than an artwork.
   portrait: '/victor-headshot-bw.webp',
-  portraitSize: [1.2, 1.8] as [number, number],
+  // hung nearly floor-to-eye, the way the reference frames him
+  portraitSize: [1.8, 2.7] as [number, number],
   name: 'Victor Safdie Levy',
-  role: 'PHOTOGRAPHER · FOUNDER OF TNES',
-  // pull-quote grounded in the six works on these walls
-  quote: `Six coastlines, one recurring subject — a single figure, small against the water.`,
-  body: `Victor Safdie Levy photographs the space between memory and place, observation and instinct. TNES. gives selected moments from that wider practice a physical form.`,
-  cta: 'Enter the artist’s mind',
+  role: 'ARTIST AND FOUNDER OF TNES.',
+  // one first-person block, in his voice — the reference layout has no room for
+  // a pull-quote AND a separate bio, and this is the wording it carries
+  statement: `I photograph the in-between. The pause. The threshold. The space where something shifts from one state to another. TNES is the world that holds that moment.`,
+  cta: 'Enter VSL',
   contact: {
     email: 'vlevy@tnes.studio',
     phone: '+1 917 445 4067',
@@ -110,19 +110,6 @@ export const ABOUT = {
     instagramUrl: 'https://instagram.com/vlevy_',
   },
 }
-
-// decorative hero on the signature wall: a single dimmed painting the VSL
-// signature is written over. Not a sellable artwork — never in `artworks`.
-export const HERO = {
-  image: '/artworks/v1/ipanema_riorunner_2025_v1.webp',
-  // z 0.07 seats the frame in front of the wall face (same as ArtworkFrame) —
-  // at z 0 its front is coplanar with the wall and z-fights into dashes
-  position: [0, 0.2, 0.07] as [number, number, number],
-  size: [1.3, 0.87] as [number, number],
-}
-// camera distance when the intro opens "fully zoomed into" the hero frame,
-// before it dollies back to the resting wall view
-export const HERO_ZOOM_Z = 1.65
 
 // ---- V1 products: the twelve works currently shown in the TNES. archive ----
 // Data sourced from tnes.studio/artifacts (title, location, year) and the
@@ -149,10 +136,11 @@ export const artworks: Artwork[] = [
     image: '/artworks/v1/stpeterspool_hero_2025_v1.webp',
     wallIndex: ARCHIVE_WALL,
     position: [-2.5, 0.3, 0],
-    size: PORTRAIT,
+    // the source file is 2560x1707 — a 3:2 landscape, not a portrait
+    size: LANDSCAPE,
     edition: EDITION,
     dimensions: DIMENSIONS,
-    frameStyle: 'black',
+    frameStyle: 'white',
     shopifyHandle: 'st-peters-pool-v1',
   },
   {
@@ -170,7 +158,7 @@ export const artworks: Artwork[] = [
     // "edition by inquiry" — the store is the truth for anything purchasable.
     edition: 'Archival pigment print · open edition, framed ready to hang',
     dimensions: DIMENSIONS,
-    frameStyle: 'black',
+    frameStyle: 'white',
     shopifyHandle: 'rio-runner',
   },
   {
@@ -186,7 +174,7 @@ export const artworks: Artwork[] = [
     size: LANDSCAPE,
     edition: EDITION,
     dimensions: DIMENSIONS,
-    frameStyle: 'black',
+    frameStyle: 'white',
     shopifyHandle: 'gozo-cave-girl',
   },
   {
@@ -218,7 +206,7 @@ export const artworks: Artwork[] = [
     size: LANDSCAPE,
     edition: EDITION,
     dimensions: DIMENSIONS,
-    frameStyle: 'black',
+    frameStyle: 'white',
     shopifyHandle: 'praia-da-baleia',
   },
   {
@@ -234,7 +222,7 @@ export const artworks: Artwork[] = [
     size: LANDSCAPE,
     edition: EDITION,
     dimensions: DIMENSIONS,
-    frameStyle: 'black',
+    frameStyle: 'white',
     shopifyHandle: 'paracas-flat-dunes',
   },
   {
@@ -324,7 +312,7 @@ export const artworks: Artwork[] = [
     size: LANDSCAPE,
     edition: EDITION,
     dimensions: DIMENSIONS,
-    frameStyle: 'black',
+    frameStyle: 'white',
     shopifyHandle: 'appenzell-alpine-lake',
   },
 ]
@@ -341,5 +329,24 @@ export const FONT_SERIF = '/fonts/Gelasio-Regular.ttf'
 export const FONT_SERIF_ITALIC = '/fonts/Gelasio-Italic.ttf'
 export const FONT_BRAND = '/fonts/PlayfairDisplay-Regular.ttf'
 export const FONT_BRAND_ITALIC = '/fonts/PlayfairDisplay-Italic.ttf'
+/**
+ * Playfair with its `lnum` (lining figures) feature baked into the default
+ * glyphs. The shipped Playfair defaults to OLDSTYLE figures — 3/4/5/7/9 hang
+ * below the baseline, 6/8 rise above, 0/1/2 sit at x-height — which makes a
+ * countdown bounce. troika (0.52.4) exposes no OpenType feature switch, so the
+ * substitution is baked into the file instead: the `lnum` lookup's mapping
+ * rewritten straight into the cmap. Verified: digit height spread 202 → 5 units.
+ * Use for any run of figures that has to sit on one line; prose keeps FONT_BRAND.
+ */
+export const FONT_BRAND_LINING = '/fonts/PlayfairDisplay-Lining.ttf'
+/**
+ * The ten digits of that same font as three.js typeface JSON — glyph OUTLINES,
+ * not an SDF atlas, so they can be extruded and subtracted as real geometry
+ * (the Countdown carves them into the wall). Baked from FONT_BRAND_LINING with
+ * skia-pathops resolving overlaps first: the shipped 4/6/8/9 are single
+ * self-intersecting contours that rely on non-zero winding, which a rasteriser
+ * handles and a triangulator does not — without that pass their counters vanish.
+ */
+export const FONT_DIGITS_TYPEFACE = '/fonts/playfair-lining-digits.typeface.json'
 // the [O] mark is always Helvetica, never the brand serif or the UI sans
 export const FONT_HELVETICA = '/fonts/Helvetica-Regular.otf'

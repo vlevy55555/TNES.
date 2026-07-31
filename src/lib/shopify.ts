@@ -68,8 +68,24 @@ export const findVariant = (
     product.options.every((o) => v.options[o.name] === selection[o.name]),
   ) ?? null
 
-/** The selection to open on: first in-stock variant, else the first variant. */
+/**
+ * The middle value of an option's merchandised list. Odd counts land dead
+ * centre; even counts take the lower of the two, which keeps the default off
+ * the most expensive size.
+ */
+export const middleValue = (values: string[]) => values[Math.floor((values.length - 1) / 2)]
+
+/**
+ * The selection to open on: the MIDDLE of every option — so a three-size print
+ * opens on its middle size rather than its smallest, which read as the cheap
+ * option instead of the intended one. Falls back to the first in-stock variant
+ * (else the first) when that middle combination isn't sold.
+ */
 export const defaultSelection = (product: ShopProduct): Record<string, string> => {
+  const middle = Object.fromEntries(
+    product.options.map((o) => [o.name, middleValue(o.values)]),
+  )
+  if (findVariant(product, middle)?.available) return middle
   const v = product.variants.find((x) => x.available) ?? product.variants[0]
   return v ? { ...v.options } : {}
 }

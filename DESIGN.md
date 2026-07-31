@@ -131,10 +131,15 @@ Nothing snaps. Reduced-motion is honoured in the DOM overlays.
 
 ## 7. Screens
 
-- **Signature (opening).** An **exhibition wall**: a central print **signed by
-  V Levy** (the hand-drawn mark rendered on the print itself), flanked by two
-  works. Carries the brand statement and the larger TNES. wordmark. This is the
-  poster of the show.
+- **Home (opening).** One hero print on a **raised concrete bay**, with
+  `nothing happens twice.` cut into the wall above it, the work's text (title,
+  place, live Shopify price, finishing note) on the base wall to its right, and
+  the `[O]` as bronze wall sculpture over a pedestal to its left. A stone
+  **console** below carries the commerce: the studio line, `SHOP PRINTS` (same
+  destination as clicking the print) and `ENTER STUDIO →` into the Manifesto
+  room. Its own light: one key wash blooming a halo above the print, narrow
+  accents on the mark and the wall text, a graze across the console's stone —
+  not the even three-lamp band the other walls use. No intro; it loads at rest.
 - **Exhibition / Archive.** Standard walls of three framed prints each; click to
   zoom + open the detail panel.
 - **Coming Soon.** A framed live countdown to the launch, road-sign props and

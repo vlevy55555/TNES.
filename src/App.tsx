@@ -1,6 +1,5 @@
 import { useEffect } from 'react'
 import { GalleryCanvas } from './components/gallery/GalleryCanvas'
-import { SignatureOverlay } from './components/gallery/SignatureOverlay'
 import { VslExitOverlay } from './components/gallery/VslExitOverlay'
 import { Header } from './components/ui/Header'
 import { Footer } from './components/ui/Footer'
@@ -65,7 +64,6 @@ export default function App() {
     <>
       <GalleryCanvas />
       <div className="light-overlay" />
-      <SignatureOverlay />
       <div className={`dim ${selectedArtworkId && !inquiryOpen ? 'dim-on' : ''}`} />
       <Header />
       <WallNavigation />

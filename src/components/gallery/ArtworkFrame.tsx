@@ -1,6 +1,6 @@
 import { Text, useCursor, useTexture } from '@react-three/drei'
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { CanvasTexture, Path, Shape, SRGBColorSpace, Vector3, type Group, type Texture } from 'three'
+import { CanvasTexture, Color, Path, Shape, SRGBColorSpace, Vector3, type Group, type Texture } from 'three'
 import gsap from 'gsap'
 import {
   artworks,
@@ -26,9 +26,19 @@ function makeShadowTexture() {
   ctx.fillRect(0, 0, 128, 128)
   return new CanvasTexture(canvas)
 }
-const shadowTexture = makeShadowTexture()
+/** shared by anything that needs to sit proud of a wall — frames, the Countdown plate */
+export const shadowTexture = makeShadowTexture()
 
 artworks.forEach((a) => useTexture.preload(a.image))
+
+/**
+ * A flat gain on the print material. The photographs are unlit and exempt from
+ * tone mapping — deliberately, so a print keeps its true colour under the warm
+ * lamps — which means neither the lights nor the exposure curve can lift them.
+ * A >1 colour multiply is the only lever there is. Kept modest: this clips
+ * highlights, and the whole point of `toneMapped={false}` is fidelity.
+ */
+const PRINT_GAIN = new Color(1.16, 1.16, 1.16)
 
 // reused by the click handler — world transform reads need a target vector
 const _worldPos = new Vector3()
@@ -56,9 +66,11 @@ function frameSpec(style: FrameStyle): FrameSpec {
       outerBorder: 0.22,
       mat: 0.035,
       imageScale: 1.2,
-      frameColor: '#bdb8ae',
-      matColor: '#f7f4ed',
-      roughness: 0.58,
+      // warm white, not the grey-beige it used to be: under the warm spots and
+      // ACES tone mapping the old #bdb8ae read as plain grey
+      frameColor: '#e6dfd1',
+      matColor: '#faf7f0',
+      roughness: 0.72,
       metalness: 0,
       clearcoat: 0,
       emissive: '#000000',
@@ -244,7 +256,7 @@ export function FrameLayers({
 
       <mesh position={[0, 0, photoZ]} castShadow>
         <planeGeometry args={[photoW, photoH]} />
-        <meshBasicMaterial map={texture} toneMapped={false} />
+        <meshBasicMaterial map={texture} color={PRINT_GAIN} toneMapped={false} />
       </mesh>
     </>
   )
@@ -275,9 +287,13 @@ export function ArtworkFrame({
   const selectArtwork = useGalleryStore((s) => s.selectArtwork)
   const selectedArtworkId = useGalleryStore((s) => s.selectedArtworkId)
   const selectedFrameStyle = useGalleryStore((s) => s.selectedFrameStyle)
+  const previewScale = useGalleryStore((s) => s.previewScale)
   const group = useRef<Group>(null)
+  const sizeGroup = useRef<Group>(null)
   const [hovered, setHovered] = useState(false)
   useCursor(hovered, INTERACTIVE_CURSOR)
+
+  const selected = selectedArtworkId === artwork.id
 
   useEffect(() => {
     if (!group.current) return
@@ -290,11 +306,18 @@ export function ArtworkFrame({
     })
   }, [hovered])
 
+  // the chosen print size, made physical — on its own group so it can't fight
+  // the hover tween above, which owns the outer group's scale
+  useEffect(() => {
+    if (!sizeGroup.current) return
+    const to = selected ? previewScale : 1
+    gsap.to(sizeGroup.current.scale, { x: to, y: to, z: 1, duration: 0.5, ease: 'power2.out' })
+  }, [selected, previewScale])
+
   const [w, h] = artwork.size
   // Archive works keep their curated wall finish until they are inspected. The
   // selected work then becomes a live black/white framing preview.
-  const resolvedFrameStyle =
-    selectedArtworkId === artwork.id ? selectedFrameStyle : frameStyle ?? artwork.frameStyle
+  const resolvedFrameStyle = selected ? selectedFrameStyle : frameStyle ?? artwork.frameStyle
   const [frameW, frameH] = frameOuterDimensions(w, h, resolvedFrameStyle)
 
   return (
@@ -327,7 +350,9 @@ export function ArtworkFrame({
       }}
       onPointerOut={() => setHovered(false)}
     >
-      <FrameLayers texture={texture} w={w} h={h} style={resolvedFrameStyle} />
+      <group ref={sizeGroup}>
+        <FrameLayers texture={texture} w={w} h={h} style={resolvedFrameStyle} />
+      </group>
 
       {/* label plaque under the frame */}
       {/* work title — Playfair (gallery identification) */}

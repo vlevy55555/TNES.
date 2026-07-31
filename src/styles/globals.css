@@ -108,33 +108,6 @@ select:not(:disabled),
     radial-gradient(115% 100% at 50% 46%, transparent 50%, rgba(10, 8, 6, 0.55) 100%);
 }
 
-/* VSL signature written over the hero wall — a 2D overlay above the canvas but
-   below the header so the logo/nav stay usable */
-.signature-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 5;
-  pointer-events: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  opacity: 0;
-  transition: opacity 0.7s ease;
-}
-
-.signature-overlay.is-on {
-  opacity: 1;
-}
-
-.signature-overlay svg {
-  /* sized to sit over the central print of the opening wall (not a full hero) */
-  width: min(30vw, 380px);
-  height: auto;
-  transform: translateY(-3%);
-  overflow: visible;
-  transform-origin: center center;
-}
-
 /* doorway exit to VSL: cream veil + the signature writing itself, then leave */
 .vsl-exit {
   position: fixed;
@@ -166,13 +139,6 @@ select:not(:disabled),
      over the cream wall the ink already carries its own contrast */
   filter: drop-shadow(0 0 10px rgba(244, 238, 226, 0.55))
     drop-shadow(0 2px 6px rgba(20, 14, 6, 0.28));
-}
-
-@media (max-width: 700px) {
-  .signature-overlay svg {
-    width: min(58vw, 320px);
-    transform: translateY(-5%);
-  }
 }
 
 .dim {
@@ -783,64 +749,69 @@ select:not(:disabled),
 
 /* ---------- coming-soon: email capture embedded in the wall ---------- */
 
+/* Countdown wall email capture: no box, no fill — a single rule under the field
+   and a text action beside it, so it reads as drawn on the concrete */
 .wall-notify {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 14px;
+  width: 460px;
   font-family: var(--sans);
   user-select: none;
 }
 
-.wall-notify .btn {
-  min-width: 210px;
-  color: #f8f0dc;
-  background: #24211d;
-  border-color: #c2943c;
-  box-shadow: 0 4px 11px rgba(40, 26, 7, 0.34), inset 0 1px 0 rgba(255, 236, 174, 0.15);
-}
-
+/* every value here was measured at ~1.15:1 against the lit concrete and was
+   effectively invisible — the rule and the ink both carry real weight now */
 .wall-notify-form {
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 14px;
-  width: 320px;
+  align-items: baseline;
+  gap: 20px;
+  border-bottom: 2px solid #5a4f40;
+  padding-bottom: 9px;
 }
 
 .wall-notify-input {
-  width: 100%;
-  padding: 10px 4px;
+  flex: 1;
+  min-width: 0;
+  padding: 0;
   border: none;
-  border-bottom: 1px solid var(--line);
   background: none;
-  color: var(--ink);
+  color: #2b2419;
   font-family: var(--sans);
-  font-size: 16px;
-  text-align: center;
+  font-size: 21px;
   outline: none;
 }
 
 .wall-notify-input::placeholder {
-  color: var(--muted);
+  color: #4b4235;
 }
 
-.wall-notify-input:focus {
-  border-color: var(--ink);
+.wall-notify-submit {
+  flex: none;
+  border: none;
+  background: none;
+  padding: 0;
+  cursor: var(--interactive-cursor);
+  font-family: var(--sans);
+  font-weight: 500;
+  font-size: 19px;
+  color: #2b2419;
+  white-space: nowrap;
+  transition: color 0.2s ease;
+}
+
+.wall-notify-submit:hover {
+  color: #000000;
 }
 
 .wall-notify-done {
   font-family: var(--serif);
   font-style: italic;
-  font-size: 17px;
-  color: var(--ink);
-  text-align: center;
+  font-size: 22px;
+  color: #2b2419;
 }
 
 .wall-notify-error {
-  font-size: 11px;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
+  margin-top: 9px;
+  font-size: 15px;
+  letter-spacing: 0.14em;
   color: #8c4a3a;
 }
 
@@ -962,36 +933,6 @@ select:not(:disabled),
 }
 
 /* Victor's direct contacts on the About wall */
-.about-contact {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 8px;
-  white-space: nowrap;
-}
-
-.about-contact-label {
-  font-family: var(--sans);
-  font-size: 10px;
-  letter-spacing: 0.24em;
-  text-transform: uppercase;
-  color: var(--muted);
-  margin-bottom: 2px;
-}
-
-.about-contact a {
-  font-family: var(--sans);
-  font-size: 15px;
-  color: var(--ink);
-  text-decoration: none;
-  border-bottom: 1px solid transparent;
-  transition: border-color 0.2s ease;
-}
-
-.about-contact a:hover {
-  border-color: var(--ink);
-}
-
 @media (prefers-reduced-motion: reduce) {
   .about-cta-btn,
   .about-cta-btn::after {

@@ -1,20 +1,106 @@
-import { Html, RoundedBox, Text, useCursor } from '@react-three/drei'
-import { useFrame } from '@react-three/fiber'
+import { Html, Text } from '@react-three/drei'
+import { useLoader } from '@react-three/fiber'
 import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react'
-import { BufferAttribute, BufferGeometry, CanvasTexture, DoubleSide, RepeatWrapping, Shape, SRGBColorSpace } from 'three'
-import { FONT_SANS, FONT_SANS_MEDIUM, OPENING_DATE } from '../../data/artworks'
+import {
+  ExtrudeGeometry,
+  Path,
+  Shape,
+  Vector2,
+  type Object3D,
+  type SpotLight,
+} from 'three'
+import { FontLoader } from 'three/examples/jsm/loaders/FontLoader.js'
+import {
+  FONT_BRAND,
+  FONT_BRAND_ITALIC,
+  FONT_DIGITS_TYPEFACE,
+  FONT_SANS,
+  OPENING_DATE,
+  WALL_BOTTOM_Y,
+  WALL_HEIGHT,
+  WALL_WIDTH,
+} from '../../data/artworks'
 import { useGalleryStore } from '../../store/useGalleryStore'
-import { INTERACTIVE_CURSOR } from './interactiveCursor'
+import { shadowTexture } from './ArtworkFrame'
+import { WallPiece, useWallPieceMap, useWallShapeMap } from './MarbleWallSurface'
+import { StoneMaterial, useStoneMap } from './stone'
 
-const FRAME_BORDER = 0.15
+// ---------------------------------------------------------------------------
+// Layout knobs. Everything on this wall is cut into, screwed onto or stood
+// against the concrete — nothing floats as a card. World units; the wall face
+// sits at z 0.05.
+// ---------------------------------------------------------------------------
 
-const INK = '#2f2a24'
-const MUTED = '#6b6151'
-const GOLD = '#b69b5e'
-const PLATE = '#dcd5c3'
-const RIVET = '#6b6152'
-const FLOOR_Y = -2.2
-const TAPE_SEGMENTS = 18
+/**
+ * The countdown does not sit ON the wall — the whole rectangle is CUT INTO it.
+ * The slab is built as four pieces around the opening, so their inner side faces
+ * become the reveals; the top one points down, away from the cones, and darkens
+ * on its own.
+ */
+const NICHE_DEPTH = 0.24
+const NICHE_BACK_Z = 0.05 - NICHE_DEPTH
+/** how much further the numerals are sunk INTO that recess, as real cavities */
+const CAVITY_DEPTH = 0.12
+const CAVITY_FLOOR_Z = NICHE_BACK_Z - CAVITY_DEPTH
+/** where the flat type (title, units) sits: just off the niche floor */
+const NICHE_FACE_Z = NICHE_BACK_Z + 0.012
+/** the four surrounding slabs have to be thick enough to line the whole recess */
+const PIECE_BACK_Z = CAVITY_FLOOR_Z - 0.03
+const PIECE_DEPTH = 0.05 - PIECE_BACK_Z
+const PIECE_Z = (0.05 + PIECE_BACK_Z) / 2
+
+const NICHE = { x1: -1.55, x2: 4.25, y1: -1.15, y2: 1.5 }
+const NICHE_MOBILE = { x1: -1.6, x2: 1.6, y1: -1.5, y2: 1.8 }
+type Rect = { x1: number; x2: number; y1: number; y2: number }
+
+/**
+ * Ink ramp. Measured against a render, the wall lands around luminance 100–135
+ * once the cones are tamed; these values keep every tier at 3:1 or better
+ * against that, which the previous `#74685a` (1.2:1) never was.
+ */
+const INK = '#2b2419' // plate titles — the darkest tier
+const SECOND = '#3d3428' // units, the countdown title, plate body copy
+const RULE = '#5a4f40' // hairlines and dividers
+/** the bottom of a carved numeral: same concrete, sunk out of the light */
+const CAVITY_FLOOR = '#8b8175'
+
+/** the editorial plate, held off the wall on four screws */
+const PLATE_X = -2.56
+const PLATE_Y = 0.21
+const PLATE_W = 1.78
+const PLATE_H = 2.16
+const PLATE_Z = 0.13
+
+/** the email capture, directly under the plate */
+const FORM_X = -2.24
+const FORM_Y = -1.34
+
+/** the countdown, pushed right of centre — the plate is what balances it */
+const COUNT_X0 = -0.63
+const COUNT_STEP = 1.32
+const COUNT_MID = COUNT_X0 + (COUNT_STEP * 3) / 2
+const COUNT_Y = 0.12
+const TITLE_Y = 0.94
+// lining figures stand at CAP height (722/1000 em) where the oldstyle ones sat
+// at x-height (529), so the same fontSize now draws ~36% taller — pulled back
+// so the countdown grows a little rather than a lot
+const NUMBER_SIZE = 0.7
+
+/** the stone volume at the bottom right, cropped by the frame edge */
+const BLOCK_X = 4.0
+const BLOCK_W = 1.33
+const BLOCK_H = 0.62
+const BLOCK_D = 0.7
+const BLOCK_Z = 0.45
+const BLOCK_PLINTH_H = 0.08
+
+/** mobile drops the plate and stacks the four units two-up, centred */
+const M_COL = 0.85
+const M_ROW_Y = [0.5, -0.55]
+
+const UNITS = ['DAYS', 'HOURS', 'MINUTES', 'SECONDS']
+
+// ---------------------------------------------------------------------------
 
 function useCountdown() {
   const [parts, setParts] = useState(() => split(OPENING_DATE.getTime() - Date.now()))
@@ -39,403 +125,207 @@ function split(ms: number) {
   ]
 }
 
-// seamless 45° hazard stripe: (x+y) mod period test — tiles perfectly, no rotation seams
-function makeCautionTexture() {
-  const size = 120
-  const period = 20
-  const canvas = document.createElement('canvas')
-  canvas.width = canvas.height = size
-  const ctx = canvas.getContext('2d')!
-  const img = ctx.createImageData(size, size)
-  for (let y = 0; y < size; y++) {
-    for (let x = 0; x < size; x++) {
-      const yellow = (((x + y) % period) + period) % period < period / 2
-      const i = (y * size + x) * 4
-      img.data[i] = yellow ? 240 : 24
-      img.data[i + 1] = yellow ? 192 : 20
-      img.data[i + 2] = yellow ? 46 : 16
-      img.data[i + 3] = 255
-    }
-  }
-  ctx.putImageData(img, 0, 0)
-  const texture = new CanvasTexture(canvas)
-  texture.colorSpace = SRGBColorSpace
-  texture.wrapS = texture.wrapT = RepeatWrapping
-  return texture
-}
-const cautionBase = makeCautionTexture()
+/** cap height of the lining figures, as a fraction of the em (verified: 722/1000) */
+const CAP_RATIO = 0.722
+/** points per curve when the glyph outlines are flattened for triangulation */
+const GLYPH_DIVISIONS = 6
 
-// The wording is painted into the tape texture, not laid over it as separate
-// type. It therefore bends with every control point of the ribbon.
-function makeCautionTextTexture() {
-  // Match the ribbon's long, thin proportions. A square-ish canvas would be
-  // stretched several times along its length and distort every letter.
-  const width = 2400
-  const height = 56
-  const canvas = document.createElement('canvas')
-  canvas.width = width
-  canvas.height = height
-  const ctx = canvas.getContext('2d')!
-  // Leave the background transparent: this texture is an ink layer painted
-  // over the yellow vinyl, so dark lettering can never turn the whole tape dark.
-  ctx.clearRect(0, 0, width, height)
-  ctx.fillStyle = '#171310'
-  ctx.font = '600 30px Arial, sans-serif'
-  ctx.textBaseline = 'middle'
-  const label = 'PLEASE STAY AWAY   —   '
-  const labelWidth = ctx.measureText(label).width
-  for (let x = -labelWidth * 0.25; x < width + labelWidth; x += labelWidth) {
-    ctx.fillText(label, x, height / 2)
-  }
-  const texture = new CanvasTexture(canvas)
-  texture.colorSpace = SRGBColorSpace
-  texture.wrapS = texture.wrapT = RepeatWrapping
-  return texture
-}
-const cautionTextBase = makeCautionTextTexture()
+type Group = { x: number; y: number; text: string }
 
-// a vertical stake planted on the floor, tape tied to it at height — sits past
-// the resting camera's framing, so it's only revealed mid-transition
-function TapeAnchor({ x, y, depth }: { x: number; y: number; depth: number }) {
-  const topY = y + 0.3
-  const postHeight = topY - FLOOR_Y
-  const postCenterY = (topY + FLOOR_Y) / 2
-  return (
-    <group position={[x, 0, depth]}>
-      <mesh position={[0, postCenterY, 0]}>
-        <cylinderGeometry args={[0.026, 0.034, postHeight, 10]} />
-        <meshStandardMaterial color="#4a4238" metalness={0.45} roughness={0.4} />
-      </mesh>
-      <mesh position={[0, y, 0.02]}>
-        <circleGeometry args={[0.042, 16]} />
-        <meshStandardMaterial color="#2a251e" metalness={0.55} roughness={0.3} />
-      </mesh>
-    </group>
-  )
-}
+/**
+ * The niche floor, with the numerals CARVED OUT of it.
+ *
+ * Not type drawn on a surface: the plate is one extruded slab whose Shape has
+ * each digit's outer contour punched through as a hole, with the counters (the
+ * bowl of a 6, both eyes of an 8) put back as separate islands at the same
+ * depth. A floor plane sits behind. So a numeral is a real void with real side
+ * walls — its upper inner face turns away from the ceiling cones and darkens,
+ * its lower face catches them, and the whole thing holds up from any angle
+ * instead of only head-on the way stacked text copies do.
+ *
+ * The digits come from a typeface JSON baked off the lining Playfair, with
+ * self-intersecting contours resolved — the shipped outlines rely on non-zero
+ * winding, which a rasteriser handles and a triangulator does not.
+ */
+function CarvedFloor({ rect, groups, size }: { rect: Rect; groups: Group[]; size: number }) {
+  const font = useLoader(FontLoader, FONT_DIGITS_TYPEFACE)
+  // the extruded plate and islands carry the shape's own XY as UVs; the floor is
+  // a plain plane with 0–1 UVs, so it needs the per-piece crop instead
+  const shapeMap = useWallShapeMap()
+  const floorMap = useWallPieceMap(rect.x1, rect.x2, rect.y1, rect.y2)
+  const key = groups.map((g) => g.text).join('|')
 
-// diagonal hazard tape strung between two wall-mounted stakes — the stakes sit
-// beyond the countdown's normal framing and only peek in as the camera widens
-// for a wall-to-wall transition
-function CautionTape({
-  from,
-  to,
-  variant = 'stripes',
-}: {
-  from: [number, number, number]
-  to: [number, number, number]
-  variant?: 'stripes' | 'text'
-}) {
-  const dx = to[0] - from[0]
-  const dy = to[1] - from[1]
-  const dz = to[2] - from[2]
-  const sag = 0.15
-  const pointAt = (t: number): [number, number, number] => [
-    from[0] + dx * t,
-    from[1] + dy * t - Math.sin(Math.PI * t) * sag,
-    from[2] + dz * t + Math.sin(Math.PI * t * 2) * 0.025,
-  ]
-  const endpoints = Array.from({ length: TAPE_SEGMENTS + 1 }, (_, index) => pointAt(index / TAPE_SEGMENTS))
-  const totalLength = endpoints.slice(1).reduce(
-    (sum, point, index) =>
-      sum + Math.hypot(point[0] - endpoints[index][0], point[1] - endpoints[index][1], point[2] - endpoints[index][2]),
-    0,
-  )
-  const texture = useMemo(() => {
-    if (variant !== 'stripes') return null
-    const t = cautionBase.clone()
-    t.wrapS = t.wrapT = RepeatWrapping
-    t.repeat.set(Math.max(0.18, totalLength / TAPE_SEGMENTS * 0.45), 1)
-    t.needsUpdate = true
-    return t
-  }, [totalLength, variant])
-  const textTexture = useMemo(() => {
-    if (variant !== 'text') return null
-    const t = cautionTextBase.clone()
-    t.wrapS = t.wrapT = RepeatWrapping
-    t.repeat.set(1, 1)
-    t.needsUpdate = true
-    return t
-  }, [variant])
+  const { plate, islands } = useMemo(() => {
+    const outline = new Shape()
+    outline.moveTo(rect.x1, rect.y1)
+    outline.lineTo(rect.x2, rect.y1)
+    outline.lineTo(rect.x2, rect.y2)
+    outline.lineTo(rect.x1, rect.y2)
+    outline.closePath()
 
-  const hoverIndex = useRef<number | null>(null)
-  const motion = useRef(
-    Array.from({ length: TAPE_SEGMENTS + 1 }, () => ({
-      y: 0,
-      z: 0,
-      yVelocity: 0,
-      zVelocity: 0,
-    })),
-  )
-  const [hovered, setHovered] = useState(false)
-  useCursor(hovered, INTERACTIVE_CURSOR)
-  const ribbon = useMemo(() => {
-    const geometry = new BufferGeometry()
-    const positions = new Float32Array((TAPE_SEGMENTS + 1) * 2 * 3)
-    const uvs = new Float32Array((TAPE_SEGMENTS + 1) * 2 * 2)
-    const indices: number[] = []
+    const counters: Shape[] = []
+    for (const group of groups) {
+      const shapes = font.generateShapes(group.text, size)
+      const xs = shapes.flatMap((s) => s.getPoints().map((p) => p.x))
+      // centre horizontally on the run's real width, but vertically on a FIXED
+      // cap box — measuring the glyphs would make the row hop by a pixel or two
+      // whenever a '1' (which has no overshoot) ticks past
+      const dx = group.x - (Math.min(...xs) + Math.max(...xs)) / 2
+      const dy = group.y - (CAP_RATIO * size) / 2
+      const shift = (points: Vector2[]) => points.map((p) => new Vector2(p.x + dx, p.y + dy))
 
-    endpoints.forEach((point, index) => {
-      const before = endpoints[Math.max(0, index - 1)]
-      const after = endpoints[Math.min(TAPE_SEGMENTS, index + 1)]
-      const tangentLength = Math.hypot(after[0] - before[0], after[1] - before[1]) || 1
-      const normalX = -(after[1] - before[1]) / tangentLength
-      const normalY = (after[0] - before[0]) / tangentLength
-      const vertex = index * 2
-      positions.set([point[0] + normalX * 0.1, point[1] + normalY * 0.1, point[2]], vertex * 3)
-      positions.set([point[0] - normalX * 0.1, point[1] - normalY * 0.1, point[2]], (vertex + 1) * 3)
-      uvs.set([index / TAPE_SEGMENTS, 1], vertex * 2)
-      uvs.set([index / TAPE_SEGMENTS, 0], (vertex + 1) * 2)
-    })
-
-    for (let index = 0; index < TAPE_SEGMENTS; index++) {
-      const current = index * 2
-      const next = current + 2
-      indices.push(current, current + 1, next, current + 1, next + 1, next)
+      for (const shape of shapes) {
+        const { shape: contour, holes } = shape.extractPoints(GLYPH_DIVISIONS)
+        outline.holes.push(new Path(shift(contour)))
+        for (const hole of holes) counters.push(new Shape(shift(hole)))
+      }
     }
 
-    geometry.setAttribute('position', new BufferAttribute(positions, 3))
-    geometry.setAttribute('uv', new BufferAttribute(uvs, 2))
-    geometry.setIndex(indices)
-    geometry.computeVertexNormals()
-    return geometry
-  }, [endpoints])
+    const settings = { depth: CAVITY_DEPTH, bevelEnabled: false }
+    return {
+      plate: new ExtrudeGeometry(outline, settings),
+      islands: counters.map((c) => new ExtrudeGeometry(c, settings)),
+    }
+    // `key` stands in for `groups` — a fresh array every tick, but only its
+    // digits change the geometry
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [font, size, rect.x1, rect.x2, rect.y1, rect.y2, key])
 
-  useEffect(() => () => ribbon.dispose(), [ribbon])
-
-  // A single ribbon is deformed through its internal control points. This keeps
-  // the vinyl visually continuous while preserving fixed tie points and a low
-  // per-frame cost.
-  useFrame((_, delta) => {
-    const dt = Math.min(delta, 1 / 30)
-    const active = hoverIndex.current
-    const positions = ribbon.getAttribute('position') as BufferAttribute
-
-    endpoints.forEach((point, index) => {
-      const isTiedEnd = index === 0 || index === TAPE_SEGMENTS
-      const distance = active === null ? Infinity : Math.abs(index - active)
-      const influence = isTiedEnd ? 0 : Math.exp(-(distance * distance) / 3.2)
-      const targetY = -influence * 0.085
-      const targetZ = influence * 0.06
-      const state = motion.current[index]
-
-      state.yVelocity += (targetY - state.y) * 58 * dt
-      state.zVelocity += (targetZ - state.z) * 58 * dt
-      const damping = Math.exp(-11 * dt)
-      state.yVelocity *= damping
-      state.zVelocity *= damping
-      state.y += state.yVelocity * dt
-      state.z += state.zVelocity * dt
-
-      const before = endpoints[Math.max(0, index - 1)]
-      const after = endpoints[Math.min(TAPE_SEGMENTS, index + 1)]
-      const tangentLength = Math.hypot(after[0] - before[0], after[1] - before[1]) || 1
-      const normalX = -(after[1] - before[1]) / tangentLength
-      const normalY = (after[0] - before[0]) / tangentLength
-      const vertex = index * 2
-      positions.setXYZ(vertex, point[0] + normalX * 0.1, point[1] + normalY * 0.1 + state.y, point[2] + state.z)
-      positions.setXYZ(vertex + 1, point[0] - normalX * 0.1, point[1] - normalY * 0.1 + state.y, point[2] + state.z)
-    })
-    positions.needsUpdate = true
-    ribbon.computeVertexNormals()
-  })
-
-  return (
-    <>
-      <mesh
-        geometry={ribbon}
-        castShadow
-        receiveShadow
-        onPointerOver={(event) => {
-          event.stopPropagation()
-          hoverIndex.current = Math.round((event.uv?.x ?? 0.5) * TAPE_SEGMENTS)
-          setHovered(true)
-        }}
-        onPointerMove={(event) => {
-          event.stopPropagation()
-          hoverIndex.current = Math.round((event.uv?.x ?? 0.5) * TAPE_SEGMENTS)
-        }}
-        onPointerOut={(event) => {
-          event.stopPropagation()
-          hoverIndex.current = null
-          setHovered(false)
-        }}
-      >
-        {variant === 'stripes' ? (
-          <meshStandardMaterial map={texture} metalness={0.28} roughness={0.3} side={DoubleSide} />
-        ) : (
-          <meshStandardMaterial color="#e5af25" metalness={0.28} roughness={0.3} side={DoubleSide} />
-        )}
-      </mesh>
-      {variant === 'text' && textTexture && (
-        <mesh geometry={ribbon} renderOrder={1}>
-          <meshBasicMaterial
-            map={textTexture}
-            transparent
-            side={DoubleSide}
-            depthWrite={false}
-            polygonOffset
-            polygonOffsetFactor={-1}
-            polygonOffsetUnits={-1}
-          />
-        </mesh>
-      )}
-      <TapeAnchor x={from[0]} y={from[1]} depth={from[2]} />
-      <TapeAnchor x={to[0]} y={to[1]} depth={to[2]} />
-    </>
+  useEffect(
+    () => () => {
+      plate.dispose()
+      islands.forEach((g) => g.dispose())
+    },
+    [plate, islands],
   )
-}
 
-// monochrome warning triangle: black outline ring + plate-colored fill + "!"
-function WarningTriangle({ size = 0.13 }: { size?: number }) {
-  const outer = useMemo(() => triangleShape(size), [size])
-  const inner = useMemo(() => triangleShape(size * 0.76), [size])
-  // exclamation as geometry (bar + dot) rather than a serif glyph: it stays
-  // dead-centred and its dot keeps clear of the bottom edge at any size
-  const cy = -size * 0.11
   return (
-    <group>
-      <mesh position={[0, 0, 0]}>
-        <shapeGeometry args={[outer]} />
-        <meshBasicMaterial color={INK} />
+    <group position={[0, 0, CAVITY_FLOOR_Z]}>
+      {/* the bottom of every cavity, a touch down from the face it is cut into */}
+      <mesh position={[(rect.x1 + rect.x2) / 2, (rect.y1 + rect.y2) / 2, -0.002]}>
+        <planeGeometry args={[rect.x2 - rect.x1, rect.y2 - rect.y1]} />
+        <meshStandardMaterial map={floorMap} color={CAVITY_FLOOR} roughness={0.92} metalness={0} />
       </mesh>
-      {/* inner plate concentric with the outer triangle -> even black border */}
-      <mesh position={[0, -size * 0.035, 0.002]}>
-        <shapeGeometry args={[inner]} />
-        <meshBasicMaterial color={PLATE} />
+      <mesh geometry={plate} receiveShadow>
+        <meshStandardMaterial map={shapeMap} roughness={0.88} metalness={0} />
       </mesh>
-      <mesh position={[0, cy + size * 0.125, 0.004]}>
-        <planeGeometry args={[size * 0.11, size * 0.44]} />
-        <meshBasicMaterial color={INK} />
-      </mesh>
-      <mesh position={[0, cy - size * 0.205, 0.004]}>
-        <circleGeometry args={[size * 0.058, 20]} />
-        <meshBasicMaterial color={INK} />
-      </mesh>
-    </group>
-  )
-}
-
-function triangleShape(size: number) {
-  const s = new Shape()
-  s.moveTo(0, size)
-  s.lineTo(-size * 0.95, -size * 0.72)
-  s.lineTo(size * 0.95, -size * 0.72)
-  s.closePath()
-  return s
-}
-
-function Rivets({ w, h }: { w: number; h: number }) {
-  const inset = 0.075
-  const corners: [number, number][] = [
-    [-w / 2 + inset, h / 2 - inset],
-    [w / 2 - inset, h / 2 - inset],
-    [-w / 2 + inset, -h / 2 + inset],
-    [w / 2 - inset, -h / 2 + inset],
-  ]
-  return (
-    <>
-      {corners.map(([x, y]) => (
-        <mesh key={`${x}-${y}`} position={[x, y, 0.019]}>
-          <circleGeometry args={[0.016, 12]} />
-          <meshStandardMaterial color={RIVET} metalness={0.6} roughness={0.35} />
+      {islands.map((geometry, i) => (
+        <mesh key={i} geometry={geometry} receiveShadow>
+          <meshStandardMaterial map={shapeMap} roughness={0.88} metalness={0} />
         </mesh>
       ))}
-    </>
+    </group>
   )
 }
 
-// a real road-sign plate, pinned flush to the wall — no post, no floor contact
-function PostSign({
-  x,
-  plateY,
-  lines,
-  z = 0.06,
-}: {
-  x: number
-  plateY: number
-  lines: [string, string]
-  z?: number
-}) {
-  const w = 0.92
-  const h = 0.64
+/** a short horizontal rule — the plate's dividers */
+function Rule({ x, y, w }: { x: number; y: number; w: number }) {
+  return (
+    <mesh position={[x + w / 2, y, 0.026]}>
+      <planeGeometry args={[w, 0.005]} />
+      <meshBasicMaterial color={RULE} />
+    </mesh>
+  )
+}
+
+/**
+ * The editorial plate: a thin stone slab pinned off the wall on four dark
+ * screws, its cast shadow proving the standoff.
+ */
+function EditorialPlate() {
+  const map = useStoneMap(PLATE_W, PLATE_H)
+  const pad = 0.19
+  const left = -PLATE_W / 2 + pad
+  const screw = 0.13
 
   return (
-    <group position={[x, plateY, z]}>
-      <RoundedBox args={[w, h, 0.032]} radius={0.026} smoothness={2}>
-        <meshStandardMaterial color={PLATE} metalness={0.25} roughness={0.55} />
-      </RoundedBox>
-      <Rivets w={w} h={h} />
-      <group position={[0, h * 0.19, 0.02]}>
-        <WarningTriangle size={h * 0.24} />
-      </group>
+    <group position={[PLATE_X, PLATE_Y, PLATE_Z]}>
+      {/* the standoff shadow, thrown down and right onto the wall behind — it
+          has to land just PROUD of the wall face (0.05), not at the slab's mid
+          plane, or the concrete swallows it */}
+      <mesh position={[0.08, -0.11, -PLATE_Z + 0.055]}>
+        <planeGeometry args={[PLATE_W + 0.5, PLATE_H + 0.5]} />
+        <meshBasicMaterial map={shadowTexture} transparent depthWrite={false} />
+      </mesh>
+
+      {/* a step DARKER than the wall, as in the reference — that separation is
+          what its own dark type needs to sit against */}
+      <mesh castShadow receiveShadow>
+        <boxGeometry args={[PLATE_W, PLATE_H, 0.045]} />
+        <StoneMaterial map={map} lift={0.16} />
+      </mesh>
+
+      {[
+        [-PLATE_W / 2 + screw, PLATE_H / 2 - screw],
+        [PLATE_W / 2 - screw, PLATE_H / 2 - screw],
+        [-PLATE_W / 2 + screw, -PLATE_H / 2 + screw],
+        [PLATE_W / 2 - screw, -PLATE_H / 2 + screw],
+      ].map(([x, y]) => (
+        <mesh key={`${x}-${y}`} position={[x, y, 0.024]}>
+          <circleGeometry args={[0.019, 14]} />
+          <meshStandardMaterial color="#3b352d" metalness={0.7} roughness={0.35} />
+        </mesh>
+      ))}
+
+      <Text
+        font={FONT_BRAND_ITALIC}
+        fontSize={0.185}
+        color={INK}
+        anchorX="left"
+        anchorY="middle"
+        position={[left, 0.72, 0.026]}
+      >
+        object 01
+      </Text>
+      <Text
+        font={FONT_BRAND}
+        fontSize={0.185}
+        color={INK}
+        anchorX="left"
+        anchorY="middle"
+        position={[left, 0.5, 0.026]}
+      >
+        revealed in
+      </Text>
+
+      <Rule x={left} y={0.3} w={0.52} />
+
       <Text
         font={FONT_SANS}
-        fontSize={0.074}
-        letterSpacing={0.12}
-        color={INK}
-        anchorX="center"
-        anchorY="middle"
-        lineHeight={1.3}
-        position={[0, -h * 0.2, 0.02]}
+        fontSize={0.095}
+        lineHeight={1.55}
+        color={SECOND}
+        anchorX="left"
+        anchorY="top"
+        position={[left, 0.16, 0.026]}
       >
-        {lines.join('\n')}
+        {'an exclusive TNES\nobject release'}
       </Text>
+      <Text
+        font={FONT_SANS}
+        fontSize={0.095}
+        color={SECOND}
+        anchorX="left"
+        anchorY="middle"
+        position={[left, -0.34, 0.026]}
+      >
+        limited first access
+      </Text>
+
+      <Rule x={left} y={-0.58} w={0.52} />
     </group>
   )
 }
 
-// free-standing sandwich board: two faces hinged at the top, each leaning out in
-// depth (rotated on X, not Z) so the pair reads as a true triangle from the side
-function AFrameSign({ position }: { position: [number, number, number] }) {
-  const w = 0.8
-  const h = 1.05
-  const tilt = 0.34
-  const hingeY = FLOOR_Y + h * Math.cos(tilt) + 0.02
-
-  return (
-    <group position={[position[0], hingeY, position[2]]} rotation={[0, 0.22, 0]}>
-      {/* front face — leans toward the viewer, carries the signage */}
-      <group rotation={[-tilt, 0, 0]}>
-        <group position={[0, -h / 2, 0]}>
-          <RoundedBox args={[w, h, 0.03]} radius={0.022} smoothness={2}>
-            <meshStandardMaterial color={PLATE} metalness={0.22} roughness={0.58} />
-          </RoundedBox>
-          <Rivets w={w} h={h} />
-          <group position={[0, h * 0.24, 0.018]}>
-            <WarningTriangle size={0.14} />
-          </group>
-          <Text
-            font={FONT_SANS}
-            fontSize={0.076}
-            letterSpacing={0.1}
-            color={INK}
-            anchorX="center"
-            anchorY="middle"
-            lineHeight={1.35}
-            position={[0, -h * 0.16, 0.018]}
-          >
-            {'EXHIBITION\nIN PREPARATION'}
-          </Text>
-        </group>
-      </group>
-      {/* back face — leans away, completing the triangular stance */}
-      <group rotation={[tilt, 0, 0]}>
-        <mesh position={[0, -h / 2, 0]}>
-          <boxGeometry args={[w, h, 0.028]} />
-          <meshStandardMaterial color="#c7bea9" metalness={0.2} roughness={0.65} />
-        </mesh>
-      </group>
-    </group>
-  )
-}
-
-// email capture embedded in the wall itself — at rest it's just the "Notify me"
-// button from the reference; clicking it reveals the email field inline
-function WallSubscribe({ position }: { position: [number, number, number] }) {
-  const [stage, setStage] = useState<'idle' | 'entering' | 'done'>('idle')
+/**
+ * Email capture. A real `<input>`, so it is DOM — but rendered in world space by
+ * drei's `Html transform`, which keeps it pinned to the wall through every orbit
+ * and dolly instead of floating over the canvas.
+ */
+function NotifyForm({ position }: { position: [number, number, number] }) {
   const [email, setEmail] = useState('')
   const [error, setError] = useState(false)
+  const [done, setDone] = useState(false)
 
   const submit = (e: FormEvent) => {
     e.preventDefault()
@@ -447,26 +337,19 @@ function WallSubscribe({ position }: { position: [number, number, number] }) {
     const list = JSON.parse(localStorage.getItem('tnes-subscribers') ?? '[]')
     if (!list.includes(email)) list.push(email)
     localStorage.setItem('tnes-subscribers', JSON.stringify(list))
-    setStage('done')
+    setDone(true)
   }
 
   return (
-    <Html transform position={position} scale={0.22} zIndexRange={[10, 0]} occlude={false}>
+    <Html transform position={position} scale={0.2} zIndexRange={[10, 0]} occlude={false}>
       <div className="wall-notify">
-        {stage === 'done' && (
-          <p className="wall-notify-done">You’re on the list — see you at the launch.</p>
-        )}
-        {stage === 'idle' && (
-          <button type="button" className="btn btn-ghost" onClick={() => setStage('entering')}>
-            Notify me
-          </button>
-        )}
-        {stage === 'entering' && (
+        {done ? (
+          <p className="wall-notify-done">you’re on the list — see you at the release.</p>
+        ) : (
           <form className="wall-notify-form" onSubmit={submit} noValidate>
             <input
               type="email"
-              autoFocus
-              placeholder="Your email address"
+              placeholder="your email address"
               aria-label="Email address"
               aria-invalid={error}
               value={email}
@@ -476,138 +359,224 @@ function WallSubscribe({ position }: { position: [number, number, number] }) {
               }}
               className="wall-notify-input"
             />
-            <button type="submit" className="btn btn-ghost">
-              Notify me
+            <button type="submit" className="wall-notify-submit">
+              notify me <span aria-hidden="true">→</span>
             </button>
           </form>
         )}
-        {error && <p className="wall-notify-error">Please enter a valid email.</p>}
+        {error && <p className="wall-notify-error">please enter a valid email</p>}
       </div>
     </Html>
   )
 }
 
-const UNITS = ['DAYS', 'HOURS', 'MINUTES', 'SECONDS']
-const UNIT_X = [-1.86, -0.62, 0.62, 1.86]
+/**
+ * One of the four light cones down the top of the wall.
+ *
+ * `distance` is the important knob, not `intensity`: it hard-stops the falloff,
+ * which is what keeps the cone in the upper third instead of washing all the way
+ * to the floor. At this position the beam dies around y 0.7 — just above the
+ * countdown, so the numbers read against even wall rather than a gradient.
+ */
+function Cone({ x }: { x: number }) {
+  const spot = useRef<SpotLight>(null)
+  const aim = useRef<Object3D>(null)
+  useEffect(() => {
+    if (spot.current && aim.current) spot.current.target = aim.current
+  }, [])
+  return (
+    <>
+      <spotLight
+        ref={spot}
+        position={[x, 3.5, 1.35]}
+        color="#ffeccd"
+        intensity={11}
+        angle={0.5}
+        penumbra={1}
+        decay={1.8}
+        distance={3.6}
+      />
+      <object3D ref={aim} position={[x, 1.6, 0.05]} />
+    </>
+  )
+}
 
-// the countdown lives inside a real gold frame, like the artworks on the other walls
-function CountdownFrame({
-  position,
-  parts,
-}: {
-  position: [number, number, number]
-  parts: string[]
-}) {
-  const w = 5.0
-  const h = 2.3
-  const frameW = w + FRAME_BORDER * 2
-  const frameH = h + FRAME_BORDER * 2
+/**
+ * The floor under every value on this wall. Without it the concrete outside the
+ * cones drops to the room's 0.2 ambient, and the wall swings ~2x in luminance
+ * across the frame — no single ink colour can stay legible across that.
+ * Deliberately broad, frontal and weak: it lifts, it does not model.
+ */
+function Fill() {
+  const spot = useRef<SpotLight>(null)
+  const aim = useRef<Object3D>(null)
+  useEffect(() => {
+    if (spot.current && aim.current) spot.current.target = aim.current
+  }, [])
+  return (
+    <>
+      <spotLight
+        ref={spot}
+        position={[0, 1.6, 5]}
+        color="#ffeeda"
+        intensity={20}
+        angle={0.9}
+        penumbra={1}
+        decay={1}
+        distance={14}
+      />
+      <object3D ref={aim} position={[0, 0.3, 0.05]} />
+    </>
+  )
+}
+
+/** The stone volume standing against the wall at the bottom right. */
+function StoneBlock() {
+  const map = useStoneMap(BLOCK_W, BLOCK_H)
+  const plinthMap = useStoneMap(BLOCK_W - 0.16, BLOCK_PLINTH_H)
+  const bodyY = WALL_BOTTOM_Y + BLOCK_PLINTH_H + (BLOCK_H - BLOCK_PLINTH_H) / 2
 
   return (
-    <group position={position}>
-      {/* Warm metallic base plus raised highlight rails: a reflective gilt frame. */}
-      <mesh castShadow receiveShadow>
-        <boxGeometry args={[frameW, frameH, 0.14]} />
-        <meshPhysicalMaterial
-          color="#a97927"
-          metalness={0.82}
-          roughness={0.2}
-          clearcoat={0.72}
-          clearcoatRoughness={0.12}
-        />
+    <group position={[BLOCK_X, 0, BLOCK_Z]}>
+      {/* recessed plinth, so the mass reads as slightly lifted off the floor */}
+      <mesh position={[0, WALL_BOTTOM_Y + BLOCK_PLINTH_H / 2, 0]} receiveShadow>
+        <boxGeometry args={[BLOCK_W - 0.16, BLOCK_PLINTH_H, BLOCK_D - 0.08]} />
+        <StoneMaterial map={plinthMap} lift={0.18} />
       </mesh>
-      <mesh position={[0, 0, 0.078]} receiveShadow>
-        <boxGeometry args={[w, h, 0.035]} />
-        <meshStandardMaterial color="#f5f0e5" roughness={0.72} />
+      <mesh position={[0, bodyY, 0]} castShadow receiveShadow>
+        <boxGeometry args={[BLOCK_W, BLOCK_H - BLOCK_PLINTH_H, BLOCK_D]} />
+        {/* lower than the Home console's 0.48: that one sits under a key light,
+            this one stands in an unlit corner and was glowing on its own */}
+        <StoneMaterial map={map} lift={0.26} />
       </mesh>
-      {[
-        [0, frameH / 2 - 0.045, frameW - 0.1, 0.045],
-        [0, -frameH / 2 + 0.045, frameW - 0.1, 0.045],
-        [-frameW / 2 + 0.045, 0, 0.045, frameH - 0.1],
-        [frameW / 2 - 0.045, 0, 0.045, frameH - 0.1],
-      ].map(([x, y, railW, railH], index) => (
-        <mesh key={index} position={[x, y, 0.091]}>
-          <boxGeometry args={[railW, railH, 0.028]} />
-          <meshPhysicalMaterial
-            color="#f0cf78"
-            metalness={0.9}
-            roughness={0.12}
-            clearcoat={0.9}
-            clearcoatRoughness={0.08}
-          />
-        </mesh>
-      ))}
-      <mesh position={[0, frameH / 2 - 0.082, 0.108]}>
-        <planeGeometry args={[frameW - 0.24, 0.026]} />
-        <meshBasicMaterial color="#fff3bd" transparent opacity={0.5} depthWrite={false} />
-      </mesh>
-
-      <Text
-        font={FONT_SANS}
-        fontSize={0.15}
-        letterSpacing={0.22}
-        color={MUTED}
-        anchorX="center"
-        position={[0, h / 2 - 0.32, 0.115]}
-      >
-        TNES FULL LAUNCH IN
-      </Text>
-
-      {parts.map((value, i) => (
-        <group key={UNITS[i]} position={[UNIT_X[i], -0.05, 0.115]}>
-          <Text font={FONT_SANS_MEDIUM} fontSize={0.54} color={INK} anchorX="center">
-            {value}
-          </Text>
-          <Text
-            font={FONT_SANS}
-            fontSize={0.048}
-            letterSpacing={0.3}
-            color={MUTED}
-            anchorX="center"
-            position={[0, -0.42, 0]}
-          >
-            {UNITS[i]}
-          </Text>
-        </group>
-      ))}
-      {[-1.24, 0, 1.24].map((x) => (
-        <Text
-          key={x}
-          font={FONT_SANS}
-          fontSize={0.34}
-          color={MUTED}
-          anchorX="center"
-          position={[x, -0.04, 0.115]}
-        >
-          :
-        </Text>
-      ))}
     </group>
   )
 }
 
+/**
+ * The wall itself, cut open. Four slabs around the opening plus a floor set back
+ * behind them; the gap between the floor and the front faces IS the recess, and
+ * the slabs' inner sides are its reveals. The floor is tinted a shade down —
+ * without shadow maps nothing else would darken the inside of a hole.
+ */
+function Niche({ rect, groups, size }: { rect: Rect; groups: Group[]; size: number }) {
+  const left = -WALL_WIDTH / 2
+  const right = WALL_WIDTH / 2
+  const bottom = WALL_BOTTOM_Y
+  const top = WALL_BOTTOM_Y + WALL_HEIGHT
+  const piece = { z: PIECE_Z, depth: PIECE_DEPTH }
+  return (
+    <group>
+      <WallPiece x1={left} x2={right} y1={rect.y2} y2={top} {...piece} />
+      <WallPiece x1={left} x2={right} y1={bottom} y2={rect.y1} {...piece} />
+      <WallPiece x1={left} x2={rect.x1} y1={rect.y1} y2={rect.y2} {...piece} />
+      <WallPiece x1={rect.x2} x2={right} y1={rect.y1} y2={rect.y2} {...piece} />
+      <CarvedFloor rect={rect} groups={groups} size={size} />
+    </group>
+  )
+}
+
+/** The unit label under a carved numeral — flat type on the niche floor. */
+function UnitLabel({ x, y, unit }: { x: number; y: number; unit: string }) {
+  return (
+    <Text
+      font={FONT_SANS}
+      fontSize={0.078}
+      letterSpacing={0.34}
+      color={SECOND}
+      anchorX="center"
+      anchorY="middle"
+      position={[x, y - 0.56, NICHE_FACE_Z]}
+    >
+      {unit}
+    </Text>
+  )
+}
+
+/**
+ * The Countdown wall: an editorial plate screwed to the concrete, the release
+ * clock cut straight into it, four light cones down the top, and a stone volume
+ * closing the right edge. Nothing here is a floating card.
+ */
 export function ComingSoonWall() {
   const parts = useCountdown()
   const isMobile = useGalleryStore((s) => s.isMobile)
 
+  const slots = parts.map((value, i) => ({
+    unit: UNITS[i],
+    text: value,
+    x: isMobile ? (i % 2 ? M_COL : -M_COL) : COUNT_X0 + i * COUNT_STEP,
+    y: isMobile ? M_ROW_Y[Math.floor(i / 2)] : COUNT_Y,
+  }))
+
+  if (isMobile) {
+    return (
+      <group>
+        <Niche rect={NICHE_MOBILE} groups={slots} size={NUMBER_SIZE} />
+        <Text
+          font={FONT_SANS}
+          fontSize={0.095}
+          letterSpacing={0.3}
+          color={SECOND}
+          anchorX="center"
+          anchorY="middle"
+          position={[0, 1.35, NICHE_FACE_Z]}
+        >
+          THE ARCHIVE OPENS IN
+        </Text>
+        {slots.map((s) => (
+          <UnitLabel key={s.unit} x={s.x} y={s.y} unit={s.unit} />
+        ))}
+        <NotifyForm position={[0, -1.5, 0.22]} />
+        {[-1.6, 1.6].map((x) => (
+          <Cone key={x} x={x} />
+        ))}
+        <Fill />
+      </group>
+    )
+  }
+
   return (
-    <group position={[0, 0, 0.06]}>
-      <CountdownFrame position={[0, 0.3, 0]} parts={parts} />
+    <group>
+      <Niche rect={NICHE} groups={slots} size={NUMBER_SIZE} />
+      <EditorialPlate />
+      <NotifyForm position={[FORM_X, FORM_Y, 0.22]} />
 
-      {/* mobile centres on just the countdown + notify; the street signage and
-          hazard tape live off-screen at the sides, so drop them to keep it clean */}
-      {!isMobile && (
-        <>
-          <PostSign x={-3.35} plateY={1.3} lines={['WORK', 'IN PROGRESS']} />
-          <PostSign x={3.35} plateY={0.1} lines={['COMING', 'SOON']} />
-          <AFrameSign position={[-3.1, 0, 0.4]} />
+      {/* wide, but not so wide the letters stop reading as a word — 0.9 broke
+          it into loose dots. This is the knob if it needs to span further */}
+      <Text
+        font={FONT_SANS}
+        fontSize={0.125}
+        letterSpacing={0.42}
+        color={SECOND}
+        anchorX="center"
+        anchorY="middle"
+        position={[COUNT_MID, TITLE_Y, NICHE_FACE_Z]}
+      >
+        THE ARCHIVE OPENS IN
+      </Text>
 
-          <CautionTape from={[-4.3, -0.392, 0.55]} to={[4.3, -1.168, 0.55]} variant="stripes" />
-          <CautionTape from={[-4.3, -1.344, 0.6]} to={[4.3, -0.696, 0.6]} variant="text" />
-        </>
-      )}
+      {slots.map((s) => (
+        <UnitLabel key={s.unit} x={s.x} y={s.y} unit={s.unit} />
+      ))}
 
-      <WallSubscribe position={[0, isMobile ? -0.4 : -0.48, 0.22]} />
+      {/* three hairlines between the four blocks */}
+      {[0, 1, 2].map((i) => (
+        <mesh
+          key={i}
+          position={[COUNT_X0 + (i + 0.5) * COUNT_STEP, COUNT_Y - 0.14, NICHE_FACE_Z]}
+        >
+          <planeGeometry args={[0.007, 1.06]} />
+          <meshBasicMaterial color={RULE} />
+        </mesh>
+      ))}
+
+      <StoneBlock />
+
+      {[-3.5, -1.17, 1.17, 3.5].map((x) => (
+        <Cone key={x} x={x} />
+      ))}
+      <Fill />
     </group>
   )
 }

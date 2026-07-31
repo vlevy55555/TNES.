@@ -4,7 +4,6 @@ import { Archive } from './Archive'
 import { Room } from './Room'
 import { GalleryLights } from './GalleryLights'
 import { CameraController } from './CameraController'
-import { InspectionSpotlight } from './InspectionSpotlight'
 import { InquiryLetter } from '../ui/InquiryOverlay'
 import { ManifestoRoom } from './ManifestoRoom'
 
@@ -14,7 +13,6 @@ export function GalleryScene() {
       <color attach="background" args={['#ddd2c0']} />
       <GalleryLights />
       <CameraController />
-      <InspectionSpotlight />
       <Room />
       <ManifestoRoom position={[MANIFESTO_ROOM_X, 0, 0]} />
 

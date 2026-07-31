@@ -9,7 +9,7 @@ export function Footer() {
     <footer className="footer">
       <p className="footer-tagline">photographs found in the in-between, made to live with.</p>
       <div className="footer-links">
-        <button onClick={() => goToWall(ARCHIVE_WALL)}>archive</button>
+        <button onClick={() => goToWall(ARCHIVE_WALL)}>prints</button>
         <button onClick={() => goToWall(ABOUT_WALL)}>about</button>
         <a href={ABOUT.contact.instagramUrl} target="_blank" rel="noopener noreferrer">
           instagram

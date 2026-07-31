@@ -29,6 +29,13 @@ type GalleryState = {
   currentWall: number
   selectedArtworkId: string | null
   selectedFrameStyle: PreviewFrameStyle
+  /**
+   * How large the inspected print hangs, relative to its middle size. The panel
+   * drives it from the chosen Shopify size so picking a smaller print visibly
+   * shrinks the work on the wall and a larger one grows it. 1 = the middle size.
+   */
+  previewScale: number
+  setPreviewScale: (v: number) => void
   zoomAt: ZoomAt | null
   manifestoRoomOpen: boolean
   isMobile: boolean
@@ -58,6 +65,8 @@ export const useGalleryStore = create<GalleryState>((set, get) => ({
   currentWall: initialWall,
   selectedArtworkId: initialArtwork,
   selectedFrameStyle: initialFrameStyle,
+  previewScale: 1,
+  setPreviewScale: (v) => set({ previewScale: v }),
   zoomAt: null,
   manifestoRoomOpen: false,
   isMobile: mqIsMobile(),
@@ -91,12 +100,13 @@ export const useGalleryStore = create<GalleryState>((set, get) => ({
     set({
       selectedArtworkId: id,
       selectedFrameStyle: artwork?.frameStyle === 'white' ? 'white' : 'black',
+      previewScale: 1,
       zoomAt,
     })
   },
   setSelectedFrameStyle: (style) => set({ selectedFrameStyle: style }),
 
-  closeArtwork: () => set({ selectedArtworkId: null, zoomAt: null }),
+  closeArtwork: () => set({ selectedArtworkId: null, zoomAt: null, previewScale: 1 }),
 
   openManifestoRoom: () =>
     set({ currentWall: ARCHIVE_WALL - 1, selectedArtworkId: null, zoomAt: null, manifestoRoomOpen: true }),

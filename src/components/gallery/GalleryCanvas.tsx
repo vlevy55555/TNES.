@@ -2,26 +2,16 @@ import { Canvas } from '@react-three/fiber'
 import { Suspense } from 'react'
 import { Loader } from '@react-three/drei'
 import { GalleryScene } from './GalleryScene'
-import {
-  CAMERA_Z,
-  SIGNATURE_WALL,
-  SIGNATURE_ZOOM,
-  WALL_SPACING,
-  walls,
-} from '../../data/artworks'
+import { CAMERA_Z, WALL_SPACING, walls } from '../../data/artworks'
 import { useGalleryStore } from '../../store/useGalleryStore'
 
 const startWall = useGalleryStore.getState().currentWall
-// the opening wall loads zoomed into its central signed print (the intro); other
-// walls open at their resting straight-on framing
-const startPos: [number, number, number] =
-  startWall === SIGNATURE_WALL
-    ? SIGNATURE_ZOOM
-    : [
-        startWall * WALL_SPACING + Math.sin(walls[startWall].angle) * CAMERA_Z,
-        0,
-        Math.cos(walls[startWall].angle) * CAMERA_Z,
-      ]
+// every wall opens at its resting straight-on framing
+const startPos: [number, number, number] = [
+  startWall * WALL_SPACING + Math.sin(walls[startWall].angle) * CAMERA_Z,
+  0,
+  Math.cos(walls[startWall].angle) * CAMERA_Z,
+]
 
 export function GalleryCanvas() {
   return (

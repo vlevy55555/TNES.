@@ -94,6 +94,43 @@ test('findVariant returns null for a combination the store does not sell', () =>
   assert.equal(findVariant(product, { Size: '12x18' }), null)
 })
 
+test('defaultSelection opens on the middle size, not the smallest', () => {
+  // the real shape: three sizes, one frame, everything in stock
+  const threeSizes = normalizeProduct({
+    handle: 'st-peters-pool-v1',
+    title: 'St Peter’s Pool',
+    options: [{ name: 'Size', values: ['12x18', '20x30', '24x36'] }],
+    variants: {
+      nodes: ['12x18', '20x30', '24x36'].map((size, i) => ({
+        id: `gid://shopify/ProductVariant/${i}`,
+        title: size,
+        availableForSale: true,
+        price: { amount: '100.0', currencyCode: 'USD' },
+        selectedOptions: [{ name: 'Size', value: size }],
+      })),
+    },
+  })
+  assert.deepEqual(defaultSelection(threeSizes), { Size: '20x30' })
+})
+
+test('defaultSelection falls back past a sold-out middle', () => {
+  const soldMiddle = normalizeProduct({
+    handle: 'x',
+    title: 'x',
+    options: [{ name: 'Size', values: ['S', 'M', 'L'] }],
+    variants: {
+      nodes: ['S', 'M', 'L'].map((size, i) => ({
+        id: `gid://shopify/ProductVariant/${i}`,
+        title: size,
+        availableForSale: size !== 'M',
+        price: { amount: '100.0', currencyCode: 'USD' },
+        selectedOptions: [{ name: 'Size', value: size }],
+      })),
+    },
+  })
+  assert.deepEqual(defaultSelection(soldMiddle), { Size: 'S' })
+})
+
 test('defaultSelection opens on the first in-stock variant, skipping sold-out', () => {
   assert.deepEqual(defaultSelection(product), {
     Size: '12x18',

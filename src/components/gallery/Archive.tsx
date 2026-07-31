@@ -4,6 +4,7 @@ import { type Object3D, type SpotLight } from 'three'
 import {
   artworks,
   FONT_SANS,
+  FONT_SERIF,
   WALL_CENTER_Y,
   WALL_HEIGHT,
   type Artwork,
@@ -84,17 +85,33 @@ export function Archive({ position }: { position: [number, number, number] }) {
         depth={0.2}
       />
 
-      {/* section label, top-left — Manrope tracked caps, wall-title style */}
+      {/* how to buy, over the whole hang — this is the only wall where every
+          piece is purchasable, and nothing else on it says how. Replaces the
+          old "ARCHIVE — II" marker: the header and the wall indicator both
+          already name the section, and two labels at this height fought. */}
+      <Text
+        font={FONT_SERIF}
+        fontSize={0.155}
+        color="#3b332a"
+        anchorX="center"
+        anchorY="middle"
+        position={[0, 2.96, 0.06]}
+      >
+        Every print is made to order.
+      </Text>
       <Text
         font={FONT_SANS}
-        fontSize={0.072}
-        letterSpacing={0.34}
-        color="#6b6151"
-        anchorX="left"
+        fontSize={0.076}
+        letterSpacing={0.3}
+        // was #6b6151 — the usual caption grey, but tracked-out caps at this
+        // size carry far less ink than the serif line above, so the same value
+        // that reads on a label disappeared here. Matches the line above.
+        color="#3b332a"
+        anchorX="center"
         anchorY="middle"
-        position={[-4.2, 2.55, 0.06]}
+        position={[0, 2.71, 0.06]}
       >
-        ARCHIVE — II
+        CLICK A WORK TO CHOOSE ITS SIZE, FRAME AND PRICE
       </Text>
 
       {/* general wall wash (not per-frame) — one per column, tight and close */}

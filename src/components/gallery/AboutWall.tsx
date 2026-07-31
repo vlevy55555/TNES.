@@ -1,17 +1,16 @@
-import { Html, Text, useCursor, useTexture } from '@react-three/drei'
+import { Text, useCursor, useTexture } from '@react-three/drei'
 import { useMemo, useState } from 'react'
 import { Path, RepeatWrapping, Shape, SRGBColorSpace } from 'three'
+import { shadowTexture } from './ArtworkFrame'
 import {
   ABOUT,
   ABOUT_DOOR_H,
   ABOUT_DOOR_W,
   ABOUT_DOOR_X,
-  FONT_BRAND_ITALIC,
+  FONT_BRAND,
   FONT_HELVETICA,
   FONT_SANS,
-  FONT_SERIF_ITALIC,
-  FRAME_BORDER,
-  MAT_BORDER,
+  FONT_SERIF,
   WALL_CENTER_Y,
   WALL_HEIGHT,
   WALL_WIDTH,
@@ -19,9 +18,25 @@ import {
 import { INTERACTIVE_CURSOR } from './interactiveCursor'
 import { useGalleryStore } from '../../store/useGalleryStore'
 
-const INK = '#2f2a24'
-const MUTED = '#6b6151'
+/**
+ * The About wall runs darker than the rest of the gallery — it is the closer,
+ * not another exhibition wall. The concrete is the SAME material as everywhere
+ * else; the darkness comes from its three ceiling lamps being turned down (see
+ * ABOUT_LAMP_INTENSITY in Wall.tsx), not from tinting the surface. That still
+ * inverts the type: everything here is LIGHT on dark, because the text is
+ * unlit basic material and holds its value while the wall behind it drops.
+ */
+const INK = '#ece5d8' // name, link — the light that reads as "ink" on this wall
+const MUTED = '#a1937d' // role, secondary
+const STATEMENT = '#ffffff' // his own words, the brightest thing on the wall
 const GOLD = '#8f7c4e'
+
+/**
+ * Keeps the print off pure black where the dimmed lamps barely reach, without
+ * taking it back out of the lighting the way an unlit material would. Same lever
+ * the floor and the freestanding stone use.
+ */
+const PORTRAIT_LIFT = 0.34
 
 // wall texture pixel aspect — /materials/concrete.png is 7680x2970
 const CONCRETE_ASPECT = 7680 / 2970
@@ -37,7 +52,31 @@ const CORRIDOR_DEPTH = 7
 // sees real depth through the door instead of a flat side wall
 const CORRIDOR_W = 3.1
 
-// Victor's portrait, framed like the artworks on the other walls (gold + mat)
+// ---- layout ---------------------------------------------------------------
+// Portrait on the left, one column of type on the right, all of it clear of the
+// doorway (which starts at x 2.0). Proportions traced off the reference: the
+// portrait runs most of the wall's height, and the type hangs from ~30% down
+// its side rather than centring against it.
+const MAT = 0.24
+const BAND = 0.06
+const PORTRAIT_X = -2.55
+const PORTRAIT_Y = 0.05
+const PORTRAIT_TOP = PORTRAIT_Y + (ABOUT.portraitSize[1] + (MAT + BAND) * 2) / 2
+const PORTRAIT_BOTTOM = PORTRAIT_Y - (ABOUT.portraitSize[1] + (MAT + BAND) * 2) / 2
+const PORTRAIT_H = PORTRAIT_TOP - PORTRAIT_BOTTOM
+
+const TEXT_X = -0.75
+// narrower than the name line on purpose — the reference breaks the statement
+// into five short lines, which is what gives the column its editorial rhythm
+const TEXT_W = 1.95
+/** fraction of the way down the portrait that each line sits */
+const at = (fraction: number) => PORTRAIT_TOP - fraction * PORTRAIT_H
+
+/**
+ * Victor's portrait. Not the gallery's gold moulding: the reference hangs him in
+ * a THIN near-black frame around a WIDE cream mat, which is what makes the print
+ * read as a portrait rather than another work in the show.
+ */
 function PortraitFrame() {
   const texture = useTexture(ABOUT.portrait, (t) => {
     t.colorSpace = SRGBColorSpace
@@ -45,18 +84,38 @@ function PortraitFrame() {
   const [w, h] = ABOUT.portraitSize
 
   return (
-    <group position={[-2.15, 0.05, 0.06]}>
-      <mesh>
-        <boxGeometry args={[w + FRAME_BORDER * 2, h + FRAME_BORDER * 2, 0.1]} />
-        <meshStandardMaterial color={GOLD} metalness={0.35} roughness={0.5} />
+    <group position={[PORTRAIT_X, PORTRAIT_Y, 0.06]}>
+      {/* the real radial falloff every frame in the gallery uses — this was a
+          flat 16% rectangle, which reads as a grey box taped behind the frame */}
+      <mesh position={[0.09, -0.12, -0.02]}>
+        <planeGeometry args={[w + MAT * 2 + 0.8, h + MAT * 2 + 0.8]} />
+        <meshBasicMaterial map={shadowTexture} transparent depthWrite={false} />
       </mesh>
-      <mesh position={[0, 0, 0.055]}>
-        <boxGeometry args={[w + MAT_BORDER * 2, h + MAT_BORDER * 2, 0.03]} />
-        <meshStandardMaterial color="#e7dfd0" />
+      {/* dark stained timber, not black plastic: rough enough to hold the lamps'
+          falloff across its width instead of reading as one flat silhouette */}
+      <mesh castShadow receiveShadow>
+        <boxGeometry args={[w + (MAT + BAND) * 2, h + (MAT + BAND) * 2, 0.07]} />
+        <meshStandardMaterial color="#3a322a" roughness={0.72} metalness={0.08} />
       </mesh>
-      <mesh position={[0, 0, 0.072]}>
+      <mesh position={[0, 0, 0.042]} receiveShadow>
+        <boxGeometry args={[w + MAT * 2, h + MAT * 2, 0.03]} />
+        <meshStandardMaterial color="#ded6c6" roughness={0.92} />
+      </mesh>
+      {/* LIT, and tone-mapped like everything else in the room. The gallery's
+          prints are deliberately exempt from both so a work keeps its true
+          colour — but that is exactly what made this one float: it ignored the
+          dimmed lamps and the exposure curve, so it never shared the wall's
+          falloff. Here fidelity matters less than belonging to the room. */}
+      <mesh position={[0, 0, 0.06]} receiveShadow>
         <planeGeometry args={[w, h]} />
-        <meshBasicMaterial map={texture} toneMapped={false} />
+        <meshStandardMaterial
+          map={texture}
+          roughness={0.94}
+          metalness={0}
+          emissiveMap={texture}
+          emissive="#ffffff"
+          emissiveIntensity={PORTRAIT_LIFT}
+        />
       </mesh>
     </group>
   )
@@ -115,6 +174,9 @@ function Corridor() {
   const floorTexture = useTexture('/materials/floor.png', (t) => {
     t.colorSpace = SRGBColorSpace
   })
+  const concreteTexture = useTexture('/materials/concrete.png', (t) => {
+    t.colorSpace = SRGBColorSpace
+  })
   const floorMap = useMemo(() => {
     const next = floorTexture.clone()
     next.colorSpace = SRGBColorSpace
@@ -123,6 +185,22 @@ function Corridor() {
     next.needsUpdate = true
     return next
   }, [floorTexture])
+  // The corridor shell used to be flat untextured colour: under this little
+  // light it collapsed to dead 100% black — a hole in the image rather than a
+  // dark room. Same concrete as everywhere else, tiled to each face's own
+  // proportions and tinted down, so the darkness still carries grain and the
+  // ambient has something to catch.
+  const shellMap = (repeatX: number, repeatY: number) => {
+    const next = concreteTexture.clone()
+    next.colorSpace = SRGBColorSpace
+    next.wrapS = next.wrapT = RepeatWrapping
+    next.repeat.set(repeatX, repeatY)
+    next.needsUpdate = true
+    return next
+  }
+  const sideMap = useMemo(() => shellMap(CORRIDOR_DEPTH / DOOR_H / CONCRETE_ASPECT, 1), [concreteTexture])
+  const ceilMap = useMemo(() => shellMap(CORRIDOR_W / CORRIDOR_DEPTH / CONCRETE_ASPECT, 1), [concreteTexture])
+  const endMap = useMemo(() => shellMap(CORRIDOR_W / DOOR_H / CONCRETE_ASPECT, 1), [concreteTexture])
   const [hovered, setHovered] = useState(false)
   useCursor(hovered, INTERACTIVE_CURSOR)
   const startVslExit = useGalleryStore((s) => s.startVslExit)
@@ -132,42 +210,45 @@ function Corridor() {
 
   return (
     <group position={[DOOR_X, 0, 0]}>
-      {/* timber jamb lining the opening */}
+      {/* timber jamb lining the opening — kept lighter than the hall behind it,
+          so the frame of the opening still catches the gallery's light */}
       <mesh position={[0, FLOOR_Y + DOOR_H + 0.05, 0]}>
         <boxGeometry args={[DOOR_W + 0.24, 0.12, 0.22]} />
-        <meshStandardMaterial color="#a89a82" roughness={0.75} />
+        <meshStandardMaterial color="#8b7f6b" roughness={0.78} />
       </mesh>
       {[-1, 1].map((side) => (
         <mesh key={side} position={[side * (DOOR_W / 2 + 0.06), doorCenterY, 0]}>
           <boxGeometry args={[0.12, DOOR_H + 0.1, 0.22]} />
-          <meshStandardMaterial color="#a89a82" roughness={0.75} />
+          <meshStandardMaterial color="#8b7f6b" roughness={0.78} />
         </mesh>
       ))}
 
-      {/* corridor shell (interior faces) — muted gray-beige, dimmer than the
-          gallery so the downlight pools carry the depth like the reference.
-          Wider than the door; the extra width hides behind the wall slab. */}
+      {/* corridor shell (interior faces). Deliberately much darker than the
+          gallery — a lit hallway competes with the wall for attention, while a
+          dark one reads as somewhere else, and lets the downlight pools alone
+          carry the depth. Wider than the door; the extra hides behind the slab. */}
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, FLOOR_Y + 0.001, -CORRIDOR_DEPTH / 2]}>
         <planeGeometry args={[CORRIDOR_W, CORRIDOR_DEPTH]} />
-        <meshStandardMaterial map={floorMap} color="#cbbfa9" roughness={0.45} metalness={0.1} />
+        <meshStandardMaterial map={floorMap} color="#584f42" roughness={0.5} metalness={0.08} />
       </mesh>
-      <mesh rotation={[Math.PI / 2, 0, 0]} position={[0, FLOOR_Y + DOOR_H, -CORRIDOR_DEPTH / 2]}>
+      <mesh rotation={[Math.PI / 2, 0, 0]} position={[0, FLOOR_Y + DOOR_H, -CORRIDOR_DEPTH / 2]} receiveShadow>
         <planeGeometry args={[CORRIDOR_W, CORRIDOR_DEPTH]} />
-        <meshStandardMaterial color="#6f675a" roughness={0.95} />
+        <meshStandardMaterial map={ceilMap} color="#4a4238" roughness={0.95} />
       </mesh>
       {[-1, 1].map((side) => (
         <mesh
           key={side}
           rotation={[0, -side * (Math.PI / 2), 0]}
           position={[side * (CORRIDOR_W / 2), doorCenterY, -CORRIDOR_DEPTH / 2]}
+          receiveShadow
         >
           <planeGeometry args={[CORRIDOR_DEPTH, DOOR_H]} />
-          <meshStandardMaterial color="#8f8674" roughness={0.9} />
+          <meshStandardMaterial map={sideMap} color="#6a6053" roughness={0.92} />
         </mesh>
       ))}
-      <mesh position={[0, doorCenterY, -CORRIDOR_DEPTH]}>
+      <mesh position={[0, doorCenterY, -CORRIDOR_DEPTH]} receiveShadow>
         <planeGeometry args={[CORRIDOR_W, DOOR_H]} />
-        <meshStandardMaterial color="#7c7464" roughness={0.9} />
+        <meshStandardMaterial map={endMap} color="#544b40" roughness={0.92} />
       </mesh>
 
       {/* open door leaves folded nearly flush against the corridor walls, so
@@ -259,16 +340,22 @@ function Corridor() {
   )
 }
 
-/** Tracked-caps text link with hairlines, a signplate centered over the door. */
+/**
+ * The way out to VSL: left-aligned at the foot of the column with a single rule
+ * under it, as in the reference — not the centred two-rule signplate that used
+ * to float over the doorway.
+ */
 function EnterLink() {
   const [hovered, setHovered] = useState(false)
   useCursor(hovered, INTERACTIVE_CURSOR)
   const startVslExit = useGalleryStore((s) => s.startVslExit)
-  const color = hovered ? INK : '#57503f'
+  const label = `${ABOUT.cta.toUpperCase()}   →`
+  // the rule tracks the label's own width instead of a fixed slab
+  const width = label.length * 0.082 * 0.82
 
   return (
     <group
-      position={[DOOR_X, FLOOR_Y + DOOR_H + 0.38, 0.06]}
+      position={[TEXT_X, at(0.96), 0.06]}
       onClick={(e) => {
         e.stopPropagation()
         startVslExit()
@@ -279,23 +366,19 @@ function EnterLink() {
       }}
       onPointerOut={() => setHovered(false)}
     >
-      <mesh position={[0, 0.13, 0]}>
-        <planeGeometry args={[2.1, 0.005]} />
-        <meshBasicMaterial color="#a4977c" />
-      </mesh>
       <Text
         font={FONT_SANS}
         fontSize={0.082}
         letterSpacing={0.26}
-        color={color}
-        anchorX="center"
+        color={hovered ? '#ffffff' : INK}
+        anchorX="left"
         anchorY="middle"
       >
-        {`${ABOUT.cta.toUpperCase()} →`}
+        {label}
       </Text>
-      <mesh position={[0, -0.13, 0]}>
-        <planeGeometry args={[2.1, 0.005]} />
-        <meshBasicMaterial color="#a4977c" />
+      <mesh position={[width / 2, -0.11, 0]}>
+        <planeGeometry args={[width, 0.005]} />
+        <meshBasicMaterial color={hovered ? '#ffffff' : '#9d907a'} />
       </mesh>
     </group>
   )
@@ -310,14 +393,14 @@ export function AboutWall() {
       <Corridor />
       <PortraitFrame />
 
-      {/* name — brand serif italic, like the reference */}
+      {/* name — upright brand serif, large and quiet, as in the reference */}
       <Text
-        font={FONT_BRAND_ITALIC}
-        fontSize={0.24}
+        font={FONT_BRAND}
+        fontSize={0.3}
         color={INK}
         anchorX="left"
         anchorY="middle"
-        position={[-0.6, 1.15, 0.06]}
+        position={[TEXT_X, at(0.31), 0.06]}
       >
         {ABOUT.name}
       </Text>
@@ -325,73 +408,31 @@ export function AboutWall() {
       <Text
         font={FONT_SANS}
         fontSize={0.066}
-        letterSpacing={0.22}
+        letterSpacing={0.24}
         color={MUTED}
         anchorX="left"
         anchorY="middle"
-        position={[-0.58, 0.82, 0.06]}
+        position={[TEXT_X, at(0.41), 0.06]}
       >
         {ABOUT.role}
       </Text>
 
-      {/* gold accent bar standing in for a CSS left-border on the pull-quote */}
-      <mesh position={[-0.59, 0.36, 0.06]}>
-        <planeGeometry args={[0.012, 0.34]} />
-        <meshBasicMaterial color="#c9a24b" />
-      </mesh>
-
+      {/* one block, first person — no pull-quote / bio split */}
       <Text
-        font={FONT_SERIF_ITALIC}
-        fontSize={0.108}
-        lineHeight={1.45}
-        color={INK}
+        font={FONT_SERIF}
+        fontSize={0.105}
+        lineHeight={1.75}
+        color={STATEMENT}
         anchorX="left"
         anchorY="top"
-        maxWidth={2.15}
-        position={[-0.51, 0.5, 0.06]}
+        maxWidth={TEXT_W}
+        position={[TEXT_X, at(0.54), 0.06]}
       >
-        {ABOUT.quote}
-      </Text>
-
-      <Text
-        font={FONT_SANS}
-        fontSize={0.068}
-        lineHeight={1.6}
-        color={MUTED}
-        anchorX="left"
-        anchorY="top"
-        maxWidth={2.2}
-        position={[-0.59, 0.02, 0.06]}
-      >
-        {ABOUT.body}
+        {ABOUT.statement}
       </Text>
 
       <EnterLink />
 
-      {/* Victor's direct contacts — icon row, clickable, tucked under the portrait */}
-      <Html transform position={[-2.15, -1.55, 0.14]} scale={0.2} zIndexRange={[10, 0]} occlude={false}>
-        <div className="about-contact">
-          <a href={`mailto:${ABOUT.contact.email}`} title={ABOUT.contact.email} aria-label="Email">
-            ✉
-          </a>
-          <a
-            href={`tel:${ABOUT.contact.phone.replace(/[^+\d]/g, '')}`}
-            title={ABOUT.contact.phone}
-            aria-label="Phone"
-          >
-            ✆
-          </a>
-          <a
-            href={ABOUT.contact.instagramUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            title={`Instagram ${ABOUT.contact.instagram}`}
-            aria-label="Instagram"
-          >
-            ◎
-          </a>
-        </div>
-      </Html>
     </group>
   )
 }
