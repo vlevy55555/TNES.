@@ -74,7 +74,7 @@ const COUNTDOWN_MOBILE_Y = -0.1
 
 // Prints hangs twelve works plus a two-line header above them — a wider field
 // than the bare wall, so the camera sits back far enough to hold the lot
-const PRINTS_FIELD: [number, number] = [10.4, 5.5]
+const PRINTS_FIELD: [number, number] = [11.3, 6.1]
 
 export function CameraController() {
   const camera = useThree((s) => s.camera) as PerspectiveCamera

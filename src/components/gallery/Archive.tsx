@@ -21,7 +21,21 @@ const ARCHIVE_WALL_WIDTH = 9.8
 // GENERAL archive lighting — a broad, soft ceiling wash, NOT one lamp per frame.
 // Pulled closer to the wall/frames so the pools of light read tight, like the
 // reference, instead of a flat even glow.
-function WallWash({ x }: { x: number }) {
+function WallWash({
+  x,
+  y = 3.6,
+  z = 2.35,
+  aimY = 0.3,
+  intensity = 13,
+  angle = 0.7,
+}: {
+  x: number
+  y?: number
+  z?: number
+  aimY?: number
+  intensity?: number
+  angle?: number
+}) {
   const spot = useRef<SpotLight>(null)
   const target = useRef<Object3D>(null)
   useEffect(() => {
@@ -31,21 +45,21 @@ function WallWash({ x }: { x: number }) {
     <>
       {/* visible track-spot housing, matching the reference ceiling fixtures —
           pulled off the wall so the wash lands frontally and evenly */}
-      <mesh position={[x, 3.68, 2.4]} rotation={[-0.75, 0, 0]}>
+      <mesh position={[x, y + 0.08, z + 0.05]} rotation={[-0.75, 0, 0]}>
         <cylinderGeometry args={[0.055, 0.055, 0.2, 16]} />
         <meshStandardMaterial color="#181512" roughness={0.6} metalness={0.4} />
       </mesh>
       <spotLight
         ref={spot}
-        position={[x, 3.6, 2.35]}
+        position={[x, y, z]}
         color="#fff3e0"
-        intensity={13}
-        angle={0.7}
-        penumbra={0.85}
+        intensity={intensity}
+        angle={angle}
+        penumbra={0.9}
         decay={1.5}
         distance={11}
       />
-      <object3D ref={target} position={[x, 0.3, 0.05]} />
+      <object3D ref={target} position={[x, aimY, 0.05]} />
     </>
   )
 }
@@ -124,6 +138,11 @@ export function Archive({ position }: { position: [number, number, number] }) {
       {[-3.7, -1.25, 1.25, 3.7].map((x) => (
         <WallWash key={x} x={x} />
       ))}
+      {/* its own lamp over the header. The type is troika text — MeshBasicMaterial,
+          so no light can touch it; what this lights is the concrete BEHIND it, and
+          the dark lettering gains its contrast from the pool it sits in. Sits high
+          and pulled back so the cone lands frontally across the full line. */}
+      <WallWash x={0} y={3.9} z={2.6} aimY={2.78} intensity={18} angle={0.62} />
 
       {/* the works — reuse ArtworkFrame (frame + mat + photo + [O] + plaque +
           click-to-zoom + hover) inside a scaled group at each slot */}
