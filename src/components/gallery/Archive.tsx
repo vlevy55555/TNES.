@@ -53,23 +53,29 @@ function WallWash({ x }: { x: number }) {
 // Hand-authored salon hang: one slot for each V1 product, across three rows.
 // x spread matches the standard wall framing (unchanged from before the
 // backdrop widened) so the whole grid still fits the resting camera zoom.
+//
+// Portraits are the tall slots (frame 1.86 vs 1.30 for a landscape), so no
+// column stacks two of them in ADJACENT rows — a column reads P / L / P at
+// worst. That is what lets the whole hang sit ~0.25 lower than it used to and
+// hand the freed headroom to the instruction above it.
 type Slot = { id: string; x: number; y: number; s: number }
 const SLOTS: Slot[] = [
-  // top row
-  { id: 'calpe-muralla-roja', x: -3.8, y: 2.0, s: 0.62 },
-  { id: 'the-pool', x: -1.25, y: 2.12, s: 0.58 },
-  { id: 'playa-roja', x: 1.25, y: 2.0, s: 0.64 },
-  { id: 'runner', x: 3.8, y: 1.9, s: 0.56 },
-  // middle row
-  { id: 'wied-il-ghasri', x: -3.8, y: 0.5, s: 0.72 },
-  { id: 'moreira-crowded-beach', x: -1.25, y: 0.45, s: 0.62 },
-  { id: 'florence-dogman', x: 1.25, y: 0.55, s: 0.68 },
-  { id: 'ischia-mezzatorre', x: 3.8, y: 0.4, s: 0.72 },
+  // top row — portrait, landscape, landscape, portrait
+  { id: 'calpe-muralla-roja', x: -3.7, y: 1.78, s: 0.58 },
+  { id: 'the-pool', x: -1.25, y: 1.84, s: 0.62 },
+  { id: 'playa-roja', x: 1.25, y: 1.8, s: 0.66 },
+  { id: 'ischia-mezzatorre', x: 3.7, y: 1.74, s: 0.6 },
+  // middle row — the short row: only one portrait, and its column is landscape
+  // above and below
+  { id: 'wied-il-ghasri', x: -3.7, y: 0.3, s: 0.7 },
+  { id: 'florence-dogman', x: -1.25, y: 0.24, s: 0.56 },
+  { id: 'appenzell-alpine-lake', x: 1.25, y: 0.3, s: 0.66 },
+  { id: 'runner', x: 3.7, y: 0.26, s: 0.6 },
   // bottom row
-  { id: 'ditch-plains-far', x: -3.8, y: -1.2, s: 0.68 },
-  { id: 'praia-da-baleia', x: -1.25, y: -1.35, s: 0.58 },
-  { id: 'lauterbrunnen', x: 1.25, y: -1.15, s: 0.7 },
-  { id: 'appenzell-alpine-lake', x: 3.8, y: -1.3, s: 0.62 },
+  { id: 'ditch-plains-far', x: -3.7, y: -1.2, s: 0.58 },
+  { id: 'praia-da-baleia', x: -1.25, y: -1.28, s: 0.6 },
+  { id: 'moreira-crowded-beach', x: 1.25, y: -1.22, s: 0.62 },
+  { id: 'lauterbrunnen', x: 3.7, y: -1.24, s: 0.6 },
 ]
 
 const byId = new Map<string, Artwork>(artworks.map((a) => [a.id, a]))
@@ -91,17 +97,17 @@ export function Archive({ position }: { position: [number, number, number] }) {
           already name the section, and two labels at this height fought. */}
       <Text
         font={FONT_SERIF}
-        fontSize={0.155}
+        fontSize={0.2}
         color="#3b332a"
         anchorX="center"
         anchorY="middle"
-        position={[0, 2.96, 0.06]}
+        position={[0, 2.92, 0.06]}
       >
         Every print is made to order.
       </Text>
       <Text
         font={FONT_SANS}
-        fontSize={0.076}
+        fontSize={0.098}
         letterSpacing={0.3}
         // was #6b6151 — the usual caption grey, but tracked-out caps at this
         // size carry far less ink than the serif line above, so the same value
@@ -109,13 +115,13 @@ export function Archive({ position }: { position: [number, number, number] }) {
         color="#3b332a"
         anchorX="center"
         anchorY="middle"
-        position={[0, 2.71, 0.06]}
+        position={[0, 2.62, 0.06]}
       >
         CLICK A WORK TO CHOOSE ITS SIZE, FRAME AND PRICE
       </Text>
 
       {/* general wall wash (not per-frame) — one per column, tight and close */}
-      {[-3.8, -1.25, 1.25, 3.8].map((x) => (
+      {[-3.7, -1.25, 1.25, 3.7].map((x) => (
         <WallWash key={x} x={x} />
       ))}
 
