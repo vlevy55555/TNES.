@@ -14,8 +14,6 @@ import {
   WALL_CENTER_Y,
   WALL_HEIGHT,
 } from '../../data/artworks'
-import { money } from '../../lib/shopify'
-import { useProduct } from '../../lib/useProduct'
 import { useGalleryStore } from '../../store/useGalleryStore'
 import { FrameLayers } from './ArtworkFrame'
 import { dragState } from './CameraController'
@@ -170,8 +168,8 @@ function HeroPrint() {
   )
 }
 
-/** Title, place, price and finishing note — the reference's right-hand wall text. */
-function WallText({ priceLine }: { priceLine: string | null }) {
+/** Title, place and finishing note — the reference's right-hand wall text. */
+function WallText() {
   return (
     <group position={[INFO_X, 0, 0.062]}>
       <Text
@@ -188,7 +186,7 @@ function WallText({ priceLine }: { priceLine: string | null }) {
         font={FONT_SANS}
         fontSize={0.062}
         letterSpacing={0.24}
-        color="#6b6151"
+        color="#3b332a"
         anchorX="left"
         anchorY="middle"
         position={[0, 0.33, 0]}
@@ -199,18 +197,6 @@ function WallText({ priceLine }: { priceLine: string | null }) {
         <planeGeometry args={[0.42, 0.006]} />
         <meshBasicMaterial color="#6b6151" />
       </mesh>
-      {priceLine && (
-        <Text
-          font={FONT_SERIF}
-          fontSize={0.115}
-          color="#3b332a"
-          anchorX="left"
-          anchorY="middle"
-          position={[0, -0.02, 0]}
-        >
-          {priceLine}
-        </Text>
-      )}
       <Text
         font={FONT_SANS}
         fontSize={0.048}
@@ -218,7 +204,7 @@ function WallText({ priceLine }: { priceLine: string | null }) {
         color="#7d7263"
         anchorX="left"
         anchorY="middle"
-        position={[0, -0.17, 0]}
+        position={[0, -0.03, 0]}
       >
         available framed or unframed
       </Text>
@@ -233,7 +219,7 @@ function ShopButton() {
   useCursor(hovered, INTERACTIVE_CURSOR)
   return (
     <group
-      position={[-0.35, BODY_Y, FACE_Z]}
+      position={[-0.575, BODY_Y, FACE_Z]}
       onClick={(e) => {
         e.stopPropagation()
         if (useGalleryStore.getState().inquiryOpen || dragState.moved) return
@@ -246,12 +232,12 @@ function ShopButton() {
       onPointerOut={() => setHovered(false)}
     >
       <mesh>
-        <planeGeometry args={[2.05, 0.46]} />
+        <planeGeometry args={[2.5, 0.58]} />
         <meshBasicMaterial color={hovered ? '#2c2620' : '#1a1714'} />
       </mesh>
       <Text
         font={FONT_SANS_MEDIUM}
-        fontSize={0.088}
+        fontSize={0.108}
         letterSpacing={0.24}
         color="#f4efe4"
         anchorX="center"
@@ -347,7 +333,7 @@ function Counter({ compact }: { compact: boolean }) {
         <meshBasicMaterial color="#6b6151" />
       </mesh>
 
-      <RoomLink label="ENTER STUDIO  →" position={[1.02, BODY_Y, FACE_Z]} fontSize={0.082} />
+      <RoomLink label="ENTER STUDIO  →" position={[1.02, BODY_Y, FACE_Z]} fontSize={0.104} />
     </group>
   )
 }
@@ -359,17 +345,6 @@ function Counter({ compact }: { compact: boolean }) {
  */
 export function HomeWall() {
   const isMobile = useGalleryStore((s) => s.isMobile)
-  const product = useProduct(hero.shopifyHandle)
-
-  const cheapest = product?.variants.length
-    ? Math.min(...product.variants.map((v) => v.price))
-    : null
-  // ponytail: strip the .00 — a gallery wall doesn't print cents. Safe because
-  // money() pins the en-US locale, so the cents always land at the end.
-  const priceLine =
-    cheapest === null
-      ? null
-      : `from ${money(cheapest, product!.variants[0].currency).replace(/\.00$/, '')}`
 
   return (
     <group>
@@ -415,7 +390,7 @@ export function HomeWall() {
       <HeroPrint />
 
       {!isMobile && <BrandMark />}
-      {!isMobile && <WallText priceLine={priceLine} />}
+      {!isMobile && <WallText />}
 
       <Counter compact={isMobile} />
 

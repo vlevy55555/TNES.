@@ -36,6 +36,11 @@ const ZOOM_EASE = 'power2.inOut'
 const ZOOM_FIT = 1.75
 const ZOOM_PAD = 0.4
 
+// Moving between scenes (wall to wall, in and out of the Manifesto room): the
+// same single glide everywhere — aim and body on one duration and one ease, no
+// dolly-out-travel-in detour.
+const WALL_MS = 1.1
+
 // resting camera distance for the viewport: the given field (both edges) fills
 // 90% of the frame on whichever axis is tighter, at every aspect ratio —
 // desktop, tablet, or phone, portrait or landscape
@@ -99,7 +104,6 @@ export function CameraController() {
   const pitchTarget = useRef(0)
   const dolly = useRef(0)
   const dollyTarget = useRef(0)
-  const prevWall = useRef(useGalleryStore.getState().currentWall)
 
   // drag to angle the view around the wall (both axes) + wheel to dolly in/out —
   // except on the signature wall, where both scrub the signature zoom
@@ -187,9 +191,6 @@ export function CameraController() {
   })
 
   useEffect(() => {
-    const wallChanged = prevWall.current !== currentWall
-    prevWall.current = currentWall
-
     const artwork = artworks.find((a) => a.id === selectedArtworkId)
     const aspect = size.width / size.height
     // must match the CSS bottom-sheet breakpoint: narrow OR portrait
@@ -214,15 +215,15 @@ export function CameraController() {
         x: MANIFESTO_ROOM_X,
         y: 0.05,
         z: 0,
-        duration: 1.1,
-        ease: 'power2.inOut',
+        duration: WALL_MS,
+        ease: ZOOM_EASE,
       })
       gsap.to(base.current, {
         x: MANIFESTO_ROOM_X,
         y: 0.05,
         z: wallZ,
-        duration: 1.5,
-        ease: 'power3.inOut',
+        duration: WALL_MS,
+        ease: ZOOM_EASE,
       })
       return
     }
@@ -301,29 +302,17 @@ export function CameraController() {
           ? HOME_MOBILE_Y
           : 0
 
-    // no wall change: closing a zoom, first mount, or stepping back out of the
-    // Manifesto room (which sits beside the Home wall, so it keeps currentWall 0)
-    if (!wallChanged) {
-      // closing a zoom (or first mount): pull back along the wall's normal
-      // pulling back out of a zoom rides the same single-tempo move as going in
-      gsap.to(look.current, { x: cx, y: restY, z: 0, duration: ZOOM_MS, ease: ZOOM_EASE })
-      gsap.to(base.current, {
-        x: cx + sinW * wallZ,
-        y: restY,
-        z: cosW * wallZ,
-        duration: ZOOM_MS,
-        ease: ZOOM_EASE,
-      })
-      return
-    }
-
-    // wall change: the camera physically rides through the room — dolly OUT,
-    // travel sideways, dolly back IN, the look point leading the direction of travel
-    const tl = gsap.timeline()
-    tl.to(base.current, { z: wallZ + 4.2, y: restY, duration: 0.62, ease: 'power2.out' }, 0)
-      .to(look.current, { x: cx, y: restY, z: 0, duration: 1.05, ease: 'power2.inOut' }, 0.14)
-      .to(base.current, { x: cx + sinW * wallZ, duration: 1.42, ease: 'power2.inOut' }, 0.14)
-      .to(base.current, { z: cosW * wallZ, duration: 0.68, ease: 'power2.inOut' }, 1.1)
+    // Every arrival at a wall — wall change, closing a zoom, first mount, or
+    // stepping out of the Manifesto room — is the same single move: aim and body
+    // travel together, no dolly-out. Same tempo as the Manifesto glide.
+    gsap.to(look.current, { x: cx, y: restY, z: 0, duration: WALL_MS, ease: ZOOM_EASE })
+    gsap.to(base.current, {
+      x: cx + sinW * wallZ,
+      y: restY,
+      z: cosW * wallZ,
+      duration: WALL_MS,
+      ease: ZOOM_EASE,
+    })
   }, [currentWall, selectedArtworkId, zoomAt, isMobile, manifestoRoomOpen, camera, size])
 
   return null
