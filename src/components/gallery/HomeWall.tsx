@@ -219,7 +219,7 @@ function ShopButton() {
   useCursor(hovered, INTERACTIVE_CURSOR)
   return (
     <group
-      position={[-0.575, BODY_Y, FACE_Z]}
+      position={[-0.35, BODY_Y, FACE_Z]}
       onClick={(e) => {
         e.stopPropagation()
         if (useGalleryStore.getState().inquiryOpen || dragState.moved) return
@@ -232,7 +232,7 @@ function ShopButton() {
       onPointerOut={() => setHovered(false)}
     >
       <mesh>
-        <planeGeometry args={[2.5, 0.58]} />
+        <planeGeometry args={[2.05, 0.46]} />
         <meshBasicMaterial color={hovered ? '#2c2620' : '#1a1714'} />
       </mesh>
       <Text
