@@ -142,7 +142,7 @@ export function Archive({ position }: { position: [number, number, number] }) {
           so no light can touch it; what this lights is the concrete BEHIND it, and
           the dark lettering gains its contrast from the pool it sits in. Sits high
           and pulled back so the cone lands frontally across the full line. */}
-      <WallWash x={0} y={3.9} z={2.6} aimY={2.78} intensity={18} angle={0.62} />
+      <WallWash x={0} y={3.55} z={2.6} aimY={2.6} intensity={17} angle={0.62} />
 
       {/* the works — reuse ArtworkFrame (frame + mat + photo + [O] + plaque +
           click-to-zoom + hover) inside a scaled group at each slot */}
