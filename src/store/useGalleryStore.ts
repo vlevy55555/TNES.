@@ -39,6 +39,13 @@ type GalleryState = {
   zoomAt: ZoomAt | null
   manifestoRoomOpen: boolean
   isMobile: boolean
+  /**
+   * Which half of the Prints hang is showing. A phone can't hold twelve works
+   * at a legible size, so on mobile that wall becomes two screens of six and
+   * the wall arrows step through them before moving on. Ignored on desktop,
+   * which hangs all twelve at once.
+   */
+  printsPage: 0 | 1
   manifestoOpen: boolean
   // inquiry form: which artwork it was opened from (null = general inquiry)
   inquiryOpen: boolean
@@ -70,6 +77,7 @@ export const useGalleryStore = create<GalleryState>((set, get) => ({
   zoomAt: null,
   manifestoRoomOpen: false,
   isMobile: mqIsMobile(),
+  printsPage: 0,
   manifestoOpen: false,
   inquiryOpen: false,
   inquiryWorkId: null,
@@ -82,17 +90,46 @@ export const useGalleryStore = create<GalleryState>((set, get) => ({
 
   goToWall: (index) => {
     const wall = Math.min(Math.max(index, 0), walls.length - 1)
-    set({ currentWall: wall, selectedArtworkId: null, zoomAt: null, manifestoRoomOpen: false })
+    set({
+      currentWall: wall,
+      selectedArtworkId: null,
+      zoomAt: null,
+      manifestoRoomOpen: false,
+      printsPage: 0,
+    })
   },
 
   goToNextWall: () => {
-    const wall = Math.min(get().currentWall + 1, walls.length - 1)
-    set({ currentWall: wall, selectedArtworkId: null, manifestoRoomOpen: false })
+    const { currentWall, isMobile, printsPage } = get()
+    // mobile hangs Prints as two screens of six — walk them before leaving
+    if (isMobile && currentWall === ARCHIVE_WALL && printsPage === 0) {
+      return set({ printsPage: 1, selectedArtworkId: null, zoomAt: null })
+    }
+    const wall = Math.min(currentWall + 1, walls.length - 1)
+    set({
+      currentWall: wall,
+      selectedArtworkId: null,
+      zoomAt: null,
+      manifestoRoomOpen: false,
+      printsPage: 0,
+    })
   },
 
   goToPreviousWall: () => {
-    const wall = Math.max(get().currentWall - 1, 0)
-    set({ currentWall: wall, selectedArtworkId: null, manifestoRoomOpen: false })
+    const { currentWall, isMobile, printsPage } = get()
+    if (isMobile && currentWall === ARCHIVE_WALL && printsPage === 1) {
+      return set({ printsPage: 0, selectedArtworkId: null, zoomAt: null })
+    }
+    const wall = Math.max(currentWall - 1, 0)
+    set({
+      currentWall: wall,
+      selectedArtworkId: null,
+      zoomAt: null,
+      manifestoRoomOpen: false,
+      // stepping back INTO Prints lands on its last screen, the one nearest
+      // the wall you came from
+      printsPage: isMobile && wall === ARCHIVE_WALL ? 1 : 0,
+    })
   },
 
   selectArtwork: (id, zoomAt = null) => {

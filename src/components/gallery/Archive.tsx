@@ -11,6 +11,7 @@ import {
 } from '../../data/artworks'
 import { ArtworkFrame } from './ArtworkFrame'
 import { MarbleWallSurface } from './MarbleWallSurface'
+import { useGalleryStore } from '../../store/useGalleryStore'
 
 // slightly wider backdrop than the single-artwork walls, but capped under
 // WALL_SPACING (10) so it never bleeds into the neighboring wall's space —
@@ -101,9 +102,77 @@ const SLOTS: Slot[] = [
   { id: 'lauterbrunnen', x: 3.7, y: -1.24, s: 0.6 },
 ]
 
+/**
+ * The same twelve works on a phone: two screens of six, 2 columns × 3 rows,
+ * in the desktop hang's reading order. A portrait viewport is framed by its
+ * WIDTH, so a four-column grid can only be fitted by pushing the camera three
+ * times further back than any other wall — the works end up unreadable. Two
+ * columns is what a phone can actually hold at a size worth looking at.
+ *
+ * Same rule as the desktop hang: no column stacks two portraits in adjacent
+ * rows, which is what keeps the three rows inside one screen.
+ */
+const MOBILE_COL = 0.63
+const MOBILE_ROW_Y = [1.58, 0.2, -1.2]
+const m = (id: string, col: 0 | 1, row: 0 | 1 | 2, s: number): Slot => ({
+  id,
+  x: col ? MOBILE_COL : -MOBILE_COL,
+  y: MOBILE_ROW_Y[row],
+  s,
+})
+const MOBILE_PAGES: Slot[][] = [
+  [
+    m('calpe-muralla-roja', 0, 0, 0.56),
+    m('the-pool', 1, 0, 0.6),
+    m('wied-il-ghasri', 0, 1, 0.6),
+    m('ischia-mezzatorre', 1, 1, 0.56),
+    m('florence-dogman', 0, 2, 0.56),
+    m('playa-roja', 1, 2, 0.6),
+  ],
+  [
+    m('ditch-plains-far', 0, 0, 0.56),
+    m('appenzell-alpine-lake', 1, 0, 0.6),
+    m('praia-da-baleia', 0, 1, 0.6),
+    m('lauterbrunnen', 1, 1, 0.56),
+    m('moreira-crowded-beach', 0, 2, 0.56),
+    m('runner', 1, 2, 0.6),
+  ],
+]
+
+/**
+ * The header, per viewport. On a phone the whole wall is framed to ~2.7 wide,
+ * so the desktop line is wider than the screen — smaller type, and a caption
+ * short enough to hold one line ("tap", not "click", while we're here).
+ */
+const DESKTOP_HEAD = {
+  titleSize: 0.2,
+  titleY: 2.92,
+  captionSize: 0.098,
+  captionY: 2.62,
+  caption: 'CLICK A WORK TO CHOOSE ITS SIZE, FRAME AND PRICE',
+  glow: [6.6, 1.5] as [number, number],
+  glowY: 2.76,
+}
+const MOBILE_HEAD = {
+  titleSize: 0.13,
+  titleY: 2.6,
+  captionSize: 0.062,
+  captionY: 2.42,
+  caption: 'TAP A WORK TO CHOOSE SIZE AND FRAME',
+  glow: [2.9, 1.0] as [number, number],
+  glowY: 2.52,
+}
+
 const byId = new Map<string, Artwork>(artworks.map((a) => [a.id, a]))
 
 export function Archive({ position }: { position: [number, number, number] }) {
+  const isMobile = useGalleryStore((s) => s.isMobile)
+  const printsPage = useGalleryStore((s) => s.printsPage)
+  // the header is part of each SCREEN, not of the section: a phone visitor who
+  // lands on the second six still has to be told the works are made to order
+  const slots = isMobile ? MOBILE_PAGES[printsPage] : SLOTS
+  const head = isMobile ? MOBILE_HEAD : DESKTOP_HEAD
+
   return (
     <group position={position}>
       {/* Archive is a section in the room: the backing panel matches each wall. */}
@@ -120,17 +189,17 @@ export function Archive({ position }: { position: [number, number, number] }) {
           already name the section, and two labels at this height fought. */}
       <Text
         font={FONT_SERIF}
-        fontSize={0.2}
+        fontSize={head.titleSize}
         color="#3b332a"
         anchorX="center"
         anchorY="middle"
-        position={[0, 2.92, 0.06]}
+        position={[0, head.titleY, 0.06]}
       >
         Every print is made to order.
       </Text>
       <Text
         font={FONT_SANS}
-        fontSize={0.098}
+        fontSize={head.captionSize}
         letterSpacing={0.3}
         // was #6b6151 — the usual caption grey, but tracked-out caps at this
         // size carry far less ink than the serif line above, so the same value
@@ -138,13 +207,13 @@ export function Archive({ position }: { position: [number, number, number] }) {
         color="#3b332a"
         anchorX="center"
         anchorY="middle"
-        position={[0, 2.62, 0.06]}
+        position={[0, head.captionY, 0.06]}
       >
-        CLICK A WORK TO CHOOSE ITS SIZE, FRAME AND PRICE
+        {head.caption}
       </Text>
 
       {/* general wall wash (not per-frame) — one per column, tight and close */}
-      {[-3.7, -1.25, 1.25, 3.7].map((x) => (
+      {(isMobile ? [-MOBILE_COL, MOBILE_COL] : [-3.7, -1.25, 1.25, 3.7]).map((x) => (
         <WallWash key={x} x={x} />
       ))}
       {/* the header's own pool of light. The type is troika text —
@@ -152,8 +221,8 @@ export function Archive({ position }: { position: [number, number, number] }) {
           concrete BEHIND it, and the dark lettering gains its contrast from the
           pool it sits in. Wide and short, so it hugs the two lines and dies well
           before the ceiling. Sits between the wall face (z 0) and the type (0.06). */}
-      <mesh position={[0, 2.76, 0.04]}>
-        <planeGeometry args={[6.6, 1.5]} />
+      <mesh position={[0, head.glowY, 0.04]}>
+        <planeGeometry args={head.glow} />
         <meshBasicMaterial
           map={headerGlow}
           transparent
@@ -165,11 +234,11 @@ export function Archive({ position }: { position: [number, number, number] }) {
 
       {/* the works — reuse ArtworkFrame (frame + mat + photo + [O] + plaque +
           click-to-zoom + hover) inside a scaled group at each slot */}
-      {SLOTS.map((slot, i) => {
+      {slots.map((slot) => {
         const artwork = byId.get(slot.id)
         if (!artwork) return null
         return (
-          <Suspense key={`frame-${i}`} fallback={null}>
+          <Suspense key={slot.id} fallback={null}>
             <group position={[slot.x, slot.y, 0]} scale={slot.s}>
               {/* zoom into the slot itself, never its source-data placement */}
               <ArtworkFrame

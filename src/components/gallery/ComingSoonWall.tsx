@@ -527,7 +527,10 @@ export function ComingSoonWall() {
         {slots.map((s) => (
           <UnitLabel key={s.unit} x={s.x} y={s.y} unit={s.unit} />
         ))}
-        <NotifyForm position={[0, -1.5, 0.22]} />
+        {/* was -1.5, exactly NICHE_MOBILE.y1 — the input rule landed on the
+            recess's bottom edge and the two lines read as one broken frame.
+            Clear of it now, and still inside COUNTDOWN_MOBILE_FIELD. */}
+        <NotifyForm position={[0, -1.86, 0.22]} />
         {[-1.6, 1.6].map((x) => (
           <Cone key={x} x={x} />
         ))}

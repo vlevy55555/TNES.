@@ -15,6 +15,7 @@ export function ArtworkPanel() {
   const closeArtwork = useGalleryStore((s) => s.closeArtwork)
   const openInquiry = useGalleryStore((s) => s.openInquiry)
   const inquiryOpen = useGalleryStore((s) => s.inquiryOpen)
+  const isMobile = useGalleryStore((s) => s.isMobile)
   const addToCart = useCartStore((s) => s.add)
   const openCart = useCartStore((s) => s.setOpen)
 
@@ -84,16 +85,16 @@ export function ArtworkPanel() {
     openCart(true)
   }
 
-  return (
-    <aside className="artwork-panel">
-      <button className="panel-close" onClick={closeArtwork} aria-label="Close">
-        ✕ Close
-      </button>
-
-      <p className="eyebrow">Selected work</p>
-      <h2 className="panel-title">{artwork.title}</h2>
-      <p className="panel-subtitle">{artwork.subtitle}</p>
-
+  /**
+   * Everything a visitor reads or picks before paying. On a phone this is put
+   * behind a native <details> so the sheet opens as a caption strip and the
+   * work stays visible while you decide you want it; the disclosure toggle,
+   * its keyboard handling and its a11y state all come free. Desktop renders
+   * the same nodes bare — the side panel has the room, and wrapping it there
+   * would change how `.panel-actions` finds the bottom of the column.
+   */
+  const shop = (
+    <>
       <p className="panel-description">{artwork.description}</p>
 
       {/* Shopify drives the options when the work is purchasable. Option names
@@ -186,6 +187,29 @@ export function ArtworkPanel() {
           Inquire
         </button>
       </div>
+    </>
+  )
+
+  return (
+    <aside className="artwork-panel">
+      <button className="panel-close" onClick={closeArtwork} aria-label="Close">
+        ✕ Close
+      </button>
+
+      <p className="eyebrow">Selected work</p>
+      <h2 className="panel-title">{artwork.title}</h2>
+      <p className="panel-subtitle">{artwork.subtitle}</p>
+
+      {/* keyed on the work: <details> is uncontrolled, so without the key a shop
+          left open would still be open over the NEXT work you tap */}
+      {isMobile ? (
+        <details className="panel-shop" key={artwork.id}>
+          <summary className="panel-shop-toggle">Shop this print</summary>
+          {shop}
+        </details>
+      ) : (
+        shop
+      )}
     </aside>
   )
 }

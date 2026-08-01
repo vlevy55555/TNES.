@@ -3,6 +3,7 @@ import { useEffect, useRef } from 'react'
 import { Vector3, type PerspectiveCamera } from 'three'
 import gsap from 'gsap'
 import {
+  ABOUT_WALL,
   ARCHIVE_WALL,
   artworks,
   CAMERA_Z,
@@ -75,6 +76,24 @@ const COUNTDOWN_MOBILE_Y = -0.1
 // Prints hangs twelve works plus a two-line header above them — a wider field
 // than the bare wall, so the camera sits back far enough to hold the lot
 const PRINTS_FIELD: [number, number] = [11.3, 6.1]
+// A portrait viewport is framed by its WIDTH, so the desktop field would put
+// the camera ~36 units back — the whole room, works the size of stamps. Mobile
+// hangs six at a time in two columns instead, and this frames that block.
+const PRINTS_MOBILE_FIELD: [number, number] = [2.45, 5.0]
+const PRINTS_MOBILE_Y = 0.24
+
+// About, on a phone: same problem, and here the fix is to CROP. The doorway
+// (wall-local x ≈ 2.0–3.9) falls outside this field on purpose — the portrait,
+// the type column and Enter VSL are what have to survive, and shifting the aim
+// left is what buys them a frame worth reading.
+const ABOUT_MOBILE_FIELD: [number, number] = [4.8, 5.0]
+const ABOUT_MOBILE_X = -1.2
+
+// How far an inspected print rides UP the screen to clear the mobile sheet.
+// Was 0.7, sized for a sheet that took 62% of the viewport; the sheet now opens
+// collapsed at roughly a fifth of that, so the work sits nearer the middle and
+// stays worth looking at while the shop is shut.
+const MOBILE_SHEET_LIFT = 0.28
 
 export function CameraController() {
   const camera = useThree((s) => s.camera) as PerspectiveCamera
@@ -195,16 +214,25 @@ export function CameraController() {
     const aspect = size.width / size.height
     // must match the CSS bottom-sheet breakpoint: narrow OR portrait
     const mobile = size.width <= 700 || aspect < 1
-    // the Home wall is framed tighter than the rest, tighter still on a phone;
-    // the Countdown only reframes on a phone, where it restacks
-    const wallZ =
+    // Each wall's own field, and a phone gets a different one wherever its
+    // layout differs — null falls back to the bare wall.
+    const field =
       currentWall === SIGNATURE_WALL
-        ? restingZ(size, ...(mobile ? HOME_MOBILE_FIELD : HOME_FIELD))
-        : mobile && currentWall === COMING_SOON_WALL
-          ? restingZ(size, ...COUNTDOWN_MOBILE_FIELD)
-          : currentWall === ARCHIVE_WALL
-            ? restingZ(size, ...PRINTS_FIELD)
-            : restingZ(size)
+        ? mobile
+          ? HOME_MOBILE_FIELD
+          : HOME_FIELD
+        : currentWall === ARCHIVE_WALL
+          ? mobile
+            ? PRINTS_MOBILE_FIELD
+            : PRINTS_FIELD
+          : currentWall === COMING_SOON_WALL
+            ? mobile
+              ? COUNTDOWN_MOBILE_FIELD
+              : null
+            : currentWall === ABOUT_WALL && mobile
+              ? ABOUT_MOBILE_FIELD
+              : null
+    const wallZ = field ? restingZ(size, ...field) : restingZ(size)
 
     gsap.killTweensOf(base.current)
     gsap.killTweensOf(look.current)
@@ -241,7 +269,7 @@ export function CameraController() {
         Math.max(frameH / 2 / tanH, frameW / 2 / (tanH * stripAspect)) * ZOOM_FIT + ZOOM_PAD
       const shift = (panelPx / 2) * ((2 * z * tanH) / size.height)
       const lx = zoomAt.x + shift
-      const ly = zoomAt.y - (mobile ? 0.7 : 0)
+      const ly = zoomAt.y - (mobile ? MOBILE_SHEET_LIFT : 0)
 
       gsap.to(look.current, { x: lx, y: ly, z: zoomAt.z, duration: ZOOM_MS, ease: ZOOM_EASE })
       gsap.to(base.current, {
@@ -275,7 +303,7 @@ export function CameraController() {
       const lx =
         artwork.wallIndex * WALL_SPACING + ax * cosA + 0.07 * sinA + cosA * shift
       const lz = -ax * sinA + 0.07 * cosA - sinA * shift
-      const ly = artwork.position[1] - (mobile ? 0.7 : 0)
+      const ly = artwork.position[1] - (mobile ? MOBILE_SHEET_LIFT : 0)
 
       gsap.to(look.current, { x: lx, y: ly, z: lz, duration: ZOOM_MS, ease: ZOOM_EASE })
       gsap.to(base.current, {
@@ -294,22 +322,30 @@ export function CameraController() {
     const cx = currentWall * WALL_SPACING
     // mobile Home: aim between the print and the console, its two live parts.
     // mobile Countdown: aim at the middle of title / units / email capture.
-    const restY = !isMobile
+    // mobile Prints: aim at the middle of the header + six works.
+    const restY = !mobile
       ? 0
       : currentWall === COMING_SOON_WALL
         ? COUNTDOWN_MOBILE_Y
         : currentWall === SIGNATURE_WALL
           ? HOME_MOBILE_Y
-          : 0
+          : currentWall === ARCHIVE_WALL
+            ? PRINTS_MOBILE_Y
+            : 0
+    // ...and mobile About aims LEFT of centre, off the doorway and onto the
+    // portrait + type column. Wall-local, so it follows the wall's own angle.
+    const restX = mobile && currentWall === ABOUT_WALL ? ABOUT_MOBILE_X : 0
+    const lx = cx + restX * cosW
+    const lz = -restX * sinW
 
     // Every arrival at a wall — wall change, closing a zoom, first mount, or
     // stepping out of the Manifesto room — is the same single move: aim and body
     // travel together, no dolly-out. Same tempo as the Manifesto glide.
-    gsap.to(look.current, { x: cx, y: restY, z: 0, duration: WALL_MS, ease: ZOOM_EASE })
+    gsap.to(look.current, { x: lx, y: restY, z: lz, duration: WALL_MS, ease: ZOOM_EASE })
     gsap.to(base.current, {
-      x: cx + sinW * wallZ,
+      x: lx + sinW * wallZ,
       y: restY,
-      z: cosW * wallZ,
+      z: lz + cosW * wallZ,
       duration: WALL_MS,
       ease: ZOOM_EASE,
     })

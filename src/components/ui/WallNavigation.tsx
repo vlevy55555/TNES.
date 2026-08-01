@@ -11,10 +11,18 @@ export function WallNavigation() {
   const manifestoRoomOpen = useGalleryStore((s) => s.manifestoRoomOpen)
   const closeManifestoRoom = useGalleryStore((s) => s.closeManifestoRoom)
   const openManifestoRoom = useGalleryStore((s) => s.openManifestoRoom)
+  const isMobile = useGalleryStore((s) => s.isMobile)
+  const printsPage = useGalleryStore((s) => s.printsPage)
 
   const hidden = selectedArtworkId !== null
 
-  const label = manifestoRoomOpen ? 'Manifesto' : walls[currentWall].name
+  // mobile splits Prints across two screens — say which one you're on, or the
+  // arrows look like they did nothing
+  const label = manifestoRoomOpen
+    ? 'Manifesto'
+    : isMobile && currentWall === ARCHIVE_WALL
+      ? `${walls[currentWall].name} ${printsPage + 1}/2`
+      : walls[currentWall].name
   const atLastWall = currentWall === walls.length - 1
 
   return (
