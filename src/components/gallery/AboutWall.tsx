@@ -45,7 +45,11 @@ const DOOR_H = ABOUT_DOOR_H
 const DOOR_X = ABOUT_DOOR_X
 // wall spans WALL_CENTER_Y ± WALL_HEIGHT/2; the floor line in content coords
 const FLOOR_Y = WALL_CENTER_Y - WALL_HEIGHT / 2
-const CORRIDOR_DEPTH = 7
+// Long enough that the last lamp's falloff dies well before the end: the black
+// plane down there is never actually lit, so the corridor reads as running on
+// into nothing instead of stopping at a surface you can see. Cheap — the shell
+// is six planes regardless of how deep it goes.
+const CORRIDOR_DEPTH = 13
 // the hall behind is wider than the opening, so the oblique resting camera
 // sees real depth through the door instead of a flat side wall
 const CORRIDOR_W = 3.1
@@ -200,7 +204,9 @@ function Corridor() {
   const startVslExit = useGalleryStore((s) => s.startVslExit)
 
   const doorCenterY = FLOOR_Y + DOOR_H / 2
-  const lightZs = [-1.1, -2.6, -4.1, -5.6]
+  // one more lamp than the corridor used to have: the receding chain is what
+  // sells the depth, and it has to still be going when the light runs out
+  const lightZs = [-1.1, -2.6, -4.1, -5.6, -7.1]
 
   return (
     <group position={[DOOR_X, 0, 0]}>
