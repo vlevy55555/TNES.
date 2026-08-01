@@ -29,7 +29,6 @@ import { useGalleryStore } from '../../store/useGalleryStore'
 const INK = '#ece5d8' // name, link — the light that reads as "ink" on this wall
 const MUTED = '#a1937d' // role, secondary
 const STATEMENT = '#ffffff' // his own words, the brightest thing on the wall
-const GOLD = '#8f7c4e'
 
 /**
  * Keeps the print off pure black where the dimmed lamps barely reach, without
@@ -168,9 +167,6 @@ function DoorwayWall() {
 
 /** The corridor behind the doorway — the physical "enter the artist's mind". */
 function Corridor() {
-  const portrait = useTexture(ABOUT.portrait, (t) => {
-    t.colorSpace = SRGBColorSpace
-  })
   const floorTexture = useTexture('/materials/floor.png', (t) => {
     t.colorSpace = SRGBColorSpace
   })
@@ -200,7 +196,6 @@ function Corridor() {
   }
   const sideMap = useMemo(() => shellMap(CORRIDOR_DEPTH / DOOR_H / CONCRETE_ASPECT, 1), [concreteTexture])
   const ceilMap = useMemo(() => shellMap(CORRIDOR_W / CORRIDOR_DEPTH / CONCRETE_ASPECT, 1), [concreteTexture])
-  const endMap = useMemo(() => shellMap(CORRIDOR_W / DOOR_H / CONCRETE_ASPECT, 1), [concreteTexture])
   const [hovered, setHovered] = useState(false)
   useCursor(hovered, INTERACTIVE_CURSOR)
   const startVslExit = useGalleryStore((s) => s.startVslExit)
@@ -246,9 +241,15 @@ function Corridor() {
           <meshStandardMaterial map={sideMap} color="#6a6053" roughness={0.92} />
         </mesh>
       ))}
-      <mesh position={[0, doorCenterY, -CORRIDOR_DEPTH]} receiveShadow>
+      {/* the far end is NOT a wall: dead black, unlit, so the corridor reads as
+          running on into nothing rather than stopping at a surface seven metres
+          in. Basic (not standard) material — the downlights must not be able to
+          lift it off black. Still a plane, not an opening: the room's backdrop
+          splits around this doorway, so removing it would punch a hole straight
+          through to the page background. */}
+      <mesh position={[0, doorCenterY, -CORRIDOR_DEPTH]}>
         <planeGeometry args={[CORRIDOR_W, DOOR_H]} />
-        <meshStandardMaterial map={endMap} color="#544b40" roughness={0.92} />
+        <meshBasicMaterial color="#000000" />
       </mesh>
 
       {/* open door leaves folded nearly flush against the corridor walls, so
@@ -287,19 +288,6 @@ function Corridor() {
           />
         </group>
       ))}
-
-      {/* the artist waiting at the very end: a small lit portrait */}
-      <group position={[0, FLOOR_Y + 1.75, -CORRIDOR_DEPTH + 0.02]}>
-        <mesh>
-          <boxGeometry args={[0.46, 0.64, 0.03]} />
-          <meshStandardMaterial color={GOLD} metalness={0.35} roughness={0.5} />
-        </mesh>
-        <mesh position={[0, 0, 0.02]}>
-          <planeGeometry args={[0.38, 0.56]} />
-          <meshBasicMaterial map={portrait} toneMapped={false} />
-        </mesh>
-        <pointLight position={[0, 0.5, 0.55]} color="#ffeccc" intensity={1.6} distance={2.4} decay={2} />
-      </group>
 
       {/* gold "O" room plaque beside the door, engraved in the mark's Helvetica.
           kept tight to the jamb — the resting camera crops around x ≈ 4.4 */}
