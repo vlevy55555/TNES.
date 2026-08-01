@@ -26,11 +26,12 @@ import { useGalleryStore } from '../../store/useGalleryStore'
  * inverts the type: everything here is LIGHT on dark, because the text is
  * unlit basic material and holds its value while the wall behind it drops.
  */
-const INK = '#ece5d8' // link — the light that reads as "ink" on this wall
-const STATEMENT = '#ffffff' // his own words, the brightest thing on the wall
-// Name and role instead run DARK, on the Countdown plate's darkest tier — the
-// concrete right behind them catches enough lamp to carry dark type, which the
-// light values were washing straight out.
+// Enter VSL is the ONLY light thing on this wall — the one action, left white
+// so it separates from the type around it.
+const INK = '#ece5d8'
+// Everything that is read rather than clicked runs DARK, on the Countdown
+// plate's darkest tier: the concrete here catches enough lamp to carry dark
+// type, which the light values were washing straight out.
 const PLATE_INK = '#2b2419'
 
 /**
@@ -422,7 +423,7 @@ export function AboutWall() {
         font={FONT_SERIF}
         fontSize={0.105}
         lineHeight={1.75}
-        color={STATEMENT}
+        color={PLATE_INK}
         anchorX="left"
         anchorY="top"
         maxWidth={TEXT_W}
