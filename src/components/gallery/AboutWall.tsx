@@ -26,8 +26,7 @@ import { useGalleryStore } from '../../store/useGalleryStore'
  * inverts the type: everything here is LIGHT on dark, because the text is
  * unlit basic material and holds its value while the wall behind it drops.
  */
-const INK = '#ece5d8' // name, link — the light that reads as "ink" on this wall
-const MUTED = '#a1937d' // role, secondary
+const INK = '#ece5d8' // name, role, link — the light that reads as "ink" on this wall
 const STATEMENT = '#ffffff' // his own words, the brightest thing on the wall
 
 /**
@@ -395,9 +394,12 @@ export function AboutWall() {
 
       <Text
         font={FONT_SANS}
-        fontSize={0.066}
+        fontSize={0.086}
         letterSpacing={0.24}
-        color={MUTED}
+        // The Countdown's plate runs its pair of lines on ONE value (object 01
+        // and the title under it are both INK). This line used to sit a step
+        // below the name on a muted brown; now it shares the name's value.
+        color={INK}
         anchorX="left"
         anchorY="middle"
         position={[TEXT_X, at(0.41), 0.06]}
