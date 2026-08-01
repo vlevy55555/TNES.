@@ -26,8 +26,12 @@ import { useGalleryStore } from '../../store/useGalleryStore'
  * inverts the type: everything here is LIGHT on dark, because the text is
  * unlit basic material and holds its value while the wall behind it drops.
  */
-const INK = '#ece5d8' // name, role, link — the light that reads as "ink" on this wall
+const INK = '#ece5d8' // link — the light that reads as "ink" on this wall
 const STATEMENT = '#ffffff' // his own words, the brightest thing on the wall
+// Name and role instead run DARK, on the Countdown plate's darkest tier — the
+// concrete right behind them catches enough lamp to carry dark type, which the
+// light values were washing straight out.
+const PLATE_INK = '#2b2419'
 
 /**
  * Keeps the print off pure black where the dimmed lamps barely reach, without
@@ -390,7 +394,7 @@ export function AboutWall() {
       <Text
         font={FONT_BRAND}
         fontSize={0.3}
-        color={INK}
+        color={PLATE_INK}
         anchorX="left"
         anchorY="middle"
         position={[TEXT_X, at(0.31), 0.06]}
@@ -403,9 +407,9 @@ export function AboutWall() {
         fontSize={0.086}
         letterSpacing={0.24}
         // The Countdown's plate runs its pair of lines on ONE value (object 01
-        // and the title under it are both INK). This line used to sit a step
-        // below the name on a muted brown; now it shares the name's value.
-        color={INK}
+        // and the title under it are both its INK). Same here: this line shares
+        // the name's value rather than sitting a tier below it.
+        color={PLATE_INK}
         anchorX="left"
         anchorY="middle"
         position={[TEXT_X, at(0.41), 0.06]}
