@@ -868,6 +868,10 @@ select:not(:disabled),
   color: #000000;
 }
 
+.wall-notify-submit:disabled {
+  opacity: 0.5;
+}
+
 .wall-notify-done {
   font-family: var(--serif);
   font-style: italic;

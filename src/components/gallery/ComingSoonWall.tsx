@@ -318,26 +318,75 @@ function EditorialPlate() {
 }
 
 /**
+ * Where a signup goes. This site is a STATIC deploy — no server of ours to post
+ * to — so the list lives in a Google Sheet fronted by an Apps Script web app,
+ * which is a URL that accepts a POST and appends a row. No key ships in the
+ * bundle: the deployment URL is the whole credential, and it is write-only.
+ *
+ * ponytail: a spreadsheet and 6 lines of Apps Script, not a mailing platform.
+ * Ceiling: no double opt-in, no dedupe across visitors, no campaign sending —
+ * move to Klaviyo/Shopify marketing when the list is worth mailing.
+ *
+ * Set VITE_NOTIFY_URL in the Render dashboard to this deployment:
+ *
+ *   // Extensions ▸ Apps Script on the sheet, then Deploy ▸ New deployment ▸
+ *   // Web app, execute as Me, access "Anyone". Paste the /exec URL.
+ *   function doPost(e) {
+ *     const { email } = JSON.parse(e.postData.contents)
+ *     SpreadsheetApp.getActiveSheet().appendRow([new Date(), email])
+ *     return ContentService.createTextOutput('ok')
+ *   }
+ *
+ * Unset, the form behaves as it always has: local only, and the address never
+ * reaches anyone.
+ */
+const NOTIFY_URL = import.meta.env.VITE_NOTIFY_URL as string | undefined
+
+async function subscribe(email: string) {
+  // keep the local copy either way — it costs nothing and survives a bad POST
+  const list = JSON.parse(localStorage.getItem('tnes-subscribers') ?? '[]')
+  if (!list.includes(email)) list.push(email)
+  localStorage.setItem('tnes-subscribers', JSON.stringify(list))
+
+  if (!NOTIFY_URL) return
+  // text/plain keeps this a "simple" request, so the browser sends no CORS
+  // preflight — an Apps Script web app cannot answer an OPTIONS
+  const response = await fetch(NOTIFY_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify({ email, at: new Date().toISOString() }),
+  })
+  if (!response.ok) throw new Error(`notify: ${response.status}`)
+}
+
+/**
  * Email capture. A real `<input>`, so it is DOM — but rendered in world space by
  * drei's `Html transform`, which keeps it pinned to the wall through every orbit
  * and dolly instead of floating over the canvas.
  */
 function NotifyForm({ position }: { position: [number, number, number] }) {
   const [email, setEmail] = useState('')
-  const [error, setError] = useState(false)
+  const [error, setError] = useState('')
+  const [sending, setSending] = useState(false)
   const [done, setDone] = useState(false)
 
-  const submit = (e: FormEvent) => {
+  const submit = async (e: FormEvent) => {
     e.preventDefault()
+    if (sending) return
     if (!/^\S+@\S+\.\S+$/.test(email)) {
-      setError(true)
+      setError('please enter a valid email')
       return
     }
-    // ponytail: localStorage only — swap for a POST when a backend/Shopify exists
-    const list = JSON.parse(localStorage.getItem('tnes-subscribers') ?? '[]')
-    if (!list.includes(email)) list.push(email)
-    localStorage.setItem('tnes-subscribers', JSON.stringify(list))
-    setDone(true)
+    setSending(true)
+    try {
+      await subscribe(email)
+      setDone(true)
+    } catch {
+      // never claim someone is on the list when the row was not written
+      setError('couldn’t save that — please try again')
+    } finally {
+      setSending(false)
+    }
   }
 
   return (
@@ -351,20 +400,20 @@ function NotifyForm({ position }: { position: [number, number, number] }) {
               type="email"
               placeholder="your email address"
               aria-label="Email address"
-              aria-invalid={error}
+              aria-invalid={!!error}
               value={email}
               onChange={(e) => {
                 setEmail(e.target.value)
-                setError(false)
+                setError('')
               }}
               className="wall-notify-input"
             />
-            <button type="submit" className="wall-notify-submit">
-              notify me <span aria-hidden="true">→</span>
+            <button type="submit" className="wall-notify-submit" disabled={sending}>
+              {sending ? 'sending…' : <>notify me <span aria-hidden="true">→</span></>}
             </button>
           </form>
         )}
-        {error && <p className="wall-notify-error">please enter a valid email</p>}
+        {error && <p className="wall-notify-error">{error}</p>}
       </div>
     </Html>
   )
