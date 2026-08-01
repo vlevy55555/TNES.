@@ -1,6 +1,6 @@
 import { Suspense, useEffect, useRef } from 'react'
 import { Text } from '@react-three/drei'
-import { type Object3D, type SpotLight } from 'three'
+import { AdditiveBlending, CanvasTexture, type Object3D, type SpotLight } from 'three'
 import {
   artworks,
   FONT_SANS,
@@ -21,21 +21,7 @@ const ARCHIVE_WALL_WIDTH = 9.8
 // GENERAL archive lighting — a broad, soft ceiling wash, NOT one lamp per frame.
 // Pulled closer to the wall/frames so the pools of light read tight, like the
 // reference, instead of a flat even glow.
-function WallWash({
-  x,
-  y = 3.6,
-  z = 2.35,
-  aimY = 0.3,
-  intensity = 13,
-  angle = 0.7,
-}: {
-  x: number
-  y?: number
-  z?: number
-  aimY?: number
-  intensity?: number
-  angle?: number
-}) {
+function WallWash({ x }: { x: number }) {
   const spot = useRef<SpotLight>(null)
   const target = useRef<Object3D>(null)
   useEffect(() => {
@@ -45,24 +31,47 @@ function WallWash({
     <>
       {/* visible track-spot housing, matching the reference ceiling fixtures —
           pulled off the wall so the wash lands frontally and evenly */}
-      <mesh position={[x, y + 0.08, z + 0.05]} rotation={[-0.75, 0, 0]}>
+      <mesh position={[x, 3.68, 2.4]} rotation={[-0.75, 0, 0]}>
         <cylinderGeometry args={[0.055, 0.055, 0.2, 16]} />
         <meshStandardMaterial color="#181512" roughness={0.6} metalness={0.4} />
       </mesh>
       <spotLight
         ref={spot}
-        position={[x, y, z]}
+        position={[x, 3.6, 2.35]}
         color="#fff3e0"
-        intensity={intensity}
-        angle={angle}
-        penumbra={0.9}
+        intensity={13}
+        angle={0.7}
+        penumbra={0.85}
         decay={1.5}
         distance={11}
       />
-      <object3D ref={target} position={[x, aimY, 0.05]} />
+      <object3D ref={target} position={[x, 0.3, 0.05]} />
     </>
   )
 }
+
+/**
+ * The pool of light under the header.
+ *
+ * ponytail: a painted gradient, not a spotLight. A real cone wide enough to
+ * cover a 3.9-wide line of type spills the same 1.9 upward — that is what put
+ * light on the ceiling. A quad can be an ellipse: wide, short, and bounded
+ * exactly where the header ends. Ceiling: it doesn't respond to the wall's
+ * normal map, so keep it soft; a spot is the upgrade if it ever needs to.
+ */
+function makeGlowTexture() {
+  const canvas = document.createElement('canvas')
+  canvas.width = canvas.height = 128
+  const ctx = canvas.getContext('2d')!
+  const gradient = ctx.createRadialGradient(64, 64, 0, 64, 64, 64)
+  gradient.addColorStop(0, 'rgba(255, 243, 224, 0.42)')
+  gradient.addColorStop(0.42, 'rgba(255, 238, 212, 0.19)')
+  gradient.addColorStop(1, 'rgba(255, 234, 198, 0)')
+  ctx.fillStyle = gradient
+  ctx.fillRect(0, 0, 128, 128)
+  return new CanvasTexture(canvas)
+}
+const headerGlow = makeGlowTexture()
 
 // Hand-authored salon hang: one slot for each V1 product, across three rows.
 // x spread matches the standard wall framing (unchanged from before the
@@ -138,11 +147,21 @@ export function Archive({ position }: { position: [number, number, number] }) {
       {[-3.7, -1.25, 1.25, 3.7].map((x) => (
         <WallWash key={x} x={x} />
       ))}
-      {/* its own lamp over the header. The type is troika text — MeshBasicMaterial,
-          so no light can touch it; what this lights is the concrete BEHIND it, and
-          the dark lettering gains its contrast from the pool it sits in. Sits high
-          and pulled back so the cone lands frontally across the full line. */}
-      <WallWash x={0} y={3.15} z={2.6} aimY={2.6} intensity={16} angle={0.65} />
+      {/* the header's own pool of light. The type is troika text —
+          MeshBasicMaterial, so no light can touch it; what this brightens is the
+          concrete BEHIND it, and the dark lettering gains its contrast from the
+          pool it sits in. Wide and short, so it hugs the two lines and dies well
+          before the ceiling. Sits between the wall face (z 0) and the type (0.06). */}
+      <mesh position={[0, 2.76, 0.04]}>
+        <planeGeometry args={[6.6, 1.5]} />
+        <meshBasicMaterial
+          map={headerGlow}
+          transparent
+          blending={AdditiveBlending}
+          depthWrite={false}
+          toneMapped={false}
+        />
+      </mesh>
 
       {/* the works — reuse ArtworkFrame (frame + mat + photo + [O] + plaque +
           click-to-zoom + hover) inside a scaled group at each slot */}
