@@ -8,7 +8,6 @@ import {
   FONT_BRAND_ITALIC,
   FONT_SANS,
   FONT_SANS_MEDIUM,
-  FONT_SERIF,
   HERO_ID,
   WALL_BOTTOM_Y,
   WALL_CENTER_Y,
@@ -36,6 +35,8 @@ const REVEAL_X = PANEL_W / 2 - 0.16
 const REVEAL_W = 0.022
 
 const STATEMENT_Y = 1.9
+const MOBILE_AUTHOR_Y = 2.14
+const DESKTOP_SUBTITLE_Y = 1.62
 
 /**
  * The one work on this wall. It is **shown, not sold**: no hover, no click, no
@@ -290,7 +291,7 @@ function RoomLink({
   )
 }
 
-function Counter({ compact }: { compact: boolean }) {
+function Counter() {
   const plinthMap = useStoneMap(COUNTER_W - 0.2, PLINTH_H)
   const bodyMap = useStoneMap(COUNTER_W, BODY_H)
   const topMap = useStoneMap(COUNTER_W + 0.2, TOP_H)
@@ -311,20 +312,6 @@ function Counter({ compact }: { compact: boolean }) {
         <boxGeometry args={[COUNTER_W + 0.2, TOP_H, COUNTER_D + 0.1]} />
         <StoneMaterial map={topMap} lift={0.4} />
       </mesh>
-
-      {!compact && (
-        <Text
-          font={FONT_SERIF}
-          fontSize={0.088}
-          lineHeight={1.5}
-          color="#332c24"
-          anchorX="left"
-          anchorY="middle"
-          position={[-2.65, BODY_Y, FACE_Z]}
-        >
-          {'fine art photography\nby Victor Safdie Levy,\narchival prints made\nto order.'}
-        </Text>
-      )}
 
       <ShopButton />
 
@@ -362,10 +349,23 @@ export function HomeWall() {
         </mesh>
       ))}
 
-      {/* the statement, cut into the panel: a light copy sits a hair above the
-          dark one, so the pair reads as an incised edge catching the wash */}
+      {/* The hero copy follows the reference: Manrope is used for the title and
+          its supporting line, with the author line moving above it on mobile. */}
+      {isMobile && (
+        <Text
+          font={FONT_SANS}
+          fontSize={0.052}
+          letterSpacing={0.08}
+          color="#b9ad99"
+          anchorX="center"
+          anchorY="middle"
+          position={[0, MOBILE_AUTHOR_Y, PANEL_FACE_Z + 0.006]}
+        >
+          fine art photography by Victor Safdie Levy
+        </Text>
+      )}
       <Text
-        font={FONT_SERIF}
+        font={FONT_SANS}
         fontSize={0.185}
         letterSpacing={0.01}
         color="#c9bda8"
@@ -376,7 +376,7 @@ export function HomeWall() {
         {BRAND_STATEMENT}
       </Text>
       <Text
-        font={FONT_SERIF}
+        font={FONT_SANS}
         fontSize={0.185}
         letterSpacing={0.01}
         color="#5a4f42"
@@ -387,12 +387,29 @@ export function HomeWall() {
         {BRAND_STATEMENT}
       </Text>
 
+      {!isMobile && (
+        <Text
+          font={FONT_SANS}
+          fontSize={0.074}
+          lineHeight={1.35}
+          letterSpacing={0.025}
+          color="#b9ad99"
+          maxWidth={3.35}
+          textAlign="center"
+          anchorX="center"
+          anchorY="middle"
+          position={[0, DESKTOP_SUBTITLE_Y, PANEL_FACE_Z + 0.006]}
+        >
+          limited prints of places that exists in between, made to live with.
+        </Text>
+      )}
+
       <HeroPrint />
 
       {!isMobile && <BrandMark />}
       {!isMobile && <WallText />}
 
-      <Counter compact={isMobile} />
+      <Counter />
 
       {/* key wash: high and pulled back, so its cone blooms a halo on the panel
           above the print before falling onto it */}
