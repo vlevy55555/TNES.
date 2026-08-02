@@ -503,6 +503,11 @@ select:not(:disabled),
 
   .footer {
     padding: 16px 22px;
+    justify-content: flex-end;
+  }
+
+  .footer-tagline {
+    display: none;
   }
 
   .wall-nav-arrow {
