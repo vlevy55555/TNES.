@@ -34,22 +34,24 @@ const PANEL_FACE_Z = 0.05 + PANEL_DEPTH / 2
 const REVEAL_X = PANEL_W / 2 - 0.16
 const REVEAL_W = 0.022
 
-const STATEMENT_Y = 1.84
-const MOBILE_AUTHOR_Y = 2.14
+const MOBILE_STATEMENT_Y = 2.08
+const MOBILE_AUTHOR_Y = 2.4
 const DESKTOP_STATEMENT_Y = 2.06
 const DESKTOP_SUBTITLE_Y = 1.68
 const STATEMENT_FONT_SIZE = 0.215
+const MOBILE_STATEMENT_FONT_SIZE = 0.235
 
 /**
  * The one work on this wall. It is **shown, not sold**: no hover, no click, no
  * zoom — the wall text beside it is its label and the console sends you to the
  * Archive to buy. Hung on the panel, so no plaque either.
  */
-const HERO_Y = 0.3
+const MOBILE_HERO_Y = 0.53
 const DESKTOP_HERO_Y = 0.12
 const HERO_Z = PANEL_FACE_Z + 0.02
 /** scales the standard 3:2 frame (1.86 wide) up to the reference's ~3.5 */
 const HERO_SCALE = 1.9
+const MOBILE_HERO_SCALE = 2.03
 
 /** [O], on the base wall left of the panel */
 const MARK_X = -3.5
@@ -61,6 +63,7 @@ const INFO_X = 2.85
 /** the console: primary CTA and studio link */
 const COUNTER_W = 6.3
 const MOBILE_COUNTER_W = 4.35
+const MOBILE_SHOP_BUTTON_W = 3.3
 const COUNTER_D = 0.8
 const COUNTER_Z = 0.55
 const PLINTH_H = 0.12
@@ -161,12 +164,12 @@ function BrandMark() {
 }
 
 /** The hung print itself — frame, mat and photograph, and nothing interactive. */
-function HeroPrint({ y }: { y: number }) {
+function HeroPrint({ y, scale = HERO_SCALE }: { y: number; scale?: number }) {
   const texture = useTexture(hero.image, (t) => {
     t.colorSpace = SRGBColorSpace
   })
   return (
-    <group scale={HERO_SCALE} position={[0, y, HERO_Z]}>
+    <group scale={scale} position={[0, y, HERO_Z]}>
       <FrameLayers texture={texture} w={hero.size[0]} h={hero.size[1]} style="white" />
     </group>
   )
@@ -217,7 +220,13 @@ function WallText() {
 }
 
 /** Primary CTA — into the Archive, where the works are actually purchasable. */
-function ShopButton({ position }: { position: [number, number, number] }) {
+function ShopButton({
+  position,
+  width = 2.05,
+}: {
+  position: [number, number, number]
+  width?: number
+}) {
   const goToWall = useGalleryStore((s) => s.goToWall)
   const [hovered, setHovered] = useState(false)
   useCursor(hovered, INTERACTIVE_CURSOR)
@@ -236,7 +245,7 @@ function ShopButton({ position }: { position: [number, number, number] }) {
       onPointerOut={() => setHovered(false)}
     >
       <mesh>
-        <planeGeometry args={[2.05, 0.46]} />
+        <planeGeometry args={[width, 0.46]} />
         <meshBasicMaterial color={hovered ? '#2c2620' : '#1a1714'} />
       </mesh>
       <Text
@@ -320,12 +329,15 @@ function Counter({ compact }: { compact: boolean }) {
         <StoneMaterial map={topMap} lift={0.4} />
       </mesh>
 
-      <ShopButton position={compact ? [0, bodyY + 0.19, FACE_Z] : [-0.35, bodyY, FACE_Z]} />
+      <ShopButton
+        position={compact ? [0, bodyY + 0.1, FACE_Z] : [-0.35, bodyY, FACE_Z]}
+        width={compact ? MOBILE_SHOP_BUTTON_W : undefined}
+      />
 
       {compact ? (
         <RoomLink
           label="EXPLORE THE STUDIO  →"
-          position={[0, bodyY - 0.2, FACE_Z]}
+          position={[0, bodyY - 0.31, FACE_Z]}
           fontSize={0.09}
           anchorX="center"
         />
@@ -349,7 +361,8 @@ function Counter({ compact }: { compact: boolean }) {
  */
 export function HomeWall() {
   const isMobile = useGalleryStore((s) => s.isMobile)
-  const statementY = isMobile ? STATEMENT_Y : DESKTOP_STATEMENT_Y
+  const statementY = isMobile ? MOBILE_STATEMENT_Y : DESKTOP_STATEMENT_Y
+  const statementFontSize = isMobile ? MOBILE_STATEMENT_FONT_SIZE : STATEMENT_FONT_SIZE
 
   return (
     <group>
@@ -384,7 +397,7 @@ export function HomeWall() {
       )}
       <Text
         font={FONT_SANS}
-        fontSize={STATEMENT_FONT_SIZE}
+        fontSize={statementFontSize}
         letterSpacing={0.01}
         color="#c9bda8"
         anchorX="center"
@@ -395,7 +408,7 @@ export function HomeWall() {
       </Text>
       <Text
         font={FONT_SANS}
-        fontSize={STATEMENT_FONT_SIZE}
+        fontSize={statementFontSize}
         letterSpacing={0.01}
         color="#5a4f42"
         anchorX="center"
@@ -422,7 +435,10 @@ export function HomeWall() {
         </Text>
       )}
 
-      <HeroPrint y={isMobile ? HERO_Y : DESKTOP_HERO_Y} />
+      <HeroPrint
+        y={isMobile ? MOBILE_HERO_Y : DESKTOP_HERO_Y}
+        scale={isMobile ? MOBILE_HERO_SCALE : HERO_SCALE}
+      />
 
       {!isMobile && <BrandMark />}
       {!isMobile && <WallText />}
@@ -431,7 +447,12 @@ export function HomeWall() {
 
       {/* key wash: high and pulled back, so its cone blooms a halo on the panel
           above the print before falling onto it */}
-      <Spot position={[0, 3.58, 2.6]} target={[0, 0.55, 0.15]} intensity={44} angle={0.5} />
+      <Spot
+        position={[0, isMobile ? 3.66 : 3.58, 2.6]}
+        target={[0, isMobile ? 0.64 : 0.55, 0.15]}
+        intensity={isMobile ? 48 : 44}
+        angle={isMobile ? 0.52 : 0.5}
+      />
       {/* narrow accents on the [O] and on the wall text */}
       <Spot
         position={[MARK_X, 3.1, 1.5]}
