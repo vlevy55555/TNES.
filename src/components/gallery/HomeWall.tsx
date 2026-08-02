@@ -34,24 +34,19 @@ const PANEL_FACE_Z = 0.05 + PANEL_DEPTH / 2
 const REVEAL_X = PANEL_W / 2 - 0.16
 const REVEAL_W = 0.022
 
-const MOBILE_STATEMENT_Y = 2.08
-const MOBILE_AUTHOR_Y = 2.4
 const DESKTOP_STATEMENT_Y = 2.06
 const DESKTOP_SUBTITLE_Y = 1.68
 const STATEMENT_FONT_SIZE = 0.215
-const MOBILE_STATEMENT_FONT_SIZE = 0.235
 
 /**
  * The one work on this wall. It is **shown, not sold**: no hover, no click, no
  * zoom — the wall text beside it is its label and the console sends you to the
  * Archive to buy. Hung on the panel, so no plaque either.
  */
-const MOBILE_HERO_Y = 0.53
 const DESKTOP_HERO_Y = 0.12
 const HERO_Z = PANEL_FACE_Z + 0.02
 /** scales the standard 3:2 frame (1.86 wide) up to the reference's ~3.5 */
 const HERO_SCALE = 1.9
-const MOBILE_HERO_SCALE = 2.03
 
 /** [O], on the base wall left of the panel */
 const MARK_X = -3.5
@@ -361,8 +356,6 @@ function Counter({ compact }: { compact: boolean }) {
  */
 export function HomeWall() {
   const isMobile = useGalleryStore((s) => s.isMobile)
-  const statementY = isMobile ? MOBILE_STATEMENT_Y : DESKTOP_STATEMENT_Y
-  const statementFontSize = isMobile ? MOBILE_STATEMENT_FONT_SIZE : STATEMENT_FONT_SIZE
 
   return (
     <group>
@@ -380,65 +373,36 @@ export function HomeWall() {
         </mesh>
       ))}
 
-      {/* The hero copy follows the reference: Manrope is used for the title and
-          its supporting line, with the author line moving above it on mobile. */}
-      {isMobile && (
-        <Text
-          font={FONT_SANS}
-          fontSize={0.052}
-          letterSpacing={0.08}
-          color="#b9ad99"
-          anchorX="center"
-          anchorY="middle"
-          position={[0, MOBILE_AUTHOR_Y, PANEL_FACE_Z + 0.006]}
-        >
-          fine art photography by Victor Safdie Levy
-        </Text>
-      )}
+      {/* Keep the opening copy and print on the same scale and rhythm on every
+          viewport: the title, limited-prints line and frame read as one stack. */}
       <Text
         font={FONT_SANS}
-        fontSize={statementFontSize}
+        fontSize={STATEMENT_FONT_SIZE}
         letterSpacing={0.01}
-        color="#c9bda8"
+        color="#3b332a"
         anchorX="center"
         anchorY="middle"
-        position={[0, statementY + 0.008, PANEL_FACE_Z + 0.006]}
+        position={[0, DESKTOP_STATEMENT_Y, PANEL_FACE_Z + 0.01]}
       >
         {BRAND_STATEMENT}
       </Text>
+
       <Text
         font={FONT_SANS}
-        fontSize={statementFontSize}
-        letterSpacing={0.01}
+        fontSize={0.106}
+        lineHeight={1.32}
+        letterSpacing={0.015}
         color="#5a4f42"
+        maxWidth={3.1}
+        textAlign="center"
         anchorX="center"
         anchorY="middle"
-        position={[0, statementY, PANEL_FACE_Z + 0.01]}
+        position={[0, DESKTOP_SUBTITLE_Y, PANEL_FACE_Z + 0.006]}
       >
-        {BRAND_STATEMENT}
+        {'limited prints of places that exists\nin between, made to live with.'}
       </Text>
 
-      {!isMobile && (
-        <Text
-          font={FONT_SANS}
-          fontSize={0.106}
-          lineHeight={1.32}
-          letterSpacing={0.015}
-          color="#5a4f42"
-          maxWidth={3.1}
-          textAlign="center"
-          anchorX="center"
-          anchorY="middle"
-          position={[0, DESKTOP_SUBTITLE_Y, PANEL_FACE_Z + 0.006]}
-        >
-          {'limited prints of places that exists\nin between, made to live with.'}
-        </Text>
-      )}
-
-      <HeroPrint
-        y={isMobile ? MOBILE_HERO_Y : DESKTOP_HERO_Y}
-        scale={isMobile ? MOBILE_HERO_SCALE : HERO_SCALE}
-      />
+      <HeroPrint y={DESKTOP_HERO_Y} scale={HERO_SCALE} />
 
       {!isMobile && <BrandMark />}
       {!isMobile && <WallText />}

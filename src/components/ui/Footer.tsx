@@ -3,7 +3,6 @@ import { useGalleryStore } from '../../store/useGalleryStore'
 
 export function Footer() {
   const goToWall = useGalleryStore((s) => s.goToWall)
-  const openInquiry = useGalleryStore((s) => s.openInquiry)
   const startVslExit = useGalleryStore((s) => s.startVslExit)
 
   return (
@@ -15,7 +14,6 @@ export function Footer() {
         <a href={ABOUT.contact.instagramUrl} target="_blank" rel="noopener noreferrer">
           instagram
         </a>
-        <button onClick={() => openInquiry()}>inquiries</button>
       </div>
     </footer>
   )
