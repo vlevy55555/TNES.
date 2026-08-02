@@ -34,10 +34,11 @@ const PANEL_FACE_Z = 0.05 + PANEL_DEPTH / 2
 const REVEAL_X = PANEL_W / 2 - 0.16
 const REVEAL_W = 0.022
 
-const STATEMENT_Y = 1.9
+const STATEMENT_Y = 1.84
 const MOBILE_AUTHOR_Y = 2.14
-const DESKTOP_STATEMENT_Y = 2.12
+const DESKTOP_STATEMENT_Y = 2.06
 const DESKTOP_SUBTITLE_Y = 1.68
+const STATEMENT_FONT_SIZE = 0.215
 
 /**
  * The one work on this wall. It is **shown, not sold**: no hover, no click, no
@@ -57,15 +58,15 @@ const MARK_Y = 0.3
 /** the work's wall text, on the base wall right of the panel */
 const INFO_X = 2.85
 
-/** the console: copy, the primary CTA, the secondary link */
+/** the console: primary CTA and studio link */
 const COUNTER_W = 6.3
+const MOBILE_COUNTER_W = 4.35
 const COUNTER_D = 0.8
 const COUNTER_Z = 0.55
 const PLINTH_H = 0.12
 const BODY_H = 0.83
+const MOBILE_BODY_H = 1.05
 const TOP_H = 0.1
-const BODY_Y = WALL_BOTTOM_Y + PLINTH_H + BODY_H / 2
-const TOP_Y = WALL_BOTTOM_Y + PLINTH_H + BODY_H + TOP_H / 2
 const FACE_Z = COUNTER_Z + COUNTER_D / 2 + 0.01
 
 const hero = artworks.find((a) => a.id === HERO_ID)!
@@ -216,13 +217,13 @@ function WallText() {
 }
 
 /** Primary CTA — into the Archive, where the works are actually purchasable. */
-function ShopButton() {
+function ShopButton({ position }: { position: [number, number, number] }) {
   const goToWall = useGalleryStore((s) => s.goToWall)
   const [hovered, setHovered] = useState(false)
   useCursor(hovered, INTERACTIVE_CURSOR)
   return (
     <group
-      position={[0, BODY_Y + 0.16, FACE_Z]}
+      position={position}
       onClick={(e) => {
         e.stopPropagation()
         if (useGalleryStore.getState().inquiryOpen || dragState.moved) return
@@ -293,36 +294,50 @@ function RoomLink({
   )
 }
 
-function Counter() {
-  const plinthMap = useStoneMap(COUNTER_W - 0.2, PLINTH_H)
-  const bodyMap = useStoneMap(COUNTER_W, BODY_H)
-  const topMap = useStoneMap(COUNTER_W + 0.2, TOP_H)
+function Counter({ compact }: { compact: boolean }) {
+  const counterW = compact ? MOBILE_COUNTER_W : COUNTER_W
+  const bodyH = compact ? MOBILE_BODY_H : BODY_H
+  const bodyY = WALL_BOTTOM_Y + PLINTH_H + bodyH / 2
+  const topY = WALL_BOTTOM_Y + PLINTH_H + bodyH + TOP_H / 2
+  const plinthMap = useStoneMap(counterW - 0.2, PLINTH_H)
+  const bodyMap = useStoneMap(counterW, bodyH)
+  const topMap = useStoneMap(counterW + 0.2, TOP_H)
 
   return (
     <group>
       {/* recessed plinth — makes the mass read as slightly lifted off the floor */}
       <mesh position={[0, WALL_BOTTOM_Y + PLINTH_H / 2, COUNTER_Z]} receiveShadow>
-        <boxGeometry args={[COUNTER_W - 0.2, PLINTH_H, COUNTER_D - 0.08]} />
+        <boxGeometry args={[counterW - 0.2, PLINTH_H, COUNTER_D - 0.08]} />
         <StoneMaterial map={plinthMap} lift={0.18} />
       </mesh>
-      <mesh position={[0, BODY_Y, COUNTER_Z]} castShadow receiveShadow>
-        <boxGeometry args={[COUNTER_W, BODY_H, COUNTER_D]} />
+      <mesh position={[0, bodyY, COUNTER_Z]} castShadow receiveShadow>
+        <boxGeometry args={[counterW, bodyH, COUNTER_D]} />
         <StoneMaterial map={bodyMap} lift={0.48} />
       </mesh>
       {/* top slab: overhangs slightly and reads a shade darker than the body */}
-      <mesh position={[0, TOP_Y, COUNTER_Z]} castShadow receiveShadow>
-        <boxGeometry args={[COUNTER_W + 0.2, TOP_H, COUNTER_D + 0.1]} />
+      <mesh position={[0, topY, COUNTER_Z]} castShadow receiveShadow>
+        <boxGeometry args={[counterW + 0.2, TOP_H, COUNTER_D + 0.1]} />
         <StoneMaterial map={topMap} lift={0.4} />
       </mesh>
 
-      <ShopButton />
+      <ShopButton position={compact ? [0, bodyY + 0.19, FACE_Z] : [-0.35, bodyY, FACE_Z]} />
 
-      <RoomLink
-        label="EXPLORE THE STUDIO  →"
-        position={[0, BODY_Y - 0.2, FACE_Z]}
-        fontSize={0.09}
-        anchorX="center"
-      />
+      {compact ? (
+        <RoomLink
+          label="EXPLORE THE STUDIO  →"
+          position={[0, bodyY - 0.2, FACE_Z]}
+          fontSize={0.09}
+          anchorX="center"
+        />
+      ) : (
+        <>
+          <mesh position={[0.78, bodyY, FACE_Z]}>
+            <planeGeometry args={[0.012, 0.38]} />
+            <meshBasicMaterial color="#6b6151" />
+          </mesh>
+          <RoomLink label="EXPLORE THE STUDIO  →" position={[1.02, bodyY, FACE_Z]} fontSize={0.09} />
+        </>
+      )}
     </group>
   )
 }
@@ -369,7 +384,7 @@ export function HomeWall() {
       )}
       <Text
         font={FONT_SANS}
-        fontSize={0.185}
+        fontSize={STATEMENT_FONT_SIZE}
         letterSpacing={0.01}
         color="#c9bda8"
         anchorX="center"
@@ -380,7 +395,7 @@ export function HomeWall() {
       </Text>
       <Text
         font={FONT_SANS}
-        fontSize={0.185}
+        fontSize={STATEMENT_FONT_SIZE}
         letterSpacing={0.01}
         color="#5a4f42"
         anchorX="center"
@@ -412,11 +427,11 @@ export function HomeWall() {
       {!isMobile && <BrandMark />}
       {!isMobile && <WallText />}
 
-      <Counter />
+      <Counter compact={isMobile} />
 
       {/* key wash: high and pulled back, so its cone blooms a halo on the panel
           above the print before falling onto it */}
-      <Spot position={[0, 3.5, 2.6]} target={[0, 0.55, 0.15]} intensity={44} angle={0.5} />
+      <Spot position={[0, 3.58, 2.6]} target={[0, 0.55, 0.15]} intensity={44} angle={0.5} />
       {/* narrow accents on the [O] and on the wall text */}
       <Spot
         position={[MARK_X, 3.1, 1.5]}
