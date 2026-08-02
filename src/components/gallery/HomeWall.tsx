@@ -36,7 +36,8 @@ const REVEAL_W = 0.022
 
 const STATEMENT_Y = 1.9
 const MOBILE_AUTHOR_Y = 2.14
-const DESKTOP_SUBTITLE_Y = 1.62
+const DESKTOP_STATEMENT_Y = 2.12
+const DESKTOP_SUBTITLE_Y = 1.68
 
 /**
  * The one work on this wall. It is **shown, not sold**: no hover, no click, no
@@ -44,6 +45,7 @@ const DESKTOP_SUBTITLE_Y = 1.62
  * Archive to buy. Hung on the panel, so no plaque either.
  */
 const HERO_Y = 0.3
+const DESKTOP_HERO_Y = 0.12
 const HERO_Z = PANEL_FACE_Z + 0.02
 /** scales the standard 3:2 frame (1.86 wide) up to the reference's ~3.5 */
 const HERO_SCALE = 1.9
@@ -158,12 +160,12 @@ function BrandMark() {
 }
 
 /** The hung print itself — frame, mat and photograph, and nothing interactive. */
-function HeroPrint() {
+function HeroPrint({ y }: { y: number }) {
   const texture = useTexture(hero.image, (t) => {
     t.colorSpace = SRGBColorSpace
   })
   return (
-    <group scale={HERO_SCALE} position={[0, HERO_Y, HERO_Z]}>
+    <group scale={HERO_SCALE} position={[0, y, HERO_Z]}>
       <FrameLayers texture={texture} w={hero.size[0]} h={hero.size[1]} style="white" />
     </group>
   )
@@ -220,7 +222,7 @@ function ShopButton() {
   useCursor(hovered, INTERACTIVE_CURSOR)
   return (
     <group
-      position={[-0.35, BODY_Y, FACE_Z]}
+      position={[0, BODY_Y + 0.16, FACE_Z]}
       onClick={(e) => {
         e.stopPropagation()
         if (useGalleryStore.getState().inquiryOpen || dragState.moved) return
@@ -315,12 +317,12 @@ function Counter() {
 
       <ShopButton />
 
-      <mesh position={[0.78, BODY_Y, FACE_Z]}>
-        <planeGeometry args={[0.012, 0.38]} />
-        <meshBasicMaterial color="#6b6151" />
-      </mesh>
-
-      <RoomLink label="ENTER STUDIO  →" position={[1.02, BODY_Y, FACE_Z]} fontSize={0.104} />
+      <RoomLink
+        label="EXPLORE THE STUDIO  →"
+        position={[0, BODY_Y - 0.2, FACE_Z]}
+        fontSize={0.09}
+        anchorX="center"
+      />
     </group>
   )
 }
@@ -332,6 +334,7 @@ function Counter() {
  */
 export function HomeWall() {
   const isMobile = useGalleryStore((s) => s.isMobile)
+  const statementY = isMobile ? STATEMENT_Y : DESKTOP_STATEMENT_Y
 
   return (
     <group>
@@ -371,7 +374,7 @@ export function HomeWall() {
         color="#c9bda8"
         anchorX="center"
         anchorY="middle"
-        position={[0, STATEMENT_Y + 0.008, PANEL_FACE_Z + 0.006]}
+        position={[0, statementY + 0.008, PANEL_FACE_Z + 0.006]}
       >
         {BRAND_STATEMENT}
       </Text>
@@ -382,7 +385,7 @@ export function HomeWall() {
         color="#5a4f42"
         anchorX="center"
         anchorY="middle"
-        position={[0, STATEMENT_Y, PANEL_FACE_Z + 0.01]}
+        position={[0, statementY, PANEL_FACE_Z + 0.01]}
       >
         {BRAND_STATEMENT}
       </Text>
@@ -390,21 +393,21 @@ export function HomeWall() {
       {!isMobile && (
         <Text
           font={FONT_SANS}
-          fontSize={0.074}
-          lineHeight={1.35}
-          letterSpacing={0.025}
-          color="#b9ad99"
-          maxWidth={3.35}
+          fontSize={0.106}
+          lineHeight={1.32}
+          letterSpacing={0.015}
+          color="#5a4f42"
+          maxWidth={3.1}
           textAlign="center"
           anchorX="center"
           anchorY="middle"
           position={[0, DESKTOP_SUBTITLE_Y, PANEL_FACE_Z + 0.006]}
         >
-          limited prints of places that exists in between, made to live with.
+          {'limited prints of places that exists\nin between, made to live with.'}
         </Text>
       )}
 
-      <HeroPrint />
+      <HeroPrint y={isMobile ? HERO_Y : DESKTOP_HERO_Y} />
 
       {!isMobile && <BrandMark />}
       {!isMobile && <WallText />}
