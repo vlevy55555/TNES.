@@ -1,11 +1,10 @@
-import { ABOUT_WALL, walls } from '../../data/artworks'
+import { walls } from '../../data/artworks'
 import { useGalleryStore } from '../../store/useGalleryStore'
 import { useCartCount, useCartStore } from '../../store/useCartStore'
 
 export function Header() {
   const currentWall = useGalleryStore((s) => s.currentWall)
   const goToWall = useGalleryStore((s) => s.goToWall)
-  const startVslExit = useGalleryStore((s) => s.startVslExit)
   const openCart = useCartStore((s) => s.setOpen)
   const count = useCartCount()
 
@@ -17,7 +16,7 @@ export function Header() {
           <button
             key={wall.index}
             className={`nav-link ${currentWall === wall.index ? 'nav-link-active' : ''}`}
-            onClick={() => (wall.index === ABOUT_WALL ? startVslExit() : goToWall(wall.index))}
+            onClick={() => goToWall(wall.index)}
           >
             {wall.name}
           </button>
