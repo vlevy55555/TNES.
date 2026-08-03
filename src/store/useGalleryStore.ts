@@ -24,6 +24,9 @@ const initialWall =
  */
 export type ZoomAt = { x: number; y: number; z: number; scale: number }
 export type PreviewFrameStyle = Extract<FrameStyle, 'black' | 'white'>
+export type PrintsIntroPhase = 'hidden' | 'entering' | 'active' | 'exiting'
+
+type PendingIntroArtwork = { id: string; zoomAt: ZoomAt | null }
 
 type GalleryState = {
   currentWall: number
@@ -46,6 +49,14 @@ type GalleryState = {
    * which hangs all twelve at once.
    */
   printsPage: 0 | 1
+  printsIntroPhase: PrintsIntroPhase
+  /** Resets on a full page load, but prevents a repeat when returning to Prints. */
+  printsIntroSeen: boolean
+  pendingIntroArtwork: PendingIntroArtwork | null
+  setPrintsIntroActive: () => void
+  selectArtworkFromPrintsIntro: (id: string, zoomAt?: ZoomAt | null) => void
+  dismissPrintsIntro: () => void
+  finishPrintsIntro: () => void
   manifestoOpen: boolean
   // inquiry form: which artwork it was opened from (null = general inquiry)
   inquiryOpen: boolean
@@ -78,6 +89,9 @@ export const useGalleryStore = create<GalleryState>((set, get) => ({
   manifestoRoomOpen: false,
   isMobile: mqIsMobile(),
   printsPage: 0,
+  printsIntroPhase: initialWall === ARCHIVE_WALL && !initialArtwork ? 'entering' : 'hidden',
+  printsIntroSeen: initialWall === ARCHIVE_WALL && !initialArtwork,
+  pendingIntroArtwork: null,
   manifestoOpen: false,
   inquiryOpen: false,
   inquiryWorkId: null,
@@ -90,12 +104,16 @@ export const useGalleryStore = create<GalleryState>((set, get) => ({
 
   goToWall: (index) => {
     const wall = Math.min(Math.max(index, 0), walls.length - 1)
+    const showPrintsIntro = wall === ARCHIVE_WALL && !get().printsIntroSeen
     set({
       currentWall: wall,
       selectedArtworkId: null,
       zoomAt: null,
       manifestoRoomOpen: false,
       printsPage: 0,
+      printsIntroPhase: showPrintsIntro ? 'entering' : 'hidden',
+      printsIntroSeen: get().printsIntroSeen || showPrintsIntro,
+      pendingIntroArtwork: null,
     })
   },
 
@@ -106,12 +124,16 @@ export const useGalleryStore = create<GalleryState>((set, get) => ({
       return set({ printsPage: 1, selectedArtworkId: null, zoomAt: null })
     }
     const wall = Math.min(currentWall + 1, walls.length - 1)
+    const showPrintsIntro = wall === ARCHIVE_WALL && !get().printsIntroSeen
     set({
       currentWall: wall,
       selectedArtworkId: null,
       zoomAt: null,
       manifestoRoomOpen: false,
       printsPage: 0,
+      printsIntroPhase: showPrintsIntro ? 'entering' : 'hidden',
+      printsIntroSeen: get().printsIntroSeen || showPrintsIntro,
+      pendingIntroArtwork: null,
     })
   },
 
@@ -121,6 +143,7 @@ export const useGalleryStore = create<GalleryState>((set, get) => ({
       return set({ printsPage: 0, selectedArtworkId: null, zoomAt: null })
     }
     const wall = Math.max(currentWall - 1, 0)
+    const showPrintsIntro = wall === ARCHIVE_WALL && !get().printsIntroSeen
     set({
       currentWall: wall,
       selectedArtworkId: null,
@@ -129,6 +152,9 @@ export const useGalleryStore = create<GalleryState>((set, get) => ({
       // stepping back INTO Prints lands on its last screen, the one nearest
       // the wall you came from
       printsPage: isMobile && wall === ARCHIVE_WALL ? 1 : 0,
+      printsIntroPhase: showPrintsIntro ? 'entering' : 'hidden',
+      printsIntroSeen: get().printsIntroSeen || showPrintsIntro,
+      pendingIntroArtwork: null,
     })
   },
 
@@ -139,6 +165,35 @@ export const useGalleryStore = create<GalleryState>((set, get) => ({
       selectedFrameStyle: artwork?.frameStyle === 'white' ? 'white' : 'black',
       previewScale: 1,
       zoomAt,
+    })
+  },
+  setPrintsIntroActive: () => {
+    if (get().printsIntroPhase === 'entering') set({ printsIntroPhase: 'active' })
+  },
+  selectArtworkFromPrintsIntro: (id, zoomAt = null) => {
+    const phase = get().printsIntroPhase
+    if (phase === 'hidden' || phase === 'exiting') return
+    set({ printsIntroPhase: 'exiting', pendingIntroArtwork: { id, zoomAt } })
+  },
+  dismissPrintsIntro: () => {
+    const phase = get().printsIntroPhase
+    if (phase === 'hidden' || phase === 'exiting') return
+    set({ printsIntroPhase: 'exiting', pendingIntroArtwork: null })
+  },
+  finishPrintsIntro: () => {
+    const pending = get().pendingIntroArtwork
+    const artwork = pending ? artworks.find((item) => item.id === pending.id) : undefined
+    set({
+      printsIntroPhase: 'hidden',
+      pendingIntroArtwork: null,
+      ...(pending
+        ? {
+            selectedArtworkId: pending.id,
+            selectedFrameStyle: artwork?.frameStyle === 'white' ? 'white' : 'black',
+            previewScale: 1,
+            zoomAt: pending.zoomAt,
+          }
+        : {}),
     })
   },
   setSelectedFrameStyle: (style) => set({ selectedFrameStyle: style }),

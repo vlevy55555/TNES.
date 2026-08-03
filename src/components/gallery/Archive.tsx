@@ -65,8 +65,8 @@ function makeGlowTexture() {
   canvas.width = canvas.height = 128
   const ctx = canvas.getContext('2d')!
   const gradient = ctx.createRadialGradient(64, 64, 0, 64, 64, 64)
-  gradient.addColorStop(0, 'rgba(255, 243, 224, 0.42)')
-  gradient.addColorStop(0.42, 'rgba(255, 238, 212, 0.19)')
+  gradient.addColorStop(0, 'rgba(255, 243, 224, 0.7)')
+  gradient.addColorStop(0.42, 'rgba(255, 238, 212, 0.32)')
   gradient.addColorStop(1, 'rgba(255, 234, 198, 0)')
   ctx.fillStyle = gradient
   ctx.fillRect(0, 0, 128, 128)
@@ -151,7 +151,8 @@ const DESKTOP_HEAD = {
   captionY: 2.62,
   caption: 'CLICK A WORK TO CHOOSE ITS SIZE, FRAME AND PRICE',
   glow: [6.6, 1.5] as [number, number],
-  glowY: 2.76,
+  // Bias the brighter centre toward the title rather than the smaller caption.
+  glowY: 2.86,
 }
 const MOBILE_HEAD = {
   titleSize: 0.13,
@@ -160,7 +161,8 @@ const MOBILE_HEAD = {
   captionY: 2.42,
   caption: 'TAP A WORK TO CHOOSE SIZE AND FRAME',
   glow: [2.9, 1.0] as [number, number],
-  glowY: 2.52,
+  // Retains the previous requested lift toward the title.
+  glowY: 2.6,
 }
 
 const byId = new Map<string, Artwork>(artworks.map((a) => [a.id, a]))

@@ -14,6 +14,7 @@ import {
   FONT_BRAND,
   FONT_BRAND_ITALIC,
   FONT_DIGITS_TYPEFACE,
+  FONT_SERIF,
   FONT_SANS,
   OPENING_DATE,
   WALL_BOTTOM_Y,
@@ -97,6 +98,13 @@ const BLOCK_PLINTH_H = 0.08
 /** mobile drops the plate and stacks the four units two-up, centred */
 const M_COL = 0.85
 const M_ROW_Y = [0.5, -0.55]
+// Mobile removes the desktop editorial plate, so this briefing restores the
+// release context immediately above the countdown recess.
+const MOBILE_RELEASE_Y = 2.68
+// Unlike the countdown labels, this copy sits on the uncut wall above the
+// recess, so it must sit in FRONT of the wall face rather than on the niche
+// floor behind it.
+const MOBILE_RELEASE_Z = 0.07
 
 const UNITS = ['DAYS', 'HOURS', 'MINUTES', 'SECONDS']
 
@@ -427,7 +435,7 @@ function NotifyForm({ position }: { position: [number, number, number] }) {
  * to the floor. At this position the beam dies around y 0.7 — just above the
  * countdown, so the numbers read against even wall rather than a gradient.
  */
-function Cone({ x }: { x: number }) {
+function Cone({ x, intensity = 11 }: { x: number; intensity?: number }) {
   const spot = useRef<SpotLight>(null)
   const aim = useRef<Object3D>(null)
   useEffect(() => {
@@ -439,7 +447,7 @@ function Cone({ x }: { x: number }) {
         ref={spot}
         position={[x, 3.5, 1.35]}
         color="#ffeccd"
-        intensity={11}
+        intensity={intensity}
         angle={0.5}
         penumbra={1}
         decay={1.8}
@@ -450,13 +458,37 @@ function Cone({ x }: { x: number }) {
   )
 }
 
+/** A tight, centred pool for the mobile release copy. */
+function MobileReleaseSpot() {
+  const spot = useRef<SpotLight>(null)
+  const aim = useRef<Object3D>(null)
+  useEffect(() => {
+    if (spot.current && aim.current) spot.current.target = aim.current
+  }, [])
+  return (
+    <>
+      <spotLight
+        ref={spot}
+        position={[0, 3.45, 1.8]}
+        color="#fff1d8"
+        intensity={12}
+        angle={0.34}
+        penumbra={1}
+        decay={1.8}
+        distance={3.1}
+      />
+      <object3D ref={aim} position={[0, 2.42, 0.05]} />
+    </>
+  )
+}
+
 /**
  * The floor under every value on this wall. Without it the concrete outside the
  * cones drops to the room's 0.2 ambient, and the wall swings ~2x in luminance
  * across the frame — no single ink colour can stay legible across that.
  * Deliberately broad, frontal and weak: it lifts, it does not model.
  */
-function Fill() {
+function Fill({ intensity = 20 }: { intensity?: number }) {
   const spot = useRef<SpotLight>(null)
   const aim = useRef<Object3D>(null)
   useEffect(() => {
@@ -468,7 +500,7 @@ function Fill() {
         ref={spot}
         position={[0, 1.6, 5]}
         color="#ffeeda"
-        intensity={20}
+        intensity={intensity}
         angle={0.9}
         penumbra={1}
         decay={1}
@@ -542,6 +574,37 @@ function UnitLabel({ x, y, unit }: { x: number; y: number; unit: string }) {
   )
 }
 
+function MobileReleaseBrief() {
+  return (
+    <group>
+      <Text
+        font={FONT_SERIF}
+        fontSize={0.18}
+        letterSpacing={0.005}
+        color={INK}
+        anchorX="center"
+        anchorY="middle"
+        position={[0, MOBILE_RELEASE_Y, MOBILE_RELEASE_Z]}
+      >
+        The first TNES archive release
+      </Text>
+      <Text
+        font={FONT_SERIF}
+        fontSize={0.118}
+        lineHeight={1.5}
+        color={SECOND}
+        maxWidth={2.8}
+        textAlign="center"
+        anchorX="center"
+        anchorY="top"
+        position={[0, MOBILE_RELEASE_Y - 0.22, MOBILE_RELEASE_Z]}
+      >
+        {'Join the list for first access\nwhen the archive opens.'}
+      </Text>
+    </group>
+  )
+}
+
 /**
  * The Countdown wall: an editorial plate screwed to the concrete, the release
  * clock cut straight into it, four light cones down the top, and a stone volume
@@ -561,6 +624,8 @@ export function ComingSoonWall() {
   if (isMobile) {
     return (
       <group>
+        <MobileReleaseBrief />
+        <MobileReleaseSpot />
         <Niche rect={NICHE_MOBILE} groups={slots} size={NUMBER_SIZE} />
         <Text
           font={FONT_SANS}
@@ -581,9 +646,9 @@ export function ComingSoonWall() {
             Clear of it now, and still inside COUNTDOWN_MOBILE_FIELD. */}
         <NotifyForm position={[0, -1.86, 0.22]} />
         {[-1.6, 1.6].map((x) => (
-          <Cone key={x} x={x} />
+          <Cone key={x} x={x} intensity={8} />
         ))}
-        <Fill />
+        <Fill intensity={14} />
       </group>
     )
   }

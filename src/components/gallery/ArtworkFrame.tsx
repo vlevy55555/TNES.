@@ -5,7 +5,6 @@ import gsap from 'gsap'
 import {
   artworks,
   FONT_BRAND,
-  FONT_SANS,
   type FrameStyle,
   type Artwork,
 } from '../../data/artworks'
@@ -288,6 +287,8 @@ export function ArtworkFrame({
   const selectedArtworkId = useGalleryStore((s) => s.selectedArtworkId)
   const selectedFrameStyle = useGalleryStore((s) => s.selectedFrameStyle)
   const previewScale = useGalleryStore((s) => s.previewScale)
+  const printsIntroPhase = useGalleryStore((s) => s.printsIntroPhase)
+  const selectArtworkFromPrintsIntro = useGalleryStore((s) => s.selectArtworkFromPrintsIntro)
   const group = useRef<Group>(null)
   const sizeGroup = useRef<Group>(null)
   const [hovered, setHovered] = useState(false)
@@ -333,12 +334,25 @@ export function ArtworkFrame({
           // divide out this group's own hover scale (1 or 1.02) so the framing
           // doesn't shift by 2% depending on whether the pointer was over it
           const scale = group.current.getWorldScale(_worldScale).x / group.current.scale.x
+          if (printsIntroPhase !== 'hidden') {
+            selectArtworkFromPrintsIntro(artwork.id, {
+              x: _worldPos.x,
+              y: _worldPos.y,
+              z: _worldPos.z,
+              scale,
+            })
+            return
+          }
           selectArtwork(artwork.id, {
             x: _worldPos.x,
             y: _worldPos.y,
             z: _worldPos.z,
             scale,
           })
+          return
+        }
+        if (printsIntroPhase !== 'hidden') {
+          selectArtworkFromPrintsIntro(artwork.id)
           return
         }
         selectArtwork(artwork.id)
@@ -355,10 +369,10 @@ export function ArtworkFrame({
       </group>
 
       {/* label plaque under the frame */}
-      {/* work title — Playfair (gallery identification) */}
+      {/* work title — larger for the Prints wall's full-grid camera framing */}
       <Text
         font={FONT_BRAND}
-        fontSize={0.115}
+        fontSize={0.14}
         color="#2f2a24"
         anchorX="left"
         anchorY="top"
@@ -366,12 +380,12 @@ export function ArtworkFrame({
       >
         {artwork.title}
       </Text>
-      {/* caption — Manrope, tracked */}
+      {/* Keep the subtitle in the title's face and contrast: in the Prints grid
+          the former small, spaced sans text faded into the marble wall. */}
       <Text
-        font={FONT_SANS}
-        fontSize={0.058}
-        letterSpacing={0.22}
-        color="#6b6151"
+        font={FONT_BRAND}
+        fontSize={0.095}
+        color="#2f2a24"
         anchorX="left"
         anchorY="top"
         position={[-frameW / 2, -frameH / 2 - 0.36, 0]}

@@ -133,6 +133,110 @@ select:not(:disabled),
   overflow: visible;
 }
 
+/* Prints first-arrival instruction: a translucent veil over the live WebGL
+   gallery, never a replacement background. GSAP owns opacity and filtering. */
+.gallery-instruction-overlay {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 30;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  pointer-events: auto;
+  background: radial-gradient(
+    circle at center,
+    rgba(255, 253, 248, 0.56) 0%,
+    rgba(248, 245, 239, 0.38) 35%,
+    rgba(240, 237, 230, 0.22) 70%,
+    rgba(235, 232, 225, 0.12) 100%
+  );
+  backdrop-filter: blur(2px) brightness(1.08);
+  -webkit-backdrop-filter: blur(2px) brightness(1.08);
+  will-change: opacity, backdrop-filter;
+}
+
+.gallery-instruction {
+  width: min(700px, 100%);
+  text-align: center;
+  color: rgba(30, 27, 24, 0.92);
+  user-select: none;
+}
+
+.instruction-title {
+  font-family: var(--serif);
+  font-size: clamp(38px, 4vw, 66px);
+  font-weight: 400;
+  line-height: 1;
+  letter-spacing: -0.03em;
+}
+
+.instruction-divider {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  margin: 38px auto 0;
+  width: min(100%, 500px);
+  color: rgba(35, 32, 28, 0.48);
+}
+
+.instruction-divider span {
+  flex: 1;
+  height: 1px;
+  background: rgba(35, 32, 28, 0.25);
+}
+
+.instruction-divider b {
+  font-family: var(--mark);
+  font-size: 15px;
+  font-weight: 400;
+  letter-spacing: 0.08em;
+}
+
+.instruction-description {
+  max-width: 610px;
+  margin: 28px auto 0;
+  font-family: var(--sans);
+  font-size: clamp(12px, 1vw, 16px);
+  line-height: 1.7;
+  letter-spacing: 0.04em;
+  color: rgba(35, 32, 28, 0.76);
+}
+
+.instruction-hint {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  margin-top: 54px;
+  font-family: var(--sans);
+  font-size: 11px;
+  line-height: 1;
+  text-transform: uppercase;
+  letter-spacing: 0.22em;
+  color: rgba(35, 32, 28, 0.7);
+}
+
+.instruction-hint i {
+  position: relative;
+  width: 17px;
+  height: 26px;
+  border: 1px solid currentColor;
+  border-radius: 10px;
+}
+
+.instruction-hint i::after {
+  position: absolute;
+  top: 5px;
+  left: 50%;
+  width: 1px;
+  height: 6px;
+  background: currentColor;
+  content: '';
+  transform: translateX(-50%);
+}
+
 .sig-ink {
   fill: #221c13;
   /* soft light halo lifts the dark ink off the darker centre of the painting;
@@ -1470,6 +1574,45 @@ select:not(:disabled),
 }
 
 @media (max-width: 700px), (orientation: portrait) {
+  .gallery-instruction-overlay {
+    padding-inline: 24px;
+    /* Phone framing places larger, busier prints directly behind the copy. A
+       slightly denser centre keeps the instruction readable without becoming
+       a solid white screen. */
+    background: radial-gradient(
+      circle at center,
+      rgba(255, 253, 248, 0.66) 0%,
+      rgba(248, 245, 239, 0.48) 35%,
+      rgba(240, 237, 230, 0.3) 70%,
+      rgba(235, 232, 225, 0.16) 100%
+    );
+    backdrop-filter: blur(3px) brightness(1.1);
+    -webkit-backdrop-filter: blur(3px) brightness(1.1);
+  }
+
+  .gallery-instruction {
+    width: 90vw;
+    transform: translateY(-4vh);
+  }
+
+  .instruction-title {
+    font-size: clamp(34px, 10vw, 52px);
+  }
+
+  .instruction-divider {
+    gap: 12px;
+    margin-top: 30px;
+  }
+
+  .instruction-description {
+    max-width: 90vw;
+  }
+
+  .instruction-hint {
+    margin-top: 42px;
+    letter-spacing: 0.17em;
+  }
+
   .cart-drawer {
     padding: 84px 22px 28px;
   }

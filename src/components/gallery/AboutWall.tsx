@@ -343,13 +343,14 @@ function Corridor() {
  * under it, as in the reference — not the centred two-rule signplate that used
  * to float over the doorway.
  */
-function EnterLink() {
+function EnterLink({ isMobile }: { isMobile: boolean }) {
   const [hovered, setHovered] = useState(false)
   useCursor(hovered, INTERACTIVE_CURSOR)
   const startVslExit = useGalleryStore((s) => s.startVslExit)
   const label = `${ABOUT.cta.toUpperCase()}   →`
+  const fontSize = isMobile ? 0.14 : 0.082
   // the rule tracks the label's own width instead of a fixed slab
-  const width = label.length * 0.082 * 0.82
+  const width = label.length * fontSize * 0.82
 
   return (
     <group
@@ -366,15 +367,15 @@ function EnterLink() {
     >
       <Text
         font={FONT_SANS}
-        fontSize={0.082}
-        letterSpacing={0.26}
+        fontSize={fontSize}
+        letterSpacing={isMobile ? 0.2 : 0.26}
         color={hovered ? '#ffffff' : INK}
         anchorX="left"
         anchorY="middle"
       >
         {label}
       </Text>
-      <mesh position={[width / 2, -0.11, 0]}>
+      <mesh position={[width / 2, isMobile ? -0.16 : -0.11, 0]}>
         <planeGeometry args={[width, 0.005]} />
         <meshBasicMaterial color={hovered ? '#ffffff' : '#9d907a'} />
       </mesh>
@@ -385,6 +386,11 @@ function EnterLink() {
 // ponytail: all positions eyeballed against the resting wall framing — nudge the
 // x/y literals if the composition drifts; nothing downstream depends on them.
 export function AboutWall() {
+  const isMobile = useGalleryStore((s) => s.isMobile)
+  const nameY = isMobile ? at(0.24) : at(0.31)
+  const roleY = isMobile ? at(0.35) : at(0.41)
+  const statementY = isMobile ? at(0.47) : at(0.54)
+
   return (
     <group>
       <DoorwayWall />
@@ -394,18 +400,18 @@ export function AboutWall() {
       {/* name — upright brand serif, large and quiet, as in the reference */}
       <Text
         font={FONT_BRAND}
-        fontSize={0.3}
+        fontSize={isMobile ? 0.32 : 0.3}
         color={PLATE_INK}
         anchorX="left"
         anchorY="middle"
-        position={[TEXT_X, at(0.31), 0.06]}
+        position={[TEXT_X, nameY, 0.06]}
       >
         {ABOUT.name}
       </Text>
 
       <Text
         font={FONT_SANS}
-        fontSize={0.086}
+        fontSize={isMobile ? 0.105 : 0.086}
         letterSpacing={0.24}
         // The Countdown's plate runs its pair of lines on ONE value (object 01
         // and the title under it are both its INK). Same here: this line shares
@@ -413,7 +419,7 @@ export function AboutWall() {
         color={PLATE_INK}
         anchorX="left"
         anchorY="middle"
-        position={[TEXT_X, at(0.41), 0.06]}
+        position={[TEXT_X, roleY, 0.06]}
       >
         {ABOUT.role}
       </Text>
@@ -421,18 +427,18 @@ export function AboutWall() {
       {/* one block, first person — no pull-quote / bio split */}
       <Text
         font={FONT_SERIF}
-        fontSize={0.105}
-        lineHeight={1.75}
+        fontSize={isMobile ? 0.13 : 0.105}
+        lineHeight={isMobile ? 1.62 : 1.75}
         color={PLATE_INK}
         anchorX="left"
         anchorY="top"
         maxWidth={TEXT_W}
-        position={[TEXT_X, at(0.54), 0.06]}
+        position={[TEXT_X, statementY, 0.06]}
       >
         {ABOUT.statement}
       </Text>
 
-      <EnterLink />
+      <EnterLink isMobile={isMobile} />
 
     </group>
   )

@@ -86,7 +86,8 @@ const PRINTS_MOBILE_Y = 0.24
 // (wall-local x ≈ 2.0–3.9) falls outside this field on purpose — the portrait,
 // the type column and Enter VSL are what have to survive, and shifting the aim
 // left is what buys them a frame worth reading.
-const ABOUT_MOBILE_FIELD: [number, number] = [4.8, 5.0]
+// Give the About portrait and its type column more breathing room on a phone.
+const ABOUT_MOBILE_FIELD: [number, number] = [5.8, 5.8]
 const ABOUT_MOBILE_X = -1.2
 
 // How far an inspected print rides UP the screen to clear the mobile sheet.
