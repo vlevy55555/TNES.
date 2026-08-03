@@ -292,6 +292,10 @@ select:not(:disabled),
   gap: 38px;
 }
 
+.mobile-wall-guide {
+  display: none;
+}
+
 .header a,
 .header button,
 .footer a,
@@ -606,6 +610,26 @@ select:not(:disabled),
     display: none;
   }
 
+  /* The desktop navigation disappears on a phone, so retain its current-page
+     cue in the same central top position. The header's dark wash plus this
+     small shadow keeps it readable over every wall material. */
+  .mobile-wall-guide {
+    position: absolute;
+    top: 21px;
+    left: 50%;
+    display: block;
+    transform: translateX(-50%);
+    font-family: var(--sans);
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 1;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    color: rgba(255, 255, 255, 0.96);
+    text-shadow: 0 1px 5px rgba(0, 0, 0, 0.72);
+  }
+
   .footer {
     padding: 16px 22px;
     justify-content: flex-end;
@@ -629,7 +653,7 @@ select:not(:disabled),
   }
 
   .wall-nav-indicator {
-    bottom: 48px;
+    display: none;
   }
 
   /* Bottom DRAWER, not a bottom sheet: height follows its content, so with the

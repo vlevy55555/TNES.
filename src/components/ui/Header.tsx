@@ -1,4 +1,4 @@
-import { ABOUT_WALL, walls } from '../../data/artworks'
+import { ABOUT_WALL, ARCHIVE_WALL, walls } from '../../data/artworks'
 import { useGalleryStore } from '../../store/useGalleryStore'
 import { useCartCount, useCartStore } from '../../store/useCartStore'
 
@@ -6,8 +6,15 @@ export function Header() {
   const currentWall = useGalleryStore((s) => s.currentWall)
   const goToWall = useGalleryStore((s) => s.goToWall)
   const startVslExit = useGalleryStore((s) => s.startVslExit)
+  const printsPage = useGalleryStore((s) => s.printsPage)
+  const manifestoRoomOpen = useGalleryStore((s) => s.manifestoRoomOpen)
   const openCart = useCartStore((s) => s.setOpen)
   const count = useCartCount()
+  const mobileGuide = manifestoRoomOpen
+    ? 'Manifesto'
+    : currentWall === ARCHIVE_WALL
+      ? `Prints ${printsPage + 1}/2`
+      : walls[currentWall].name
 
   return (
     <header className="header">
@@ -23,6 +30,7 @@ export function Header() {
           </button>
         ))}
       </nav>
+      <span className="mobile-wall-guide" aria-live="polite">{mobileGuide}</span>
       <button
         className="header-cart"
         onClick={() => openCart(true)}
