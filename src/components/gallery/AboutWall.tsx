@@ -1,7 +1,7 @@
 import { Text, useCursor, useTexture } from '@react-three/drei'
 import { useMemo, useState } from 'react'
 import { Path, RepeatWrapping, Shape, SRGBColorSpace } from 'three'
-import { shadowTexture } from './ArtworkFrame'
+import { shadowTexture } from './FrameLayers'
 import {
   ABOUT,
   ABOUT_DOOR_H,

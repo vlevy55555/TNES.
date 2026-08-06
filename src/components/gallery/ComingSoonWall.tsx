@@ -22,7 +22,7 @@ import {
   WALL_WIDTH,
 } from '../../data/artworks'
 import { useGalleryStore } from '../../store/useGalleryStore'
-import { shadowTexture } from './ArtworkFrame'
+import { shadowTexture } from './FrameLayers'
 import { WallPiece, useWallPieceMap, useWallShapeMap } from './MarbleWallSurface'
 import { StoneMaterial, useStoneMap } from './stone'
 

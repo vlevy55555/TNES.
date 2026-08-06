@@ -1,9 +1,9 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
-import type { ReactNode, RefObject } from 'react'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { artworks, BRAND_STATEMENT, HERO_ID } from '../data/artworks'
 import { SHOP_DOMAIN } from '../lib/shopify'
+import { RevealText, useSectionTextReveal } from './reveal'
 import Studio from './Studio'
 import './home.css'
 
@@ -35,7 +35,7 @@ const projects = HOME_IDS.map((id) => {
 const NAV = [
   { label: 'shop', href: '/shop' },
   { label: 'studio', href: '/studio' },
-  { label: 'catalog', href: '/' },
+  { label: 'catalog', href: '/shop#catalogs' },
   { label: 'moments', href: '/moments' },
   { label: 'about', href: '/about' },
   { label: 'cart', href: '/cart' },
@@ -83,77 +83,6 @@ function useInView<T extends HTMLElement>() {
   }, [])
 
   return [ref, seen] as const
-}
-
-/** The shared editorial entrance used by the manifesto headline and every
- * other textual group on Home. Each section owns one timeline, preventing the
- * many captions in the moving carousel from creating competing triggers. */
-function useSectionTextReveal(sectionRef: RefObject<HTMLElement | null>, immediate = false) {
-  useLayoutEffect(() => {
-    const section = sectionRef.current
-    if (!section || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
-
-    let observer: IntersectionObserver | undefined
-    const context = gsap.context(() => {
-      const text = gsap.utils.toArray<HTMLElement>('[data-home-text-reveal]', section)
-      if (!text.length) return
-
-      gsap.set(text, {
-        // The mask has breathing room for glyph ascenders/descenders. Start
-        // farther below it so that extra room never exposes text prematurely.
-        yPercent: 130,
-        rotationX: -28,
-        scaleY: 1.08,
-        opacity: 0,
-        transformOrigin: '50% 100%',
-      })
-
-      const reveal = {
-        yPercent: 0,
-        rotationX: 0,
-        scaleY: 1,
-        opacity: 1,
-        duration: 1.05,
-        ease: 'expo.out',
-        stagger: 0.07,
-      }
-
-      const play = () => gsap.to(text, reveal)
-      if (immediate) {
-        play()
-        return
-      }
-
-      // The sections themselves already use IntersectionObserver for their
-      // lifecycle. Triggering this timeline from the same viewport signal is
-      // reliable even while the home page changes its scrollable root.
-      const sectionObserver = new IntersectionObserver(
-        ([entry]) => {
-          if (!entry.isIntersecting) return
-          sectionObserver.disconnect()
-          play()
-        },
-        { rootMargin: '0px 0px -12% 0px' },
-      )
-      observer = sectionObserver
-      sectionObserver.observe(section)
-    }, section)
-
-    return () => {
-      observer?.disconnect()
-      context.revert()
-    }
-  }, [sectionRef, immediate])
-}
-
-function RevealText({ children, block = false }: { children: ReactNode; block?: boolean }) {
-  return (
-    <span className={`text-reveal ${block ? 'text-reveal--block' : ''}`}>
-      <span className="text-reveal__content" data-home-text-reveal>
-        {children}
-      </span>
-    </span>
-  )
 }
 
 const STATEMENT_TITLE_LINES = ['nothing', 'happens', 'twice']

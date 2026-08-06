@@ -14,7 +14,7 @@ import {
   WALL_HEIGHT,
 } from '../../data/artworks'
 import { useGalleryStore } from '../../store/useGalleryStore'
-import { FrameLayers } from './ArtworkFrame'
+import { FrameLayers } from './FrameLayers'
 import { dragState } from './CameraController'
 import { INTERACTIVE_CURSOR } from './interactiveCursor'
 import { MarbleWallSurface } from './MarbleWallSurface'

@@ -1,0 +1,594 @@
+/* /shop — the white-paper system of design.md, same tokens as .home.
+   Scoped under .shop so the 3D gallery's global sheet is untouched.
+   .text-reveal / .reveal live in home.css, which Shop.tsx imports alongside. */
+
+html:has(.shop),
+body:has(.shop),
+#root:has(.shop) {
+  height: auto;
+  overflow-x: hidden;
+  overflow-y: auto;
+  background: #fff;
+}
+
+.shop {
+  --paper: #fff;
+  --paper-ink: #0b0b0b;
+  --paper-muted: #5d5d5d;
+  --paper-line: rgba(11, 11, 11, 0.2);
+  --media-fallback: #e8e8e8;
+  --pad-x: clamp(20px, 3.3vw, 52px);
+  --pad-y: clamp(20px, 3.4vw, 54px);
+  /* the specimen voice — system mono, no new font file */
+  --mono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+
+  display: block;
+  min-height: 100svh;
+  background: var(--paper);
+  color: var(--paper-ink);
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+}
+
+.shop * {
+  box-sizing: border-box;
+}
+
+.shop a {
+  color: inherit;
+  font: inherit;
+  text-decoration: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Deliberately thin: a type+class selector outranks the single class of
+   .shop__pill, so anything reset here would silently undo the pill's own box,
+   face and ink. The pill declares all of them itself. */
+.shop button {
+  margin: 0;
+  cursor: pointer;
+}
+
+.shop :focus-visible {
+  outline: 1px solid rgba(11, 11, 11, 0.5);
+  outline-offset: 4px;
+}
+
+/* Header — wordmark left, sections right, same rhythm as the hero's */
+
+.shop__header {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 24px;
+  padding: var(--pad-y) var(--pad-x);
+  background: linear-gradient(180deg, var(--paper) 62%, rgba(255, 255, 255, 0));
+}
+
+.shop__logo {
+  font-size: clamp(22px, 1.9vw, 30px);
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: 0.14em;
+}
+
+.shop__nav {
+  display: flex;
+  align-items: baseline;
+  gap: clamp(14px, 1.8vw, 28px);
+}
+
+.shop__nav a {
+  color: rgba(11, 11, 11, 0.6);
+  font-size: clamp(11px, 0.85vw, 13px);
+  line-height: 1;
+  letter-spacing: 0.08em;
+  transition: color 220ms ease;
+}
+
+.shop__nav a:hover,
+.shop__nav a[aria-current='page'] {
+  color: var(--paper-ink);
+}
+
+/* Page head — title, tabs, filters, count */
+
+.shop__intro {
+  padding: clamp(28px, 4vw, 64px) var(--pad-x) clamp(20px, 2.4vw, 36px);
+}
+
+.shop__title {
+  margin: 0;
+  font-size: clamp(44px, 5.4vw, 92px);
+  font-weight: 400;
+  line-height: 0.92;
+  letter-spacing: -0.04em;
+}
+
+.shop__tabs {
+  display: flex;
+  gap: 22px;
+  margin-top: clamp(14px, 1.6vw, 24px);
+}
+
+/* A border, not text-decoration: the label sits inside .text-reveal, whose
+   `overflow: clip` would cut an underline drawn 6px below the baseline. */
+.shop__tab {
+  padding-bottom: 6px;
+  border-bottom: 1px solid transparent;
+  color: var(--paper-muted);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  transition: color 220ms ease, border-color 220ms ease;
+}
+
+.shop__tab:hover {
+  color: var(--paper-ink);
+}
+
+.shop__tab--on {
+  border-bottom-color: currentcolor;
+  color: var(--paper-ink);
+}
+
+.shop__filter {
+  margin-top: clamp(18px, 2vw, 30px);
+}
+
+.shop__filter-label {
+  display: block;
+  margin-bottom: 8px;
+  color: var(--paper-muted);
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+}
+
+.shop__pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.shop__pill {
+  padding: 6px 12px;
+  border: 1px solid var(--paper-line);
+  background: transparent;
+  color: var(--paper-muted);
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  transition:
+    background-color 180ms ease,
+    border-color 180ms ease,
+    color 180ms ease;
+}
+
+/* :not() keeps hover off the chosen pill — the pointer rests on it right after
+   the click, and a plain :hover rule would outrank --on and blank its label. */
+.shop__pill:not(.shop__pill--on):hover {
+  border-color: rgba(11, 11, 11, 0.5);
+  color: var(--paper-ink);
+}
+
+.shop__pill--on {
+  border-color: var(--paper-ink);
+  background: var(--paper-ink);
+  color: var(--paper);
+}
+
+.shop__count {
+  margin: clamp(22px, 2.6vw, 40px) 0 0;
+  color: var(--paper-muted);
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+}
+
+/* Three columns, native aspect per photo — but the vertical rhythm belongs to
+   each column, not to the page. Multicol (not grid) is what buys that: a work
+   stacks directly under the one above it in its own column, so a short frame
+   never holds the other columns to its bottom edge. No row line ever forms. */
+
+.shop__grid {
+  columns: 3;
+  column-gap: clamp(14px, 1.6vw, 26px);
+  padding: clamp(12px, 1.6vw, 24px) var(--pad-x) clamp(72px, 9vw, 140px);
+}
+
+.shop__item {
+  display: block;
+  break-inside: avoid;
+  margin-bottom: clamp(34px, 4vw, 64px);
+}
+
+@media (min-width: 1600px) {
+  .shop__grid {
+    columns: 4;
+  }
+}
+
+@media (max-width: 900px) {
+  .shop__grid {
+    columns: 2;
+  }
+}
+
+@media (max-width: 560px) {
+  .shop__grid {
+    columns: 1;
+  }
+}
+
+/* --ar is the work's own ratio, so a landscape is wide and short and a portrait
+   tall and narrow at the same column width. Nothing is cropped to a square. */
+.shop__figure {
+  aspect-ratio: var(--ar, 1.5);
+  width: 100%;
+  margin: 0;
+  overflow: hidden;
+  background: var(--media-fallback);
+  will-change: clip-path;
+}
+
+.shop__figure img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 700ms cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: transform;
+}
+
+.shop__item:hover .shop__figure img,
+.shop__catalog:hover .shop__figure img {
+  transform: scale(1.035);
+}
+
+.shop__caption {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  margin: 14px 0 0;
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1.4;
+  letter-spacing: 0.02em;
+}
+
+.shop__price {
+  color: var(--paper-muted);
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 400;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
+.shop__meta {
+  margin: 5px 0 0;
+  color: var(--paper-muted);
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.06em;
+}
+
+.shop__arrow {
+  display: inline-block;
+  transition: transform 220ms ease;
+}
+
+.shop__catalog:hover .shop__arrow {
+  transform: translateX(4px);
+}
+
+/* Catalogs */
+
+.shop__catalogs {
+  padding: clamp(56px, 7vw, 110px) var(--pad-x) clamp(72px, 9vw, 140px);
+  border-top: 1px solid var(--paper-line);
+}
+
+.shop__section-title {
+  margin: 0;
+  font-size: clamp(38px, 4.6vw, 78px);
+  font-weight: 400;
+  line-height: 0.92;
+  letter-spacing: -0.04em;
+}
+
+.shop__section-sub {
+  max-width: 42ch;
+  margin: 14px 0 0;
+  color: var(--paper-muted);
+  font-size: 11px;
+  line-height: 1.5;
+  letter-spacing: 0.03em;
+}
+
+.shop__catalog-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: clamp(18px, 2.4vw, 40px);
+  margin-top: clamp(28px, 3.4vw, 56px);
+}
+
+/* the native landscape ratio of the works behind them — no hard crop */
+.shop__catalog .shop__figure {
+  aspect-ratio: 3 / 2;
+}
+
+@media (max-width: 700px) {
+  .shop__catalog-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Footer */
+
+.shop__footer {
+  padding: clamp(48px, 6vw, 92px) var(--pad-x) clamp(28px, 3vw, 44px);
+  border-top: 1px solid var(--paper-line);
+}
+
+.shop__mark {
+  display: block;
+  font-family: var(--mark);
+  font-size: clamp(38px, 4vw, 64px);
+  line-height: 1;
+  letter-spacing: -0.01em;
+}
+
+.shop__footer-body {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: clamp(28px, 4vw, 80px);
+  margin-top: clamp(28px, 3.4vw, 52px);
+}
+
+.shop__footer-tagline {
+  margin: 0;
+  color: var(--paper-muted);
+  font-size: 11px;
+  line-height: 1.6;
+  letter-spacing: 0.03em;
+}
+
+.shop__footer-links {
+  display: flex;
+  gap: clamp(36px, 5vw, 90px);
+}
+
+.shop__footer-links div {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.shop__footer-links a {
+  color: var(--paper-muted);
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  transition: color 220ms ease;
+}
+
+.shop__footer-links a:hover {
+  color: var(--paper-ink);
+}
+
+.shop__footer-base {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: clamp(40px, 5vw, 84px);
+  padding-top: clamp(16px, 1.8vw, 26px);
+  border-top: 1px solid var(--paper-line);
+  color: var(--paper-muted);
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.06em;
+}
+
+/* One work — /shop/<id>. Same tokens as the shop (the root carries both
+   classes): the print on the right, the name and price set against its bottom
+   edge on the left, and the buying row on a hairline rule beneath.
+
+   Header, print and buying row are one screen exactly: the stage takes every
+   spare pixel, so on a tall viewport the name and the buying row settle
+   downward and the row lands flush with the bottom edge. The print does not
+   follow them down — it is the one thing pinned to the top of the stage. */
+
+.product__first {
+  display: flex;
+  flex-direction: column;
+  min-height: 100svh;
+}
+
+.product__stage {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr);
+  flex: 1 0 auto;
+  align-items: end;
+  gap: clamp(28px, 4vw, 72px);
+  /* The whole screen is the first view: header, print and the buying row have
+     to land above the fold together, so this padding stays tight. */
+  padding: 0 var(--pad-x) clamp(28px, 3vw, 48px);
+}
+
+.product__lede {
+  padding-bottom: clamp(4px, 1vw, 18px);
+}
+
+.product__title {
+  margin: 0;
+  font-size: clamp(46px, 6.4vw, 118px);
+  font-weight: 500;
+  line-height: 0.88;
+  letter-spacing: -0.05em;
+}
+
+.product__price {
+  margin: clamp(18px, 2vw, 32px) 0 0;
+  font-size: clamp(26px, 2.4vw, 40px);
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+
+.product__lede .shop__meta {
+  margin-top: 12px;
+}
+
+/* The stage for the framed print. The canvas is transparent, so the paper shows
+   through and the contact shadow lands straight on it — no box, no letterbox.
+   Deliberately no `overflow`: a mask here would clip the frame the moment it
+   turns. A fixed height keeps the buying row from jumping while it loads. */
+/* The canvas overflows its slot instead of enlarging it: it is 20% taller than
+   --stage and the negative margins hand that growth back, so the grid row — and
+   everything under it — stays exactly put. The print reads bigger by spilling
+   into the white above and beside it, which was empty anyway.
+   (Sizing the r3f wrapper with `inset` does not work: it carries inline
+   width/height 100%, which outranks the offsets.) */
+.product__media {
+  --stage: clamp(300px, 50svh, 620px);
+
+  position: relative;
+  align-self: start;
+  /* The overflow is deliberately lopsided. Above there is only the header's
+     own band to borrow from; below there is everything the stretched stage
+     leaves under the print, which is where the extra height comes from. */
+  height: calc(var(--stage) * 1.45);
+  margin-top: calc(var(--stage) * -0.1);
+  margin-bottom: calc(var(--stage) * -0.35);
+  margin-left: calc(var(--stage) * -0.12);
+}
+
+.product__media canvas {
+  display: block;
+  /* the drag rotates the frame; a vertical swipe still scrolls the page */
+  touch-action: pan-y;
+}
+
+/* The buying row: four fields, each opening on its own rule. */
+.product__options {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  align-items: start;
+  gap: clamp(20px, 2.4vw, 44px);
+  padding: 0 var(--pad-x) clamp(28px, 3vw, 48px);
+}
+
+.product__field {
+  padding-top: 14px;
+  border-top: 1px solid var(--paper-ink);
+}
+
+.product__label {
+  margin: 0 0 clamp(18px, 2vw, 30px);
+  color: var(--paper-muted);
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 400;
+  letter-spacing: 0.1em;
+}
+
+.product__description {
+  margin: 0 0 12px;
+  font-size: 12px;
+  line-height: 1.55;
+  letter-spacing: 0.01em;
+}
+
+/* The A24 quantity strip, reused: every value on one line, the chosen one in
+   full ink and the rest receded. No boxes — the type carries the state. */
+.product__choices {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 18px;
+}
+
+.product__choice {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--paper-muted);
+  font-family: inherit;
+  font-size: clamp(15px, 1.3vw, 21px);
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  transition: color 200ms ease;
+}
+
+.product__choice:hover {
+  color: var(--paper-ink);
+}
+
+.product__choice--on {
+  color: var(--paper-ink);
+}
+
+.product__cart {
+  display: grid;
+  place-items: center;
+  min-height: clamp(64px, 5.6vw, 86px);
+  border: 1px solid var(--paper-ink);
+  font-size: clamp(15px, 1.3vw, 21px);
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  transition: background-color 180ms ease, color 180ms ease;
+}
+
+.product__cart:hover {
+  background: var(--paper-ink);
+  color: var(--paper);
+}
+
+.product__missing {
+  padding: clamp(60px, 10vw, 160px) var(--pad-x);
+}
+
+@media (max-width: 900px) {
+  .product__stage {
+    grid-template-columns: 1fr;
+    align-items: start;
+  }
+
+  /* the print leads on a phone; the name sits under it, as in the grid */
+  .product__media {
+    order: -1;
+  }
+
+  .product__options {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 560px) {
+  .product__options {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Reduced motion — the GSAP timelines bail out, so nothing needs unhiding here */
+
+@media (prefers-reduced-motion: reduce) {
+  .shop__figure img,
+  .shop__arrow,
+  .shop__pill,
+  .product__choice,
+  .product__cart,
+  .shop__nav a,
+  .shop__footer-links a {
+    transition-duration: 1ms !important;
+  }
+}

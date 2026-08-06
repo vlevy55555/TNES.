@@ -17,7 +17,8 @@ export function Header() {
 
   return (
     <header className="header">
-      <span className="logo">TNES.</span>
+      {/* the wordmark leaves the room for the landing page, the site's root */}
+      <a className="logo" href="/">TNES.</a>
       <nav className="nav">
         {walls.map((wall) => (
           <button
