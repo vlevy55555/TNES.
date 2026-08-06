@@ -58,7 +58,7 @@ export function WallLamp({ x, intensity = LAMP_INTENSITY }: { x: number; intensi
   )
 }
 
-export function Wall({ wall }: { wall: WallType }) {
+export function Wall({ wall, bare = false }: { wall: WallType; bare?: boolean }) {
   const closeArtwork = useGalleryStore((s) => s.closeArtwork)
   const zoomed = useGalleryStore((s) => s.selectedArtworkId !== null)
   const lampX = [-3.13, 0, 3.13]
@@ -120,7 +120,7 @@ export function Wall({ wall }: { wall: WallType }) {
         </Text>
       )}
 
-      {wall.index === SIGNATURE_WALL && <HomeWall />}
+      {wall.index === SIGNATURE_WALL && <HomeWall bare={bare} />}
       {wall.index === COMING_SOON_WALL && <ComingSoonWall />}
       {wall.index === ABOUT_WALL && <AboutWall />}
     </group>

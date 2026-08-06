@@ -73,7 +73,7 @@ export const ABOUT_DOOR_H = 3.5
 export const OPENING_DATE = new Date('2026-08-15T18:00:00')
 
 // the opening (Signature) wall's one-line brand statement, cut into the concrete
-export const BRAND_STATEMENT = 'nothing happens twice.'
+export const BRAND_STATEMENT = 'nothing happens twice'
 
 // the single work hung on the opening wall
 export const HERO_ID = 'the-pool'

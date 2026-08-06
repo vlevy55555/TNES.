@@ -298,7 +298,7 @@ function RoomLink({
   )
 }
 
-function Counter({ compact }: { compact: boolean }) {
+function Counter({ compact, bare = false }: { compact: boolean; bare?: boolean }) {
   const counterW = compact ? MOBILE_COUNTER_W : COUNTER_W
   const bodyH = compact ? MOBILE_BODY_H : BODY_H
   const bodyY = WALL_BOTTOM_Y + PLINTH_H + bodyH / 2
@@ -324,12 +324,16 @@ function Counter({ compact }: { compact: boolean }) {
         <StoneMaterial map={topMap} lift={0.4} />
       </mesh>
 
-      <ShopButton
-        position={compact ? [0, bodyY + 0.1, FACE_Z] : [-0.35, bodyY, FACE_Z]}
-        width={compact ? MOBILE_SHOP_BUTTON_W : undefined}
-      />
+      {/* `bare` keeps the console's stone but drops everything that navigates
+          or sells — the home page embeds this wall purely as an environment */}
+      {!bare && (
+        <ShopButton
+          position={compact ? [0, bodyY + 0.1, FACE_Z] : [-0.35, bodyY, FACE_Z]}
+          width={compact ? MOBILE_SHOP_BUTTON_W : undefined}
+        />
+      )}
 
-      {compact ? (
+      {bare ? null : compact ? (
         <RoomLink
           label="EXPLORE THE STUDIO  →"
           position={[0, bodyY - 0.31, FACE_Z]}
@@ -354,7 +358,7 @@ function Counter({ compact }: { compact: boolean }) {
  * into the wall above it, the work's text to the right, the [O] to the left,
  * and the console carrying the commerce.
  */
-export function HomeWall() {
+export function HomeWall({ bare = false }: { bare?: boolean } = {}) {
   const isMobile = useGalleryStore((s) => s.isMobile)
 
   return (
@@ -407,7 +411,7 @@ export function HomeWall() {
       {!isMobile && <BrandMark />}
       {!isMobile && <WallText />}
 
-      <Counter compact={isMobile} />
+      <Counter compact={isMobile} bare={bare} />
 
       {/* key wash: high and pulled back, so its cone blooms a halo on the panel
           above the print before falling onto it */}

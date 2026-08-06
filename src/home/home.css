@@ -1,0 +1,784 @@
+/* A24-style hero. Everything is scoped under .home so the 3D gallery's global
+   sheet (fixed, overflow:hidden) is untouched. */
+
+html:has(.home),
+body:has(.home),
+#root:has(.home) {
+  height: auto;
+  overflow-x: hidden;
+  overflow-y: auto;
+  background: #080808;
+}
+
+.home {
+  --paper: #fff;
+  --black: #050505;
+  --paper-ink: #0b0b0b;
+  --paper-muted: #5d5d5d;
+  --paper-line: rgba(11, 11, 11, 0.2);
+  --media-fallback: #e8e8e8;
+  color: #fff;
+  background: var(--paper);
+  /* the reference face — the project already ships Helvetica for the [O] mark */
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+}
+
+/* /home-black keeps the same gallery composition, only reversing the paper
+   system so typography, controls and the embedded Studio remain coherent. */
+.home--black {
+  --paper: #090909;
+  --black: #050505;
+  --paper-ink: #f4f1eb;
+  --paper-muted: #aaa59c;
+  --paper-line: rgba(244, 241, 235, 0.25);
+  --media-fallback: #242424;
+}
+
+html:has(.home--black),
+body:has(.home--black),
+#root:has(.home--black) {
+  background: #090909;
+}
+
+.home * {
+  box-sizing: border-box;
+}
+
+.home button,
+.home a {
+  font: inherit;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.home button {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+
+/* Every Home text enters through this small viewport. Its child receives the
+   exact upward/rotating GSAP motion used by "nothing happens twice". */
+.text-reveal {
+  display: inline-block;
+  overflow: clip;
+  /* Helvetica's glyphs extend beyond a tight line box. Keep a vertical bleed
+     area inside the clipping mask so the reveal never trims their tops. The
+     negative margin preserves the original text rhythm in each layout. */
+  padding-block: 0.16em;
+  margin-block: -0.16em;
+  vertical-align: top;
+  perspective: 420px;
+}
+
+.text-reveal--block {
+  display: block;
+}
+
+.text-reveal__content {
+  display: block;
+  will-change: transform, opacity;
+}
+
+.home .hero {
+  --pad-x: clamp(20px, 3.3vw, 52px);
+  --pad-y: clamp(20px, 3.4vw, 54px);
+  --fade: 600ms cubic-bezier(0.22, 1, 0.36, 1);
+
+  position: relative;
+  width: 100%;
+  min-height: 100vh;
+  min-height: 100svh;
+  overflow: hidden;
+  isolation: isolate;
+  background: #080808;
+  outline: none;
+  touch-action: pan-y;
+}
+
+.hero:focus-visible {
+  outline: 1px solid rgba(255, 255, 255, 0.45);
+  outline-offset: -5px;
+}
+
+/* Background */
+
+.hero__background,
+.hero__slide,
+.hero__poster {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.hero__background {
+  z-index: -3;
+  background: #080808;
+}
+
+.hero__slide {
+  opacity: 0;
+  visibility: hidden;
+  transform: scale(1.035);
+  transition:
+    opacity var(--fade),
+    visibility var(--fade),
+    transform 1300ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.hero__slide--active {
+  opacity: 1;
+  visibility: visible;
+  transform: scale(1);
+}
+
+.hero__poster {
+  display: block;
+  object-fit: cover;
+  object-position: center;
+  user-select: none;
+  pointer-events: none;
+}
+
+/* barely there — the reference keeps the photograph almost untouched, only
+   enough falloff top and bottom to hold the white type */
+.hero__overlay {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: linear-gradient(
+    180deg,
+    rgba(0, 0, 0, 0.56) 0%,
+    rgba(0, 0, 0, 0.08) 24%,
+    rgba(0, 0, 0, 0.06) 48%,
+    rgba(0, 0, 0, 0.5) 100%
+  );
+  box-shadow: inset 0 0 18vw rgba(0, 0, 0, 0.42);
+}
+
+/* Header — wordmark left, sections right */
+
+.hero__header {
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  z-index: 5;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 24px;
+  padding: var(--pad-y) var(--pad-x);
+}
+
+.hero__logo {
+  color: #fff;
+  text-decoration: none;
+  font-size: clamp(22px, 1.9vw, 30px);
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: 0.14em;
+}
+
+.hero__nav {
+  display: flex;
+  align-items: baseline;
+  gap: clamp(14px, 1.8vw, 28px);
+}
+
+.hero__nav a {
+  color: rgba(255, 255, 255, 0.82);
+  text-decoration: none;
+  font-size: clamp(11px, 0.85vw, 13px);
+  font-weight: 400;
+  line-height: 1;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  transition: color 220ms ease;
+}
+
+.hero__nav a:hover {
+  color: #fff;
+}
+
+/* The [O] mark and the stack of titles */
+
+.hero__list {
+  position: absolute;
+  left: var(--pad-x);
+  bottom: clamp(60px, 9vh, 96px);
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+/* the signature work wears the [O] instead of its title — the mark is always
+   the real Helvetica (--mark), never the UI sans */
+.hero__item--mark .hero__title {
+  font-family: var(--mark);
+  font-size: clamp(52px, 6vw, 100px);
+  font-weight: 400;
+  letter-spacing: -0.01em;
+  line-height: 1;
+  padding-bottom: 0.2em;
+}
+
+.hero__item {
+  display: inline-flex;
+  align-items: flex-start;
+  text-align: left;
+  transform-origin: left center;
+  transition:
+    color 320ms ease,
+    transform 400ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* the selected work is already the photograph behind you — its title recedes
+   to grey so the choices still open to you stay white */
+.hero__item[aria-pressed='true'] {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.hero__title {
+  display: inline-block;
+  max-width: 9ch;
+  font-size: clamp(48px, 5.4vw, 92px);
+  font-weight: 500;
+  line-height: 0.9;
+  letter-spacing: -0.045em;
+}
+
+.hero__year {
+  padding-top: 0.35em;
+  margin-left: 0.34em;
+  font-size: clamp(12px, 1.1vw, 18px);
+  font-weight: 400;
+  line-height: 1;
+  letter-spacing: 0.01em;
+  opacity: 0.92;
+}
+
+.hero__item:hover {
+  transform: translateX(6px);
+}
+
+.hero__item:focus-visible {
+  outline: 1px solid rgba(255, 255, 255, 0.5);
+  outline-offset: 4px;
+}
+
+/* Price + shop, bottom right — follows the active work */
+
+.hero__buy {
+  position: absolute;
+  right: var(--pad-x);
+  bottom: clamp(60px, 9vh, 96px);
+  z-index: 4;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+  text-align: right;
+  font-size: clamp(12px, 1vw, 15px);
+  line-height: 1.2;
+}
+
+.hero__price {
+  opacity: 0.85;
+}
+
+.hero__shop {
+  color: #fff;
+  text-decoration: none;
+}
+
+.hero__shop-arrow {
+  display: inline-block;
+  transition: transform 220ms ease;
+}
+
+.hero__shop:hover .hero__shop-arrow {
+  transform: translateX(4px);
+}
+
+/* ---- Everything below the hero sits on the gallery's warm paper ---- */
+
+.home .statement,
+.home .studio {
+  --pad-x: clamp(20px, 3.3vw, 52px);
+  background: var(--paper);
+  color: var(--paper-ink);
+}
+
+/* reveal on scroll — one transition, driven by IntersectionObserver */
+.reveal {
+  opacity: 0;
+  transform: translateY(28px);
+  transition:
+    opacity 900ms cubic-bezier(0.22, 1, 0.36, 1),
+    transform 900ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.reveal--in {
+  opacity: 1;
+  transform: none;
+}
+
+/* Statement */
+
+.statement {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: clamp(20px, 3vw, 34px);
+  min-height: 100svh;
+  justify-content: flex-start;
+  padding: clamp(48px, 5.2vw, 88px) var(--pad-x);
+  border-top: 1px solid var(--paper-ink);
+  text-align: left;
+}
+
+/* Oversized, left-set and tightly stacked. The width deliberately lets the
+   three words break into a compact block instead of reading as a small caption. */
+.statement__line {
+  max-width: min(100%, 8.8ch);
+  margin: 0;
+  font-size: clamp(52px, 10.5vw, 142px);
+  font-weight: 500;
+  line-height: 0.9;
+  letter-spacing: -0.055em;
+}
+
+.statement__line-mask,
+.statement__copy-mask {
+  display: block;
+  overflow: clip;
+}
+
+.statement__title-reveal,
+.statement__copy-reveal {
+  display: block;
+  will-change: transform, opacity;
+}
+
+.statement__sub {
+  max-width: 32ch;
+  margin: 0;
+  color: var(--paper-muted);
+  font-size: clamp(11px, 0.85vw, 13px);
+  font-weight: 500;
+  line-height: 1.45;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.statement__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.statement__actions a {
+  display: inline-flex;
+  align-items: center;
+  gap: 24px;
+  min-height: 46px;
+  padding: 0 16px;
+  border: 1px solid var(--paper-ink);
+  background: var(--paper-ink);
+  color: var(--paper);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-decoration: none;
+  text-transform: uppercase;
+  transition: background-color 180ms ease, color 180ms ease;
+}
+
+.statement__actions a:last-child {
+  background: transparent;
+  color: var(--paper-ink);
+}
+
+.statement__actions a:hover {
+  background: var(--paper);
+  color: var(--paper-ink);
+}
+
+.statement__actions a:last-child:hover {
+  background: var(--paper-ink);
+  color: var(--paper);
+}
+
+.statement__artwork {
+  position: absolute;
+  top: clamp(48px, 5.2vw, 88px);
+  right: var(--pad-x);
+  width: min(52vw, 820px);
+}
+
+.statement__media {
+  width: 100%;
+  aspect-ratio: 3 / 2;
+  margin: 0;
+  overflow: hidden;
+  background: var(--media-fallback);
+  will-change: clip-path;
+}
+
+.statement__media img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  will-change: transform;
+}
+
+.statement__artwork-caption {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 8px 18px;
+  padding-top: 10px;
+  color: var(--paper-ink);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.statement__artwork-caption a {
+  margin-left: auto;
+  color: inherit;
+  text-decoration: none;
+}
+
+.statement__artwork-caption a:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+@media (min-width: 769px) {
+  /* Desktop reads as three distinct, full compositions: let the hero breathe
+     before the manifesto statement, then bring the next editorial section
+     back into reach instead of holding an empty full viewport beneath it. */
+  .home .hero {
+    min-height: 108svh;
+  }
+
+  .statement {
+    min-height: clamp(680px, 84svh, 920px);
+    padding-top: clamp(88px, 8vw, 132px);
+  }
+
+  .statement__line {
+    max-width: min(8.8ch, 36vw);
+  }
+
+  .home .works {
+    padding-top: clamp(56px, 5.5vw, 92px);
+    padding-bottom: clamp(48px, 4vw, 72px);
+  }
+
+  .home .studio {
+    padding-top: clamp(48px, 4vw, 72px);
+  }
+}
+
+/* Selected works carousel */
+
+.works {
+  --pad-x: clamp(20px, 3.3vw, 52px);
+  padding: clamp(72px, 9vw, 140px) 0 clamp(92px, 12vw, 180px);
+  overflow: hidden;
+  background: var(--paper);
+  color: var(--paper-ink);
+}
+
+.works__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 0 var(--pad-x) clamp(12px, 1.8vw, 28px);
+}
+
+.works__head h2 {
+  margin: 0;
+  font-size: clamp(56px, 8.1vw, 138px);
+  font-weight: 500;
+  line-height: 0.82;
+  letter-spacing: -0.065em;
+}
+
+.works__head h2 span,
+.studio__title span {
+  display: block;
+}
+
+.works__arrows {
+  display: flex;
+  gap: 10px;
+}
+
+.works__arrows button {
+  display: grid;
+  width: 40px;
+  height: 40px;
+  place-items: center;
+  border: 1px solid var(--paper-ink);
+  border-radius: 0;
+  font-size: 16px;
+  transition:
+    background-color 220ms ease,
+    color 220ms ease,
+    border-color 220ms ease;
+}
+
+.works__arrows button:hover {
+  border-color: var(--paper-ink);
+  background: var(--paper-ink);
+  color: var(--paper);
+}
+
+.works__track {
+  /* the long edge of every print — width for a landscape, height for a
+     portrait. Set once here; each frame picks the axis it applies to. */
+  --long-edge: clamp(260px, 30vw, 500px);
+  /* Reserve the largest possible card plus its two caption lines. The row's
+     height is therefore stable while a portrait expands, so Studio never
+     jumps upward when the pointer leaves a work. */
+  --caption-space: 56px;
+
+  display: flex;
+  counter-reset: work;
+  /* ragged tops, one shared baseline for the captions */
+  align-items: flex-end;
+  gap: clamp(18px, 2.8vw, 48px);
+  margin: 0;
+  padding: 0 var(--pad-x);
+  min-height: calc(var(--long-edge) * 1.14 + var(--caption-space));
+  list-style: none;
+  /* no scroll-snap: it would fight the sub-pixel drift of the autoplay loop */
+  overflow-x: auto;
+  scrollbar-width: none;
+  overscroll-behavior-x: contain;
+}
+
+.works__track::-webkit-scrollbar {
+  display: none;
+}
+
+.works__item {
+  flex: none;
+  counter-increment: work;
+  width: var(--frame-width);
+  transition: width 560ms cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: width;
+}
+
+/* size comes from the inline long-edge rule — the aspect is each work's own */
+.works__frame {
+  width: 100%;
+  height: var(--frame-height);
+  overflow: visible;
+  background: var(--media-fallback);
+  transition: height 560ms cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: height;
+}
+
+.works__frame img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  /* The image follows the physical frame; it is never enlarged behind a
+     clipping mask. */
+  transform: none;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .works__item--expanded {
+    width: calc(var(--frame-width) * 1.14);
+  }
+
+  .works__item--expanded .works__frame {
+    height: calc(var(--frame-height) * 1.14);
+  }
+}
+
+.works__title,
+.works__meta {
+  max-width: 34ch;
+  margin: 0;
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1.4;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.works__title {
+  display: flex;
+  gap: 12px;
+  margin-top: 18px;
+  color: var(--paper-ink);
+  transition: color 300ms ease;
+}
+
+.works__title::before {
+  color: var(--paper-muted);
+  content: counter(work, decimal-leading-zero);
+}
+
+.works__item:hover .works__title {
+  color: var(--paper-ink);
+}
+
+.works__meta {
+  color: var(--paper-muted);
+}
+
+/* The studio — the exhibition's opening wall, embedded */
+
+.studio {
+  padding: clamp(72px, 10vw, 150px) 0 clamp(60px, 8vw, 110px);
+}
+
+.studio__title {
+  margin: 0;
+  padding: 0 var(--pad-x) clamp(44px, 5vw, 78px);
+  font-size: clamp(56px, 8.1vw, 138px);
+  font-weight: 500;
+  line-height: 0.82;
+  letter-spacing: -0.065em;
+}
+
+.studio__stage {
+  position: relative;
+  height: min(82vh, 760px);
+  overflow: hidden;
+  background: #ddd2c0;
+  border-block: 1px solid var(--paper-ink);
+}
+
+/* the shared .gallery-canvas is fixed to the viewport for the real gallery —
+   inside the home page it has to stay inside its section */
+.studio__stage canvas {
+  display: block;
+  touch-action: pan-y;
+}
+
+/* Mobile — same stack, smaller */
+
+@media (max-width: 768px) {
+  .home .hero {
+    --pad-x: 18px;
+    --pad-y: 20px;
+  }
+
+  .hero__header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .hero__logo {
+    font-size: 20px;
+  }
+
+  .hero__nav {
+    flex-wrap: wrap;
+    gap: 14px;
+  }
+
+  .hero__nav a {
+    font-size: 12px;
+  }
+
+  .hero__title {
+    font-size: clamp(48px, 12vw, 74px);
+  }
+
+  .hero__item--mark .hero__title {
+    font-size: clamp(48px, 14vw, 72px);
+  }
+
+  .hero__year {
+    font-size: 11px;
+  }
+
+  .hero__list {
+    bottom: 44px;
+  }
+
+  .hero__buy {
+    bottom: 44px;
+    font-size: 12px;
+  }
+
+  .works__track {
+    --long-edge: 58vw;
+  }
+
+  .statement {
+    min-height: 72svh;
+  }
+
+  .statement__line {
+    font-size: clamp(48px, 10vw, 64px);
+  }
+
+  .statement__artwork {
+    position: relative;
+    top: auto;
+    right: auto;
+    width: 100%;
+    max-width: 420px;
+    margin-top: clamp(12px, 4vw, 24px);
+  }
+
+  .studio__stage {
+    height: 68vh;
+  }
+}
+
+/* Reduced motion */
+
+@media (prefers-reduced-motion: reduce) {
+  .hero__slide,
+  .hero__item,
+  .hero__shop span,
+  .hero__nav a,
+  .reveal,
+  .works__frame img,
+  .works__frame,
+  .works__item,
+  .works__title,
+  .works__arrows button {
+    transition-duration: 1ms !important;
+  }
+
+  .reveal {
+    opacity: 1;
+    transform: none;
+  }
+
+  .works__track {
+    scroll-behavior: auto;
+  }
+
+  .hero__slide {
+    transform: none;
+  }
+
+}
