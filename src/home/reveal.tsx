@@ -5,7 +5,15 @@ import { gsap } from 'gsap'
 /** The shared editorial entrance used by every textual group on the flat pages.
  * Each section owns one timeline, preventing the many captions in a long list
  * from creating competing triggers. */
-export function useSectionTextReveal(sectionRef: RefObject<HTMLElement | null>, immediate = false) {
+export function useSectionTextReveal(
+  sectionRef: RefObject<HTMLElement | null>,
+  immediate = false,
+  /** how far INTO the viewport the section must come before it plays. The
+   *  default catches it at the bottom edge; a section that only appears once the
+   *  screen above it has scrolled away needs a later mark, or its lines finish
+   *  before anyone is looking at them. */
+  rootMargin = '0px 0px -12% 0px',
+) {
   useLayoutEffect(() => {
     const section = sectionRef.current
     if (!section || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
@@ -50,7 +58,7 @@ export function useSectionTextReveal(sectionRef: RefObject<HTMLElement | null>, 
           sectionObserver.disconnect()
           play()
         },
-        { rootMargin: '0px 0px -12% 0px' },
+        { rootMargin },
       )
       observer = sectionObserver
       sectionObserver.observe(section)
@@ -60,7 +68,7 @@ export function useSectionTextReveal(sectionRef: RefObject<HTMLElement | null>, 
       observer?.disconnect()
       context.revert()
     }
-  }, [sectionRef, immediate])
+  }, [sectionRef, immediate, rootMargin])
 }
 
 export function RevealText({ children, block = false }: { children: ReactNode; block?: boolean }) {

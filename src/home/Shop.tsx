@@ -2,6 +2,8 @@ import { useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { artworks } from '../data/artworks'
+import { money, type ShopProduct } from '../lib/shopify'
+import { useProducts } from '../lib/useProduct'
 import { RevealText, useSectionTextReveal } from './reveal'
 import { catalogHref, PRICE, ShopFooter, ShopHeader } from './ShopChrome'
 import './home.css'
@@ -54,6 +56,16 @@ const works = artworks.map((work) => {
   }
 })
 
+const HANDLES = works.map((w) => w.shopifyHandle).filter((h): h is string => !!h)
+
+/** The cheapest purchasable size — what "from" means on a grid card. */
+const fromPrice = (product?: ShopProduct) => {
+  const sellable = product?.variants.filter((v) => v.available) ?? []
+  if (!sellable.length) return PRICE
+  const cheapest = sellable.reduce((a, b) => (b.price < a.price ? b : a))
+  return money(cheapest.price, cheapest.currency)
+}
+
 // two large pieces standing in for the wider bodies of work
 const CATALOGS = [
   { title: 'the hamptons', id: 'playa-roja' },
@@ -97,6 +109,9 @@ export default function Shop() {
   const catalogs = useRef<HTMLElement>(null)
   const [place, setPlace] = useState('all')
   const [scene, setScene] = useState('all')
+  // every card's price at once: one round-trip per handle, deduped and cached in
+  // shopify.ts, so opening a work later is already paid for
+  const products = useProducts(HANDLES)
 
   useSectionTextReveal(head, true)
   useSectionTextReveal(catalogs)
@@ -193,7 +208,9 @@ export default function Shop() {
             </figure>
             <p className="shop__caption">
               <span>{work.title.toLowerCase()}.</span>
-              <span className="shop__price">from {PRICE}</span>
+              <span className="shop__price">
+                from {fromPrice(work.shopifyHandle ? products[work.shopifyHandle] : undefined)}
+              </span>
             </p>
             <p className="shop__meta">{work.meta}</p>
           </a>

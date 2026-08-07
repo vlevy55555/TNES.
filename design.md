@@ -291,7 +291,35 @@ impressão lidera no telefone, como faz na grade.
 
 ---
 
-## 10. Endereços
+## 10. `/cart` — a seleção
+
+Mesmo papel, mesmo header e footer (`<main class="shop cart">`). Uma tela, não
+uma gaveta: nada flutua sobre a página, nada escurece o fundo.
+
+1. **`cart.`** — mesmo título de página do §8, com a contagem em mono muted
+   abaixo (`3 works`, ou `empty`).
+2. **Linhas**, cada uma sobre uma régua de 1px: foto à esquerda em aresta longa
+   fixa (`clamp(160px, 18vw, 300px)`) — retrato alto, paisagem largo, alturas
+   propositalmente irregulares —, título minúsculo com ponto final linkando de
+   volta para `/shop/<id>`, tamanho em mono muted, `remove` em mono 10px.
+3. **Quantidade** é a régua tipográfica do §9.3: `– 2 +` numa linha, sem caixa,
+   sem stepper. Preço da linha à direita, sempre relido da Storefront API.
+4. **Fecho** alinhado à direita, largura máxima de 520px: `subtotal` em rótulo
+   mono 13px sobre régua de 1px de tinta cheia, valor em `clamp(34px, 3.2vw, 56px)`,
+   nota mono, e `checkout →` na mesma caixa de borda 1px do `add to cart`.
+   Desabilitado ele perde a tinta em vez de ganhar cinza.
+5. **Vazia**: `nothing selected yet.` no corpo grande e `browse the shop →`.
+
+Movimento: título, subtotal e rótulos usam o reveal do §5.1 no load; as fotos
+das linhas usam a cortina do §5.2 direto no mount — estão acima da dobra.
+
+Uma linha cuja variante sumiu da Shopify não é descartada em silêncio: ela
+aparece marcada (`no longer available` / `sold out`) e fica fora do subtotal e
+do checkout.
+
+---
+
+## 11. Endereços
 
 | Rota | Tela |
 |---|---|
@@ -300,6 +328,7 @@ impressão lidera no telefone, como faz na grade.
 | `/home-black` | a variante escura, no endereço que sempre teve |
 | `/shop` | o índice das impressões |
 | `/shop/<id>` | uma obra, pelo `id` do artwork |
+| `/cart` | a seleção (`Cart`) — uma tela da loja, não um painel |
 | `/gallery` | a exposição 3D (`App`) |
 
 O wordmark `TNES.` — no header da loja, do produto **e** da sala 3D — sempre

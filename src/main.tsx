@@ -4,6 +4,8 @@ import App from './App'
 import Home from './home/Home'
 import Shop from './home/Shop'
 import Product from './home/Product'
+import Cart from './home/Cart'
+import About from './home/About'
 import './styles/globals.css'
 
 // ponytail: one path check, no router dependency. render.yaml already rewrites
@@ -14,6 +16,8 @@ import './styles/globals.css'
 //   /home-black       the dark variant, at the address it has always had
 //   /shop             the print index
 //   /shop/<id>        one work, by its artwork id
+//   /cart             the selection, as a page of the shop
+//   /about            Victor, and the door into VSL
 //   /gallery          the 3D exhibition
 const path = window.location.pathname.replace(/\/$/, '')
 const productId = path.startsWith('/shop/') ? path.slice('/shop/'.length) : ''
@@ -21,6 +25,8 @@ const productId = path.startsWith('/shop/') ? path.slice('/shop/'.length) : ''
 const Page =
   productId ? () => <Product id={productId} />
   : path === '/shop' ? Shop
+  : path === '/cart' ? Cart
+  : path === '/about' ? About
   : path === '/home-black' ? () => <Home dark />
   : path === '/gallery' ? App
   : Home

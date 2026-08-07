@@ -23,12 +23,10 @@ export type CartLine = {
 
 type CartState = {
   items: Record<string, CartLine>
-  open: boolean
   add: (line: Omit<CartLine, 'qty'>, qty?: number) => void
   setQty: (variantId: string, qty: number) => void
   remove: (variantId: string) => void
   clear: () => void
-  setOpen: (open: boolean) => void
 }
 
 // Shopify rejects absurd line quantities and a made-to-order print has no
@@ -40,7 +38,6 @@ export const useCartStore = create<CartState>()(
   persist(
     (set) => ({
       items: {},
-      open: false,
 
       add: (line, qty = 1) =>
         set((s) => {
@@ -70,13 +67,10 @@ export const useCartStore = create<CartState>()(
         }),
 
       clear: () => set({ items: {} }),
-      setOpen: (open) => set({ open }),
     }),
     {
       name: 'tnes-cart',
       version: 1,
-      // `open` is view state — a reload must not reopen the drawer
-      partialize: (s) => ({ items: s.items }),
     },
   ),
 )

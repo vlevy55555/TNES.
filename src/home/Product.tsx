@@ -1,8 +1,10 @@
-import { useLayoutEffect, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { gsap } from 'gsap'
 import { artworks, INQUIRY_EMAIL } from '../data/artworks'
 import type { FrameStyle } from '../data/artworks'
-import { SHOP_DOMAIN } from '../lib/shopify'
+import { defaultSelection, findVariant, money } from '../lib/shopify'
+import { useProduct } from '../lib/useProduct'
+import { useCartStore } from '../store/useCartStore'
 import { RevealText, useSectionTextReveal } from './reveal'
 import { PRICE, ShopFooter, ShopHeader } from './ShopChrome'
 import ProductFrame from './ProductFrame'
@@ -27,9 +29,34 @@ export default function Product({ id }: { id: string }) {
   const work = artworks.find((a) => a.id === id)
   const stage = useRef<HTMLElement>(null)
   const options = useRef<HTMLElement>(null)
-  const sizes = work ? sizesOf(work.dimensions) : []
-  const [size, setSize] = useState(sizes[0] ?? '')
+  const product = useProduct(work?.shopifyHandle)
+  const addToCart = useCartStore((s) => s.add)
+
+  // Live options win over the static cm list: Shopify is what the checkout
+  // honours, so a size shown here has to be a size you can actually order.
+  const frameOption = product?.options.find((o) => /frame/i.test(o.name))
+  const sizeOption = product?.options.find((o) => o !== frameOption)
+  const sizes = sizeOption?.values ?? (work ? sizesOf(work.dimensions) : [])
+  const [size, setSize] = useState('')
   const [frame, setFrame] = useState<FrameStyle>(work?.frameStyle ?? 'white')
+
+  // open on the middle size — the smallest reads as the cheap option
+  useEffect(() => {
+    if (product && sizeOption) setSize(defaultSelection(product)[sizeOption.name] ?? '')
+    else setSize(work ? sizesOf(work.dimensions)[0] ?? '' : '')
+  }, [product, sizeOption, work])
+
+  // The room's three mouldings are a preview, not a merchandised option in this
+  // store — but if Shopify ever sells the frame, keep the bought variant in sync.
+  const frameValue = frameOption?.values.find((v) => v.toLowerCase() === frame)
+  const variantFor = (value: string) =>
+    product && sizeOption
+      ? findVariant(product, {
+          [sizeOption.name]: value,
+          ...(frameOption && frameValue ? { [frameOption.name]: frameValue } : {}),
+        })
+      : null
+  const variant = variantFor(size)
 
   useSectionTextReveal(stage, true)
   useSectionTextReveal(options, true)
@@ -72,7 +99,9 @@ export default function Product({ id }: { id: string }) {
         <section className="product__stage" ref={stage}>
           <div className="product__lede">
             <h1 className="product__title"><RevealText block>{work.title.toLowerCase()}.</RevealText></h1>
-            <p className="product__price"><RevealText>{PRICE}</RevealText></p>
+            <p className="product__price">
+              <RevealText>{variant ? money(variant.price, variant.currency) : PRICE}</RevealText>
+            </p>
             <p className="shop__meta">{`${where.toLowerCase()} · ${year}`}</p>
           </div>
 
@@ -108,33 +137,53 @@ export default function Product({ id }: { id: string }) {
           <div className="product__field">
             <h2 className="product__label"><RevealText>size</RevealText></h2>
             <div className="product__choices" role="group" aria-label="Tamanho">
-              {sizes.map((option) => (
-                <button
-                  key={option}
-                  type="button"
-                  className={`product__choice ${size === option ? 'product__choice--on' : ''}`}
-                  aria-pressed={size === option}
-                  onClick={() => setSize(option)}
-                >
-                  {option}
-                </button>
-              ))}
+              {sizes.map((option) => {
+                const candidate = variantFor(option)
+                return (
+                  <button
+                    key={option}
+                    type="button"
+                    className={`product__choice ${size === option ? 'product__choice--on' : ''} ${
+                      candidate && !candidate.available ? 'product__choice--out' : ''
+                    }`}
+                    aria-pressed={size === option}
+                    onClick={() => setSize(option)}
+                  >
+                    {option}
+                  </button>
+                )
+              })}
             </div>
           </div>
 
-          {/* ponytail: the local cart is keyed on a live Shopify variant id, which
-              these static labels can't resolve — hand the chosen combination to
-              the store rather than fake a line the checkout can't honour. */}
-          <a
-            className="product__cart"
-            href={
-              work.shopifyHandle
-                ? `https://${SHOP_DOMAIN}/products/${work.shopifyHandle}`
-                : `mailto:${INQUIRY_EMAIL}?subject=${encodeURIComponent(`${work.title} · ${frame} · ${size}`)}`
-            }
-          >
-            add to cart
-          </a>
+          {/* The cart line is keyed on the live Shopify variant id — the only
+              thing the hosted checkout honours. Without a reachable store there
+              is no id to key on, so the work stays inquiry-only. */}
+          {variant?.available ? (
+            <button
+              type="button"
+              className="product__cart"
+              onClick={() => {
+                addToCart({
+                  variantId: variant.id,
+                  artworkId: work.id,
+                  handle: work.shopifyHandle!,
+                  label: variant.title,
+                })
+                // the cart is a screen now — adding goes there, as a shop does
+                window.location.href = '/cart'
+              }}
+            >
+              add to cart
+            </button>
+          ) : (
+            <a
+              className="product__cart"
+              href={`mailto:${INQUIRY_EMAIL}?subject=${encodeURIComponent(`${work.title} · ${frame} · ${size}`)}`}
+            >
+              {product && variant ? 'sold out · inquire' : 'inquire'}
+            </a>
+          )}
         </section>
       </div>
 

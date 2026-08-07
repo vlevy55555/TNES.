@@ -1,13 +1,12 @@
 import { ARCHIVE_WALL, walls } from '../../data/artworks'
 import { useGalleryStore } from '../../store/useGalleryStore'
-import { useCartCount, useCartStore } from '../../store/useCartStore'
+import { useCartCount } from '../../store/useCartStore'
 
 export function Header() {
   const currentWall = useGalleryStore((s) => s.currentWall)
   const goToWall = useGalleryStore((s) => s.goToWall)
   const printsPage = useGalleryStore((s) => s.printsPage)
   const manifestoRoomOpen = useGalleryStore((s) => s.manifestoRoomOpen)
-  const openCart = useCartStore((s) => s.setOpen)
   const count = useCartCount()
   const mobileGuide = manifestoRoomOpen
     ? 'Manifesto'
@@ -31,13 +30,14 @@ export function Header() {
         ))}
       </nav>
       <span className="mobile-wall-guide" aria-live="polite">{mobileGuide}</span>
-      <button
+      {/* the cart is its own screen — leaving the room is the point */}
+      <a
         className="header-cart"
-        onClick={() => openCart(true)}
+        href="/cart"
         aria-label={`Cart, ${count} item${count === 1 ? '' : 's'}`}
       >
         Cart{count > 0 && <span className="cart-badge">{count}</span>}
-      </button>
+      </a>
     </header>
   )
 }
