@@ -15,8 +15,8 @@ const NAV = [
 // the store's option names line up with the frame/size labels shown here.
 export const PRICE = '$100'
 
-export const catalogHref = (title: string) =>
-  `mailto:${INQUIRY_EMAIL}?subject=${encodeURIComponent(`Catalog · ${title}`)}`
+/** Every catalog reference opens the complete catalog presentation. */
+export const catalogHref = (_title?: string) => '/shop#catalogs'
 
 /** The wordmark always returns to the landing page, which is the site root. */
 export function ShopHeader({ current = 'shop' }: { current?: string }) {

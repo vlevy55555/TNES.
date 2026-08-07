@@ -212,11 +212,15 @@ body:has(.home--black),
 .hero__list {
   position: absolute;
   left: var(--pad-x);
-  bottom: clamp(60px, 9vh, 96px);
+  top: 54%;
+  bottom: auto;
   z-index: 3;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
+  width: min(44vw, 720px);
+  border: 1px solid rgba(255, 255, 255, 0.48);
+  transform: translateY(-50%);
 }
 
 /* the signature work wears the [O] instead of its title — the mark is always
@@ -227,17 +231,28 @@ body:has(.home--black),
   font-weight: 400;
   letter-spacing: -0.01em;
   line-height: 1;
-  padding-bottom: 0.2em;
+  padding: clamp(18px, 2.5vw, 38px) clamp(16px, 2vw, 30px);
 }
 
-.hero__item {
-  display: inline-flex;
-  align-items: flex-start;
+.home .hero__item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) clamp(82px, 7vw, 118px);
+  align-items: stretch;
+  width: 100%;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.38);
   text-align: left;
   transform-origin: left center;
   transition:
     color 320ms ease,
     transform 400ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.home .hero__item:last-child {
+  border-bottom: 0;
+}
+
+.hero__item--mark {
+  grid-template-columns: 1fr;
 }
 
 /* the selected work is already the photograph behind you — its title recedes
@@ -248,16 +263,25 @@ body:has(.home--black),
 
 .hero__title {
   display: inline-block;
-  max-width: 9ch;
-  font-size: clamp(48px, 5.4vw, 92px);
+  max-width: none;
+  font-size: clamp(38px, 4vw, 68px);
   font-weight: 500;
-  line-height: 0.9;
+  line-height: 1;
   letter-spacing: -0.045em;
+  white-space: nowrap;
+}
+
+.hero__item:not(.hero__item--mark) .hero__title {
+  align-self: center;
+  padding: clamp(8px, 1vh, 14px) clamp(12px, 1.4vw, 22px);
 }
 
 .hero__year {
-  padding-top: 0.35em;
-  margin-left: 0.34em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 clamp(10px, 1vw, 16px);
+  border-left: 1px solid rgba(255, 255, 255, 0.38);
   font-size: clamp(12px, 1.1vw, 18px);
   font-weight: 400;
   line-height: 1;
@@ -654,13 +678,38 @@ body:has(.home--black),
   padding: clamp(72px, 10vw, 150px) 0 clamp(60px, 8vw, 110px);
 }
 
+.studio__head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: clamp(24px, 4vw, 64px);
+  padding: 0 var(--pad-x) clamp(44px, 5vw, 78px);
+}
+
 .studio__title {
   margin: 0;
-  padding: 0 var(--pad-x) clamp(44px, 5vw, 78px);
   font-size: clamp(56px, 8.1vw, 138px);
   font-weight: 500;
   line-height: 0.82;
   letter-spacing: -0.065em;
+}
+
+.studio__visit {
+  flex: 0 0 auto;
+  padding: 18px 20px;
+  border: 1px solid var(--paper-ink);
+  color: var(--paper-ink);
+  font-size: clamp(11px, 0.85vw, 13px);
+  line-height: 1;
+  letter-spacing: 0.08em;
+  text-decoration: none;
+  text-transform: uppercase;
+  transition: background-color 180ms ease, color 180ms ease;
+}
+
+.studio__visit:hover {
+  background: var(--paper-ink);
+  color: var(--paper) !important;
 }
 
 .studio__stage {
@@ -673,9 +722,12 @@ body:has(.home--black),
 
 /* the shared .gallery-canvas is fixed to the viewport for the real gallery —
    inside the home page it has to stay inside its section */
-.studio__stage canvas {
+.studio__video {
   display: block;
-  touch-action: pan-y;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
 }
 
 /* Mobile — same stack, smaller */
@@ -706,7 +758,7 @@ body:has(.home--black),
   }
 
   .hero__title {
-    font-size: clamp(48px, 12vw, 74px);
+    font-size: clamp(30px, 8.5vw, 46px);
   }
 
   .hero__item--mark .hero__title {
@@ -718,7 +770,9 @@ body:has(.home--black),
   }
 
   .hero__list {
-    bottom: 44px;
+    top: 54%;
+    bottom: auto;
+    width: calc(100vw - (2 * var(--pad-x)));
   }
 
   .hero__buy {
@@ -745,6 +799,15 @@ body:has(.home--black),
     width: 100%;
     max-width: 420px;
     margin-top: clamp(12px, 4vw, 24px);
+  }
+
+  .studio__head {
+    gap: 16px;
+  }
+
+  .studio__visit {
+    padding: 14px 12px;
+    white-space: nowrap;
   }
 
   .studio__stage {
