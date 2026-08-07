@@ -4,7 +4,6 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { artworks, BRAND_STATEMENT, HERO_ID } from '../data/artworks'
 import { SHOP_DOMAIN } from '../lib/shopify'
 import { RevealText, useSectionTextReveal } from './reveal'
-import Studio from './Studio'
 import './home.css'
 
 gsap.registerPlugin(ScrollTrigger)
@@ -34,8 +33,8 @@ const projects = HOME_IDS.map((id) => {
 // the gallery are real today.
 const NAV = [
   { label: 'shop', href: '/shop' },
-  { label: 'studio', href: '/studio' },
-  { label: 'catalog', href: '/shop#catalogs' },
+  { label: 'studio', href: '/#studio' },
+  { label: 'catalogs', href: '/shop#catalogs' },
   { label: 'moments', href: '/moments' },
   { label: 'about', href: '/about' },
   { label: 'cart', href: '/cart' },
@@ -333,11 +332,30 @@ function TheStudio() {
 
   return (
     <section className="studio" id="studio" ref={ref}>
-      <h2 className="studio__title">
-        <RevealText block>the</RevealText>
-        <RevealText block>studio.</RevealText>
-      </h2>
-      <div className="studio__stage">{seen && <Studio />}</div>
+      <div className="studio__head">
+        <h2 className="studio__title">
+          <RevealText block>the</RevealText>
+          <RevealText block>studio.</RevealText>
+        </h2>
+        <a className="studio__visit" href="/gallery">
+          <RevealText>visit studio <span aria-hidden="true">→</span></RevealText>
+        </a>
+      </div>
+      <div className="studio__stage">
+        {seen && (
+          <video
+            className="studio__video"
+            autoPlay
+            loop
+            muted
+            playsInline
+            preload="metadata"
+            aria-label="A galeria virtual do estúdio TNES"
+          >
+            <source src="/videos/studio-banner.mp4" type="video/mp4" />
+          </video>
+        )}
+      </div>
     </section>
   )
 }
