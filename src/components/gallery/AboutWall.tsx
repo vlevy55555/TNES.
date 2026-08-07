@@ -366,7 +366,7 @@ function EnterLink({ isMobile }: { isMobile: boolean }) {
       onPointerOut={() => setHovered(false)}
     >
       <Text
-        font={FONT_SANS}
+        font={FONT_HELVETICA}
         fontSize={fontSize}
         letterSpacing={isMobile ? 0.2 : 0.26}
         color={hovered ? '#ffffff' : INK}
@@ -410,7 +410,7 @@ export function AboutWall() {
       </Text>
 
       <Text
-        font={FONT_SANS}
+        font={FONT_HELVETICA}
         fontSize={isMobile ? 0.105 : 0.086}
         letterSpacing={0.24}
         // The Countdown's plate runs its pair of lines on ONE value (object 01
@@ -426,7 +426,7 @@ export function AboutWall() {
 
       {/* one block, first person — no pull-quote / bio split */}
       <Text
-        font={FONT_SERIF}
+        font={FONT_HELVETICA}
         fontSize={isMobile ? 0.13 : 0.105}
         lineHeight={isMobile ? 1.62 : 1.75}
         color={PLATE_INK}

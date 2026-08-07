@@ -180,6 +180,7 @@ body:has(.home--black),
 .hero__logo {
   color: #fff;
   text-decoration: none;
+  font-family: var(--mark);
   font-size: clamp(22px, 1.9vw, 30px);
   font-weight: 500;
   line-height: 1;
@@ -212,32 +213,46 @@ body:has(.home--black),
 .hero__list {
   position: absolute;
   left: var(--pad-x);
-  bottom: clamp(60px, 9vh, 96px);
+  top: auto;
+  bottom: clamp(78px, 11vh, 120px);
   z-index: 3;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
+  width: min(44vw, 720px);
+  border: 1px solid rgba(255, 255, 255, 0.48);
 }
 
 /* the signature work wears the [O] instead of its title — the mark is always
    the real Helvetica (--mark), never the UI sans */
 .hero__item--mark .hero__title {
   font-family: var(--mark);
-  font-size: clamp(52px, 6vw, 100px);
+  font-size: clamp(46px, 5.3vw, 88px);
   font-weight: 400;
   letter-spacing: -0.01em;
   line-height: 1;
-  padding-bottom: 0.2em;
+  padding: clamp(18px, 2.5vw, 38px) clamp(16px, 2vw, 30px);
 }
 
-.hero__item {
-  display: inline-flex;
-  align-items: flex-start;
+.home .hero__item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) clamp(82px, 7vw, 118px);
+  align-items: stretch;
+  width: 100%;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.38);
   text-align: left;
   transform-origin: left center;
   transition:
     color 320ms ease,
     transform 400ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.home .hero__item:last-child {
+  border-bottom: 0;
+}
+
+.hero__item--mark {
+  grid-template-columns: 1fr;
 }
 
 /* the selected work is already the photograph behind you — its title recedes
@@ -248,16 +263,26 @@ body:has(.home--black),
 
 .hero__title {
   display: inline-block;
-  max-width: 9ch;
-  font-size: clamp(48px, 5.4vw, 92px);
+  max-width: none;
+  font-size: clamp(32px, 3.4vw, 58px);
   font-weight: 500;
-  line-height: 0.9;
+  line-height: 1;
   letter-spacing: -0.045em;
+  white-space: nowrap;
+}
+
+.hero__item:not(.hero__item--mark) .hero__title {
+  align-self: center;
+  padding: clamp(8px, 1vh, 14px) clamp(12px, 1.4vw, 22px);
+  text-transform: lowercase;
 }
 
 .hero__year {
-  padding-top: 0.35em;
-  margin-left: 0.34em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 clamp(10px, 1vw, 16px);
+  border-left: 1px solid rgba(255, 255, 255, 0.38);
   font-size: clamp(12px, 1.1vw, 18px);
   font-weight: 400;
   line-height: 1;
@@ -629,13 +654,38 @@ body:has(.home--black),
   padding: clamp(72px, 10vw, 150px) 0 clamp(60px, 8vw, 110px);
 }
 
+.studio__head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: clamp(24px, 4vw, 64px);
+  padding: 0 var(--pad-x) clamp(44px, 5vw, 78px);
+}
+
 .studio__title {
   margin: 0;
-  padding: 0 var(--pad-x) clamp(44px, 5vw, 78px);
   font-size: clamp(56px, 8.1vw, 138px);
   font-weight: 500;
   line-height: 0.82;
   letter-spacing: -0.065em;
+}
+
+.studio__visit {
+  flex: 0 0 auto;
+  padding: 18px 20px;
+  border: 1px solid var(--paper-ink);
+  color: var(--paper-ink);
+  font-size: clamp(11px, 0.85vw, 13px);
+  line-height: 1;
+  letter-spacing: 0.08em;
+  text-decoration: none;
+  text-transform: uppercase;
+  transition: background-color 180ms ease, color 180ms ease;
+}
+
+.studio__visit:hover {
+  background: var(--paper-ink);
+  color: var(--paper) !important;
 }
 
 .studio__stage {
@@ -648,9 +698,95 @@ body:has(.home--black),
 
 /* the shared .gallery-canvas is fixed to the viewport for the real gallery —
    inside the home page it has to stay inside its section */
-.studio__stage canvas {
+.studio__video {
   display: block;
-  touch-action: pan-y;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+
+.studio__signup {
+  padding: clamp(82px, 10vw, 150px) var(--pad-x) clamp(16px, 2vw, 30px);
+  color: var(--paper-ink);
+}
+
+.studio__signup-eyebrow {
+  margin: 0;
+  color: var(--paper-muted);
+  font-size: 11px;
+  letter-spacing: 0.42em;
+  text-transform: lowercase;
+}
+
+.studio__signup-title {
+  margin: clamp(54px, 6vw, 88px) 0 0;
+  font-family: var(--sans);
+  font-size: clamp(58px, 7.2vw, 122px);
+  font-style: normal;
+  font-weight: 500;
+  line-height: 0.92;
+  letter-spacing: -0.065em;
+}
+
+.studio__signup-copy {
+  margin: clamp(52px, 5vw, 76px) 0 0;
+  color: var(--paper-muted);
+  font-size: clamp(16px, 1.3vw, 22px);
+  line-height: 1.4;
+}
+
+.studio__signup-form {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0;
+  width: min(100%, 690px);
+  margin-top: clamp(62px, 6vw, 92px);
+  border-bottom: 1px solid var(--paper-line);
+}
+
+.studio__signup-input {
+  min-width: 0;
+  padding: 0 0 22px;
+  border: 0;
+  border-radius: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--paper-ink);
+  font: inherit;
+  font-size: clamp(17px, 1.25vw, 21px);
+}
+
+.studio__signup-input::placeholder {
+  color: var(--paper-muted);
+}
+
+.home .studio__signup-submit {
+  min-width: 52px;
+  padding: 0 0 20px;
+  border: 0;
+  background: transparent;
+  color: var(--paper-ink);
+  font-size: 30px;
+  line-height: 1;
+  transition: transform 180ms ease;
+}
+
+.home .studio__signup-submit:hover {
+  transform: translateX(5px);
+}
+
+.home .studio__signup-submit:disabled {
+  cursor: wait;
+  opacity: 0.55;
+}
+
+.studio__signup-message {
+  min-height: 1.4em;
+  margin: 10px 0 0;
+  color: var(--paper-muted);
+  font-size: 11px;
+  letter-spacing: 0.04em;
 }
 
 /* Mobile — same stack, smaller */
@@ -680,12 +816,20 @@ body:has(.home--black),
     font-size: 12px;
   }
 
+  .hero__slide--runner .hero__poster {
+    object-position: 42% center;
+  }
+
+  .hero__slide--praia-da-baleia .hero__poster {
+    object-position: 84% center;
+  }
+
   .hero__title {
-    font-size: clamp(48px, 12vw, 74px);
+    font-size: clamp(26px, 7.5vw, 38px);
   }
 
   .hero__item--mark .hero__title {
-    font-size: clamp(48px, 14vw, 72px);
+    font-size: clamp(42px, 12vw, 62px);
   }
 
   .hero__year {
@@ -693,11 +837,13 @@ body:has(.home--black),
   }
 
   .hero__list {
-    bottom: 44px;
+    top: auto;
+    bottom: 60px;
+    width: calc(100vw - (2 * var(--pad-x)));
   }
 
   .hero__buy {
-    bottom: 44px;
+    bottom: 12px;
     font-size: 12px;
   }
 
@@ -720,6 +866,23 @@ body:has(.home--black),
     width: 100%;
     max-width: 420px;
     margin-top: clamp(12px, 4vw, 24px);
+  }
+
+  .studio__head {
+    gap: 16px;
+  }
+
+  .studio__visit {
+    padding: 14px 12px;
+    white-space: nowrap;
+  }
+
+  .studio__signup-form {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .home .studio__signup-submit {
+    justify-self: end;
   }
 
   .studio__stage {
