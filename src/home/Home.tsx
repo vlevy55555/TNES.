@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState, type FormEvent } from 'react'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { artworks, BRAND_STATEMENT, HERO_ID } from '../data/artworks'
@@ -7,6 +7,22 @@ import { RevealText, useSectionTextReveal } from './reveal'
 import './home.css'
 
 gsap.registerPlugin(ScrollTrigger)
+
+const NOTIFY_URL = import.meta.env.VITE_NOTIFY_URL as string | undefined
+
+async function subscribeToStudio(email: string) {
+  const list = JSON.parse(localStorage.getItem('tnes-subscribers') ?? '[]')
+  if (!list.includes(email)) list.push(email)
+  localStorage.setItem('tnes-subscribers', JSON.stringify(list))
+
+  if (!NOTIFY_URL) return
+  const response = await fetch(NOTIFY_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify({ email, at: new Date().toISOString(), source: 'studio' }),
+  })
+  if (!response.ok) throw new Error(`notify: ${response.status}`)
+}
 
 // The works the hero cycles, in order. The first one is the signature work and
 // carries the [O] instead of its title — it is the brand's own entry in the
@@ -328,7 +344,31 @@ function SelectedWorks() {
 
 function TheStudio() {
   const [ref, seen] = useInView<HTMLElement>()
+  const [email, setEmail] = useState('')
+  const [message, setMessage] = useState('')
+  const [sending, setSending] = useState(false)
   useSectionTextReveal(ref)
+
+  const submit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    if (sending) return
+    if (!/^\S+@\S+\.\S+$/.test(email)) {
+      setMessage('please enter a valid email')
+      return
+    }
+
+    setSending(true)
+    setMessage('')
+    try {
+      await subscribeToStudio(email)
+      setEmail('')
+      setMessage('you’re on the list.')
+    } catch {
+      setMessage('couldn’t save that — please try again')
+    } finally {
+      setSending(false)
+    }
+  }
 
   return (
     <section className="studio" id="studio" ref={ref}>
@@ -350,11 +390,41 @@ function TheStudio() {
             muted
             playsInline
             preload="metadata"
-            aria-label="A galeria virtual do estúdio TNES"
+            aria-label="A galeria virtual do estúdio TNES."
           >
             <source src="/videos/studio-banner.mp4" type="video/mp4" />
           </video>
         )}
+      </div>
+      <div className="studio__signup">
+        <p className="studio__signup-eyebrow">early access</p>
+        <h3 className="studio__signup-title">be the first to know.</h3>
+        <p className="studio__signup-copy">
+          early access to new work, limited objects, and studio collaborations.
+        </p>
+        <form className="studio__signup-form" onSubmit={submit} noValidate>
+          <input
+            className="studio__signup-input"
+            type="email"
+            value={email}
+            onChange={(event) => {
+              setEmail(event.target.value)
+              setMessage('')
+            }}
+            placeholder="email address"
+            aria-label="Email address"
+            aria-invalid={message.startsWith('please')}
+          />
+          <button
+            className="studio__signup-submit"
+            type="submit"
+            disabled={sending}
+            aria-label="Join early access"
+          >
+            {sending ? '…' : <span aria-hidden="true">→</span>}
+          </button>
+        </form>
+        <p className="studio__signup-message" aria-live="polite">{message}</p>
       </div>
     </section>
   )
@@ -414,7 +484,7 @@ export default function Home({ dark = false }: { dark?: boolean }) {
           {projects.map((project, index) => (
             <div
               key={project.id}
-              className={`hero__slide ${index === activeIndex ? 'hero__slide--active' : ''}`}
+              className={`hero__slide hero__slide--${project.id} ${index === activeIndex ? 'hero__slide--active' : ''}`}
             >
               <img
                 className="hero__poster"
@@ -431,7 +501,7 @@ export default function Home({ dark = false }: { dark?: boolean }) {
 
         <header className="hero__header">
           <a className="hero__logo" href="/">
-            <RevealText>TNES</RevealText>
+            <RevealText>TNES.</RevealText>
           </a>
 
           <nav className="hero__nav" aria-label="Navegação principal">

@@ -14,6 +14,7 @@ import {
   FONT_BRAND,
   FONT_BRAND_ITALIC,
   FONT_DIGITS_TYPEFACE,
+  FONT_HELVETICA,
   FONT_SERIF,
   FONT_SANS,
   OPENING_DATE,
@@ -299,7 +300,7 @@ function EditorialPlate() {
       <Rule x={left} y={0.3} w={0.52} />
 
       <Text
-        font={FONT_SANS}
+        font={FONT_HELVETICA}
         fontSize={0.095}
         lineHeight={1.55}
         color={SECOND}
@@ -307,7 +308,7 @@ function EditorialPlate() {
         anchorY="top"
         position={[left, 0.16, 0.026]}
       >
-        {'an exclusive TNES\nobject release'}
+        {'an exclusive TNES.\nobject release'}
       </Text>
       <Text
         font={FONT_SANS}
@@ -578,7 +579,7 @@ function MobileReleaseBrief() {
   return (
     <group>
       <Text
-        font={FONT_SERIF}
+        font={FONT_HELVETICA}
         fontSize={0.18}
         letterSpacing={0.005}
         color={INK}
@@ -586,7 +587,7 @@ function MobileReleaseBrief() {
         anchorY="middle"
         position={[0, MOBILE_RELEASE_Y, MOBILE_RELEASE_Z]}
       >
-        The first TNES archive release
+        The first TNES. archive release
       </Text>
       <Text
         font={FONT_SERIF}
