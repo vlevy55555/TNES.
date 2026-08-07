@@ -25,3 +25,17 @@ export const SIGNATURE_REVEAL_LUT = [
   0.7008,0.7337,0.7488,0.7763,0.7910,0.8098,0.8288,0.8469,
   0.8650,0.8835,0.9022,0.9298,0.9470,0.9640,0.9806,1.0000
 ]
+
+/**
+ * `t` (0..1 of the animation) -> fraction of the stroke drawn, interpolated
+ * between LUT samples. Every driver — the timed VSL doorway, /about's scrub —
+ * writes `strokeDashoffset = 1 - drawnFraction(t)`, so ink appears at a constant
+ * rate instead of racing through the long strokes.
+ */
+export function drawnFraction(t: number) {
+  const n = SIGNATURE_REVEAL_LUT.length
+  const x = Math.min(1, Math.max(0, t)) * (n - 1)
+  const i = Math.floor(x)
+  if (i >= n - 1) return SIGNATURE_REVEAL_LUT[n - 1]
+  return SIGNATURE_REVEAL_LUT[i] + (SIGNATURE_REVEAL_LUT[i + 1] - SIGNATURE_REVEAL_LUT[i]) * (x - i)
+}

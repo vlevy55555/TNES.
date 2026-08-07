@@ -17,7 +17,6 @@ export function ArtworkPanel() {
   const inquiryOpen = useGalleryStore((s) => s.inquiryOpen)
   const isMobile = useGalleryStore((s) => s.isMobile)
   const addToCart = useCartStore((s) => s.add)
-  const openCart = useCartStore((s) => s.setOpen)
 
   const setPreviewScale = useGalleryStore((s) => s.setPreviewScale)
 
@@ -81,8 +80,8 @@ export function ArtworkPanel() {
       handle: artwork.shopifyHandle,
       label: variant.title,
     })
+    // stay on the wall — the header's Cart link leads to /cart when they're done
     setAdded(true)
-    openCart(true)
   }
 
   /**

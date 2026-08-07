@@ -6,9 +6,7 @@ import { Header } from './components/ui/Header'
 import { Footer } from './components/ui/Footer'
 import { WallNavigation } from './components/ui/WallNavigation'
 import { ArtworkPanel } from './components/ui/ArtworkPanel'
-import { CartDrawer } from './components/ui/CartDrawer'
 import { useGalleryStore } from './store/useGalleryStore'
-import { useCartStore } from './store/useCartStore'
 
 export default function App() {
   const selectedArtworkId = useGalleryStore((s) => s.selectedArtworkId)
@@ -39,18 +37,16 @@ export default function App() {
         closeInquiry,
         printsIntroPhase,
       } = useGalleryStore.getState()
-      const cartOpen = useCartStore.getState().open
       // Prints' first-arrival veil owns the interaction until a real artwork
       // is chosen; don't let keyboard navigation slip behind it.
       if (printsIntroPhase !== 'hidden') return
       if (e.key === 'Escape') {
-        if (cartOpen) return useCartStore.getState().setOpen(false)
         closeInquiry()
         closeManifesto()
         if (manifestoRoomOpen) closeManifestoRoom()
         closeArtwork()
       }
-      if (cartOpen || inquiryOpen || manifestoOpen || selectedArtworkId) return
+      if (inquiryOpen || manifestoOpen || selectedArtworkId) return
       if (manifestoRoomOpen) {
         if (e.key === 'ArrowRight') closeManifestoRoom()
         return
@@ -73,7 +69,6 @@ export default function App() {
       <Header />
       <WallNavigation />
       <ArtworkPanel />
-      <CartDrawer />
       <Footer />
       <GalleryInstructionOverlay />
       <VslExitOverlay />

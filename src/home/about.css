@@ -1,0 +1,291 @@
+/* /about — Victor. Same paper and chrome as the shop; the type follows the text
+   reference: a bracketed mono eyebrow, the name stacked one word per line, then
+   one block of body copy under it. The page opens on those words, lets the
+   photograph climb over them until it is the whole screen, pulls it back into a
+   small grey plate with his hand written across it, and only then moves on. */
+
+/* The shop's sheet gives body and #root `overflow-y: auto`, which makes each of
+   them a scroll container — and a sticky child then anchors to a box that never
+   scrolls, so it just rides the page down. The opening depends on sticky
+   holding against the VIEWPORT, so this page hands those two back to `visible`.
+   html keeps its own rule: it is the document scroller either way. */
+body:has(.about),
+#root:has(.about) {
+  overflow: visible;
+}
+
+/* No paper gradient over the photograph: on the shop it fades the page out from
+   under the nav, here it just hazes the top of the picture. The header keeps its
+   own ink — the studio wall behind it is white. */
+.about .shop__header {
+  background: none;
+}
+
+/* The opening. One sticky stage carries the whole sequence: the words, the
+   photograph climbing over them, the shrink, the signature, and the ride out.
+   The track's height is how long that takes — the scrub runs over
+   `height - 100svh`. Native sticky; the wheel is never taken (§6). */
+.about {
+  /* the sticky header's own height: its padding plus the wordmark's line box.
+     Declared once — the opening both slides under it and clears it. */
+  --about-header: calc(var(--pad-y) * 2 + clamp(22px, 1.9vw, 30px));
+}
+
+.about__hero {
+  position: relative;
+  height: 380svh;
+  /* the header sits over the picture instead of on a band of paper */
+  margin-top: calc(-1 * var(--about-header));
+}
+
+.about__hero-stage {
+  position: sticky;
+  top: 0;
+  height: 100svh;
+  overflow: clip;
+}
+
+/* 1-2 · the first screen: one left-set column, §7's own instinct — the eyebrow,
+   the name, the line under it and his sentence, in that order. The rest of the
+   screen stays empty on purpose: it is what the photograph climbs through. */
+.about__lede {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  padding: calc(var(--about-header) + clamp(12px, 2vw, 34px)) var(--pad-x)
+    clamp(28px, 4.5vw, 76px);
+  will-change: opacity;
+}
+
+/* 2-3 · the photograph starts below the fold and climbs until it IS the screen,
+   then pulls back on the spot. Transform + filter only — no relayout per frame. */
+.about__hero-media {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  margin: 0;
+  /* off frame at rest: the load shows his name, not a photograph */
+  transform: translateY(100%);
+  transform-origin: 50% 50%;
+  will-change: transform, filter;
+}
+
+.about__hero-media img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* 4-5 · his hand, written over the plate while it is still shrinking */
+.about__hero-sig {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  z-index: 3;
+  width: min(78vw, 880px);
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+.about__hero-sig svg {
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+/* Ink, not paper: the hand reads as something written ON the photograph. The
+   room's halo goes with it — §1 allows no shadow. */
+.about__hero-sig .sig-ink {
+  fill: var(--paper-ink);
+  filter: none;
+}
+
+/* The two mono lines are NOT twins: the eyebrow is a filing label — smallest,
+   muted — and the role is the name's own subtitle, so it carries full ink, the
+   way the 3D room hangs it under his portrait on one value with the name. */
+.about__eyebrow {
+  margin: 0;
+  color: var(--paper-muted);
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+}
+
+/* One word per line, stacked tight — and deliberately on the site's OWN title
+   tier (§3: `selected works.` / `the studio.`), not a size invented for this
+   page. Same scale, same weight, same tracking: the page reads as part of the
+   sheet rather than a louder cousin of it. */
+.about__name {
+  margin: clamp(14px, 1.8vw, 26px) 0 0;
+  font-size: clamp(48px, 8.1vw, 138px);
+  font-weight: 500;
+  line-height: 0.82;
+  letter-spacing: -0.065em;
+  /* one word per line, so this capitalises exactly the three initials */
+  text-transform: capitalize;
+}
+
+/* the line the 3D room hangs under his portrait, kept word for word */
+.about__role {
+  margin: clamp(16px, 2vw, 30px) 0 0;
+  font-family: var(--mono);
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+/* The reference's body: large, short measure, sitting straight under the line
+   it belongs to. Its measure is wider than the name's so the block reads as a
+   column that narrows downward instead of a stack of equal slabs. */
+.about__statement {
+  max-width: 34ch;
+  margin: clamp(18px, 2.2vw, 32px) 0 0;
+  font-size: clamp(18px, 1.6vw, 27px);
+  font-weight: 400;
+  line-height: 1.34;
+  letter-spacing: -0.02em;
+  text-wrap: pretty;
+}
+
+.about__split-figure img {
+  display: block;
+  width: 100%;
+  height: auto;
+  will-change: transform;
+}
+
+/* Two columns, photo one side and words the other — the landing's split. */
+.about__split {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  align-items: center;
+  gap: clamp(28px, 5vw, 100px);
+  padding: clamp(40px, 5vw, 90px) var(--pad-x);
+  border-top: 1px solid var(--paper-line);
+}
+
+.about__split-figure {
+  margin: 0;
+  overflow: hidden;
+  background: var(--media-fallback);
+  will-change: clip-path;
+}
+
+.about__split-title {
+  margin: 0;
+  max-width: 10ch;
+  font-size: clamp(40px, 5.4vw, 96px);
+  font-weight: 500;
+  line-height: 0.86;
+  letter-spacing: -0.055em;
+}
+
+.about__split-copy {
+  max-width: 34ch;
+  margin: clamp(18px, 2vw, 32px) 0 0;
+  font-size: clamp(15px, 1.2vw, 20px);
+  line-height: 1.5;
+  letter-spacing: -0.01em;
+}
+
+.about__closer {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 14px;
+  padding: clamp(40px, 5vw, 90px) var(--pad-x) clamp(72px, 9vw, 140px);
+  border-top: 1px solid var(--paper-line);
+}
+
+/* ponytail: the same outlined box the product page uses for `add to cart` —
+   paper ground, 1px rule, inverting on hover. Fill it with ink again when the
+   exit is meant to read as the page's one loud object. */
+.about__vsl {
+  display: grid;
+  place-items: center;
+  min-width: min(100%, 420px);
+  max-width: 100%;
+  min-height: clamp(64px, 5.6vw, 86px);
+  padding-inline: clamp(24px, 3vw, 48px);
+  border: 1px solid var(--paper-ink);
+  background: transparent;
+  color: var(--paper-ink);
+  font-size: clamp(15px, 1.3vw, 21px);
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  transition: background-color 180ms ease, color 180ms ease;
+}
+
+.about__vsl:hover {
+  background: var(--paper-ink);
+  color: var(--paper);
+}
+
+.about__vsl:hover .shop__arrow {
+  transform: translateX(4px);
+}
+
+@media (max-width: 900px) {
+  /* the photograph leads on a phone, as it does everywhere else on this site */
+  .about__split {
+    grid-template-columns: 1fr;
+  }
+
+  /* no room for a diagonal: the corners become one column, the sentence
+     keeping its own space at the bottom of the screen */
+  .about__lede {
+    grid-template-columns: 1fr;
+  }
+
+  .about__statement {
+    max-width: 34ch;
+  }
+
+  .about__hero-sig {
+    width: 92vw;
+  }
+}
+
+/* No sequence to run: the stage becomes a plain stack, so every piece of it is
+   still on the page and still readable. */
+@media (prefers-reduced-motion: reduce) {
+  .about__hero {
+    height: auto;
+    margin-top: 0;
+  }
+
+  .about__hero-stage {
+    position: static;
+    height: auto;
+    padding-bottom: clamp(40px, 5vw, 80px);
+  }
+
+  .about__lede {
+    position: static;
+    display: block;
+    padding: clamp(30px, 4vw, 66px) var(--pad-x);
+  }
+
+  .about__statement {
+    margin-top: clamp(20px, 2.4vw, 36px);
+  }
+
+  .about__hero-media {
+    position: static;
+    height: 62svh;
+    transform: none;
+    filter: grayscale(1);
+  }
+
+  .about__hero-sig {
+    position: static;
+    margin: clamp(30px, 4vw, 66px) auto 0;
+    transform: none;
+  }
+
+  .about__vsl,
+  .about__vsl .shop__arrow {
+    transition-duration: 1ms !important;
+  }
+}
