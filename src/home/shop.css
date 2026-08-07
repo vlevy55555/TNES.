@@ -295,8 +295,20 @@ body:has(.shop),
   transition: transform 220ms ease;
 }
 
+.shop__item:hover .shop__arrow,
 .shop__catalog:hover .shop__arrow {
   transform: translateX(4px);
+}
+
+/* the caption comes up to full ink with it — on a page of twelve works, the one
+   under the cursor should be the only one at full value */
+.shop__item .shop__caption,
+.shop__item .shop__meta {
+  transition: color 220ms ease;
+}
+
+.shop__item:hover .shop__meta {
+  color: var(--paper-ink);
 }
 
 /* Catalogs */

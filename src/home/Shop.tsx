@@ -212,7 +212,11 @@ export default function Shop() {
                 from {fromPrice(work.shopifyHandle ? products[work.shopifyHandle] : undefined)}
               </span>
             </p>
-            <p className="shop__meta">{work.meta}</p>
+            {/* the catalogs' own affordance, on every work: the arrow steps
+                right as the photograph pushes in under the cursor */}
+            <p className="shop__meta">
+              {work.meta} <span className="shop__arrow" aria-hidden="true">→</span>
+            </p>
           </a>
         ))}
       </div>
