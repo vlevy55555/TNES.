@@ -525,31 +525,6 @@ body:has(.home--black),
   display: block;
 }
 
-.works__arrows {
-  display: flex;
-  gap: 10px;
-}
-
-.works__arrows button {
-  display: grid;
-  width: 40px;
-  height: 40px;
-  place-items: center;
-  border: 1px solid var(--paper-ink);
-  border-radius: 0;
-  font-size: 16px;
-  transition:
-    background-color 220ms ease,
-    color 220ms ease,
-    border-color 220ms ease;
-}
-
-.works__arrows button:hover {
-  border-color: var(--paper-ink);
-  background: var(--paper-ink);
-  color: var(--paper);
-}
-
 .works__track {
   /* the long edge of every print — width for a landscape, height for a
      portrait. Set once here; each frame picks the axis it applies to. */
@@ -763,8 +738,7 @@ body:has(.home--black),
   .works__frame img,
   .works__frame,
   .works__item,
-  .works__title,
-  .works__arrows button {
+  .works__title {
     transition-duration: 1ms !important;
   }
 

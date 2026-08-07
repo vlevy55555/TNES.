@@ -231,12 +231,6 @@ function SelectedWorks() {
 
   // ponytail: the track is a plain scroll container — the arrows nudge it and
   // the loop below drifts it, so manual scroll and autoplay share one mechanism
-  const nudge = (direction: number) =>
-    track.current?.scrollBy({
-      left: direction * track.current.clientWidth * 0.8,
-      behavior: 'smooth',
-    })
-
   useEffect(() => {
     const el = track.current
     // rAF is already throttled to zero in a hidden tab, so nothing drifts
@@ -269,14 +263,6 @@ function SelectedWorks() {
           <RevealText block>works.</RevealText>
         </h2>
 
-        <div className="works__arrows">
-          <button type="button" aria-label="Anterior" onClick={() => nudge(-1)}>
-            <RevealText>←</RevealText>
-          </button>
-          <button type="button" aria-label="Próximo" onClick={() => nudge(1)}>
-            <RevealText>→</RevealText>
-          </button>
-        </div>
       </header>
 
       <ul
