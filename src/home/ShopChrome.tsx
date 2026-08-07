@@ -15,8 +15,8 @@ const NAV = [
 // visitor a number rather than a blank.
 export const PRICE = '$236'
 
-export const catalogHref = (title: string) =>
-  `mailto:${INQUIRY_EMAIL}?subject=${encodeURIComponent(`Catalog · ${title}`)}`
+/** Every catalog reference opens the complete catalog presentation. */
+export const catalogHref = (_title?: string) => '/shop#catalogs'
 
 /**
  * The wordmark always returns to the landing page, which is the site root.
