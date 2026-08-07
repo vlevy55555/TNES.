@@ -68,9 +68,9 @@ const fromPrice = (product?: ShopProduct) => {
 
 // two large pieces standing in for the wider bodies of work
 const CATALOGS = [
-  { title: 'the hamptons', id: 'playa-roja' },
-  { title: 'selected works', id: 'appenzell-alpine-lake' },
-].map((c) => ({ ...c, image: works.find((w) => w.id === c.id)!.image }))
+  { title: 'the hamptons', image: works.find((w) => w.id === 'playa-roja')!.image },
+  { title: 'selected works', image: '/catalogs/product4-cows-tall.webp' },
+]
 
 function Filter({
   label,
@@ -233,10 +233,12 @@ export default function Shop() {
               <figure className="shop__figure">
                 <img src={catalog.image} alt={catalog.title} loading="lazy" />
               </figure>
-              <p className="shop__caption"><span>{catalog.title}.</span></p>
-              <p className="shop__meta">
-                view catalog <span className="shop__arrow" aria-hidden="true">→</span>
-              </p>
+              <div className="shop__catalog-info">
+                <p className="shop__catalog-title">{catalog.title}.</p>
+                <p className="shop__catalog-link">
+                  view catalog <span className="shop__arrow" aria-hidden="true">→</span>
+                </p>
+              </div>
             </a>
           ))}
         </div>

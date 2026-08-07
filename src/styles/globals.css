@@ -1188,7 +1188,7 @@ select:not(:disabled),
 }
 
 .letter-mark {
-  font-family: var(--brand);
+  font-family: var(--mark);
   font-size: 20px;
   letter-spacing: 0.06em;
   color: var(--ink);
