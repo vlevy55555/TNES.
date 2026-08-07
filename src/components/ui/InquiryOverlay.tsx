@@ -47,7 +47,7 @@ function makePaperTexture() {
   ctx.fillStyle = g
   ctx.fillRect(0, 0, 512, 620)
   ctx.fillStyle = 'rgba(47,42,36,0.5)'
-  ctx.font = '600 22px Georgia'
+  ctx.font = '400 22px Helvetica'
   ctx.fillText('TNES.', 54, 70)
   ctx.strokeStyle = 'rgba(182,155,94,0.6)'
   ctx.beginPath()
@@ -224,7 +224,7 @@ export function InquiryLetter() {
       '',
       message.trim() || '(no message)',
     ]
-    const subject = `TNES inquiry — ${type}${work ? ` — ${work.title}` : ''}`
+    const subject = `TNES. inquiry — ${type}${work ? ` — ${work.title}` : ''}`
     window.location.href =
       `mailto:${INQUIRY_EMAIL}?subject=${encodeURIComponent(subject)}` +
       `&body=${encodeURIComponent(lines.join('\n'))}`
