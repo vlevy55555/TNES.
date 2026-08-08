@@ -6,6 +6,7 @@ import { money, type ShopProduct } from '../lib/shopify'
 import { useProducts } from '../lib/useProduct'
 import { RevealText, useSectionTextReveal } from './reveal'
 import { catalogHref, PRICE, ShopFooter, ShopHeader } from './ShopChrome'
+import Catalog, { isCatalogSlug } from './Catalog'
 import './home.css'
 import './shop.css'
 
@@ -113,7 +114,7 @@ function Filter({
   )
 }
 
-export default function Shop() {
+function ShopIndex() {
   const head = useRef<HTMLElement>(null)
   const grid = useRef<HTMLDivElement>(null)
   const catalogs = useRef<HTMLElement>(null)
@@ -263,4 +264,9 @@ export default function Shop() {
       <ShopFooter />
     </main>
   )
+}
+
+export default function Shop() {
+  const catalog = new URLSearchParams(window.location.search).get('catalog')
+  return isCatalogSlug(catalog) ? <Catalog slug={catalog} /> : <ShopIndex />
 }
