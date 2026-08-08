@@ -87,6 +87,53 @@ body,
   inset: 0;
 }
 
+.gallery-loader {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 18px;
+  background: #ece5d8;
+  color: #2f2a24;
+  opacity: 1;
+  transition: opacity 700ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.gallery-loader--leaving {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.gallery-loader__brand {
+  font-family: var(--mark);
+  font-size: clamp(24px, 2.4vw, 38px);
+  letter-spacing: 0.14em;
+}
+
+.gallery-loader__track {
+  width: min(240px, 58vw);
+  height: 1px;
+  overflow: hidden;
+  background: rgba(47, 42, 36, 0.2);
+}
+
+.gallery-loader__track span {
+  display: block;
+  height: 100%;
+  background: #2f2a24;
+  transition: width 300ms ease;
+}
+
+.gallery-loader__status {
+  color: #8a7f6d;
+  font-family: var(--sans);
+  font-size: 9px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+
 /* Use the mark only where an action or a selection is available. */
 button:not(:disabled),
 a[href],
@@ -282,6 +329,8 @@ select:not(:disabled),
   letter-spacing: 0.06em;
   line-height: 1;
   color: #fff;
+  border-bottom: 0;
+  text-decoration: none;
 }
 
 .nav {
@@ -669,6 +718,9 @@ select:not(:disabled),
     border-top: 1px solid var(--line);
     border-radius: 16px 16px 0 0;
     overflow-y: auto;
+    overscroll-behavior-y: contain;
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-y;
     animation: sheet-in 0.45s cubic-bezier(0.22, 1, 0.36, 1);
   }
 

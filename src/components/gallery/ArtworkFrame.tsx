@@ -1,6 +1,7 @@
 import { Text, useCursor, useTexture } from '@react-three/drei'
+import { useThree } from '@react-three/fiber'
 import { useEffect, useRef, useState } from 'react'
-import { SRGBColorSpace, Vector3, type Group } from 'three'
+import { LinearFilter, LinearMipmapLinearFilter, SRGBColorSpace, Vector3, type Group } from 'three'
 import gsap from 'gsap'
 import { FONT_BRAND, type FrameStyle, type Artwork } from '../../data/artworks'
 import { FrameLayers, frameOuterDimensions } from './FrameLayers'
@@ -35,6 +36,15 @@ export function ArtworkFrame({
   const texture = useTexture(artwork.image, (t) => {
     t.colorSpace = SRGBColorSpace
   })
+  const maxAnisotropy = useThree((state) => state.gl.capabilities.getMaxAnisotropy())
+
+  useEffect(() => {
+    texture.anisotropy = Math.min(16, maxAnisotropy)
+    texture.minFilter = LinearMipmapLinearFilter
+    texture.magFilter = LinearFilter
+    texture.generateMipmaps = true
+    texture.needsUpdate = true
+  }, [maxAnisotropy, texture])
   const selectArtwork = useGalleryStore((s) => s.selectArtwork)
   const selectedArtworkId = useGalleryStore((s) => s.selectedArtworkId)
   const selectedFrameStyle = useGalleryStore((s) => s.selectedFrameStyle)

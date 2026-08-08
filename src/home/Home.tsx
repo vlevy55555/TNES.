@@ -339,7 +339,7 @@ function TheStudio() {
           </video>
         )}
       </div>
-      <EarlyAccess />
+      <EarlyAccess showCountdown />
     </section>
   )
 }

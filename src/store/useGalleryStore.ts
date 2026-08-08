@@ -89,8 +89,8 @@ export const useGalleryStore = create<GalleryState>((set, get) => ({
   manifestoRoomOpen: false,
   isMobile: mqIsMobile(),
   printsPage: 0,
-  printsIntroPhase: initialWall === ARCHIVE_WALL && !initialArtwork ? 'entering' : 'hidden',
-  printsIntroSeen: initialWall === ARCHIVE_WALL && !initialArtwork,
+  printsIntroPhase: 'hidden',
+  printsIntroSeen: true,
   pendingIntroArtwork: null,
   manifestoOpen: false,
   inquiryOpen: false,
@@ -104,15 +104,14 @@ export const useGalleryStore = create<GalleryState>((set, get) => ({
 
   goToWall: (index) => {
     const wall = Math.min(Math.max(index, 0), walls.length - 1)
-    const showPrintsIntro = wall === ARCHIVE_WALL && !get().printsIntroSeen
     set({
       currentWall: wall,
       selectedArtworkId: null,
       zoomAt: null,
       manifestoRoomOpen: false,
       printsPage: 0,
-      printsIntroPhase: showPrintsIntro ? 'entering' : 'hidden',
-      printsIntroSeen: get().printsIntroSeen || showPrintsIntro,
+      printsIntroPhase: 'hidden',
+      printsIntroSeen: true,
       pendingIntroArtwork: null,
     })
   },

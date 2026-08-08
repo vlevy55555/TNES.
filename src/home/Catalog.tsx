@@ -1,3 +1,4 @@
+import { useState, type FormEvent } from 'react'
 import { artworks, INQUIRY_EMAIL } from '../data/artworks'
 import { RevealText } from './reveal'
 import { ShopFooter, ShopHeader } from './ShopChrome'
@@ -7,6 +8,8 @@ import './shop.css'
 import './catalog.css'
 
 type CatalogSlug = 'the-hamptons' | 'selected-works'
+
+const CATALOG_PASSWORD = 'victor'
 
 const catalogCopy = {
   'the-hamptons': {
@@ -35,6 +38,9 @@ export function isCatalogSlug(value: string | null): value is CatalogSlug {
 }
 
 export default function Catalog({ slug }: { slug: CatalogSlug }) {
+  const [unlocked, setUnlocked] = useState(false)
+  const [password, setPassword] = useState('')
+  const [error, setError] = useState('')
   const catalog = catalogCopy[slug]
   const selected = catalog.ids
     .map((id) => artworks.find((work) => work.id === id))
@@ -44,6 +50,49 @@ export default function Catalog({ slug }: { slug: CatalogSlug }) {
     label: chapterCopy[(index + chapterOffset) % chapterCopy.length],
     works: selected.slice(index * 3, index * 3 + 3),
   }))
+
+  const unlockCatalog = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    if (password !== CATALOG_PASSWORD) {
+      setError('incorrect password. please try again.')
+      return
+    }
+    setUnlocked(true)
+  }
+
+  if (!unlocked) {
+    return (
+      <main className="shop catalog-gate">
+        <ShopHeader current="catalogs" />
+        <section className="catalog-gate__content">
+          <p className="catalog-gate__mark">[O]</p>
+          <h1>this catalog is private.</h1>
+          <p className="catalog-gate__intro">enter the password from the studio to view the photographs.</p>
+          <form className="catalog-gate__form" onSubmit={unlockCatalog}>
+            <label htmlFor="catalog-password">password</label>
+            <input
+              id="catalog-password"
+              type="password"
+              value={password}
+              onChange={(event) => {
+                setPassword(event.target.value)
+                setError('')
+              }}
+              autoComplete="current-password"
+              autoFocus
+            />
+            <div className="catalog-gate__actions">
+              <button type="submit">enter catalog <span aria-hidden="true">→</span></button>
+              <p className="catalog-gate__contact">
+                no password? <a href={`mailto:${INQUIRY_EMAIL}?subject=Private catalog access`}>write to the studio</a>
+              </p>
+            </div>
+            <p className="catalog-gate__error" aria-live="polite">{error}</p>
+          </form>
+        </section>
+      </main>
+    )
+  }
 
   return (
     <main className="shop catalog-page">
@@ -98,7 +147,7 @@ export default function Catalog({ slug }: { slug: CatalogSlug }) {
         ))}
       </section>
 
-      <EarlyAccess />
+      <EarlyAccess showCountdown />
       <ShopFooter />
     </main>
   )

@@ -174,6 +174,7 @@ export function Archive({ position }: { position: [number, number, number] }) {
   // lands on the second six still has to be told the works are made to order
   const slots = isMobile ? MOBILE_PAGES[printsPage] : SLOTS
   const head = isMobile ? MOBILE_HEAD : DESKTOP_HEAD
+  const scaleBoost = isMobile && window.innerWidth <= 390 ? 1.02 : 1.06
 
   return (
     <group position={position}>
@@ -241,7 +242,7 @@ export function Archive({ position }: { position: [number, number, number] }) {
         if (!artwork) return null
         return (
           <Suspense key={slot.id} fallback={null}>
-            <group position={[slot.x, slot.y, 0]} scale={slot.s}>
+            <group position={[slot.x, slot.y, 0]} scale={slot.s * scaleBoost}>
               {/* zoom into the slot itself, never its source-data placement */}
               <ArtworkFrame
                 artwork={artwork}
