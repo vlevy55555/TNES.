@@ -1,6 +1,5 @@
 import { useEffect } from 'react'
 import { GalleryCanvas } from './components/gallery/GalleryCanvas'
-import { GalleryInstructionOverlay } from './components/gallery/GalleryInstructionOverlay'
 import { VslExitOverlay } from './components/gallery/VslExitOverlay'
 import { Header } from './components/ui/Header'
 import { Footer } from './components/ui/Footer'
@@ -35,11 +34,7 @@ export default function App() {
         closeManifestoRoom,
         openManifestoRoom,
         closeInquiry,
-        printsIntroPhase,
       } = useGalleryStore.getState()
-      // Prints' first-arrival veil owns the interaction until a real artwork
-      // is chosen; don't let keyboard navigation slip behind it.
-      if (printsIntroPhase !== 'hidden') return
       if (e.key === 'Escape') {
         closeInquiry()
         closeManifesto()
@@ -70,7 +65,6 @@ export default function App() {
       <WallNavigation />
       <ArtworkPanel />
       <Footer />
-      <GalleryInstructionOverlay />
       <VslExitOverlay />
     </>
   )

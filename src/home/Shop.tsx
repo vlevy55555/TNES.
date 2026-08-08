@@ -243,6 +243,7 @@ function ShopIndex() {
             <a className="shop__catalog" key={catalog.title} href={catalogHref(catalog.title)}>
               <figure className="shop__figure">
                 <img src={catalog.image} alt={catalog.title} loading="lazy" />
+                <span className="shop__catalog-private">[O] private</span>
               </figure>
               <div className="shop__catalog-info">
                 <p className="shop__catalog-title">{catalog.title}.</p>

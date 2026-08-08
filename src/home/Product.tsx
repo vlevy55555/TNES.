@@ -93,7 +93,7 @@ export default function Product({ id }: { id: string }) {
   const orientation = work.size[1] > work.size[0] ? 'portrait' : 'landscape'
 
   return (
-    <main className="shop product">
+    <main className={`shop product product--${work.id}`}>
       <div className="product__first">
         <ShopHeader />
 

@@ -1,9 +1,8 @@
 import { useEffect, useState } from 'react'
 import { artworks } from '../../data/artworks'
 import { useGalleryStore } from '../../store/useGalleryStore'
-import { useCartStore } from '../../store/useCartStore'
 import { useProduct } from '../../lib/useProduct'
-import { checkoutUrl, defaultSelection, findVariant, money } from '../../lib/shopify'
+import { defaultSelection, findVariant, money } from '../../lib/shopify'
 
 /** how much the hung print grows or shrinks per step away from the middle size */
 const PREVIEW_STEP = 0.16
@@ -16,20 +15,16 @@ export function ArtworkPanel() {
   const openInquiry = useGalleryStore((s) => s.openInquiry)
   const inquiryOpen = useGalleryStore((s) => s.inquiryOpen)
   const isMobile = useGalleryStore((s) => s.isMobile)
-  const addToCart = useCartStore((s) => s.add)
-
   const setPreviewScale = useGalleryStore((s) => s.setPreviewScale)
 
   const artwork = artworks.find((a) => a.id === selectedArtworkId)
   const product = useProduct(artwork?.shopifyHandle)
 
   const [selection, setSelection] = useState<Record<string, string>>({})
-  const [added, setAdded] = useState(false)
 
   // open on the middle size whenever a new product loads
   useEffect(() => {
     setSelection(product ? defaultSelection(product) : {})
-    setAdded(false)
   }, [product])
 
   const frameOption = product?.options.find((option) => /^(frame|frame color|framing)$/i.test(option.name))
@@ -57,31 +52,12 @@ export function ArtworkPanel() {
 
   const selectFrame = (style: 'black' | 'white') => {
     setSelectedFrameStyle(style)
-    setAdded(false)
     // If the Shopify catalogue later exposes a Black/White frame option, keep
     // its real purchasable variant in sync with the live gallery preview.
     const value = frameOption?.values.find((item) => item.toLowerCase() === style)
     if (frameOption && value) {
       setSelection((current) => ({ ...current, [frameOption.name]: value }))
     }
-  }
-
-  const buy = () => {
-    if (!variant) return
-    // new tab: the 3D exhibition stays open behind the checkout
-    window.open(checkoutUrl([{ variantId: variant.id, qty: 1 }]), '_blank', 'noopener')
-  }
-
-  const add = () => {
-    if (!variant || !artwork.shopifyHandle) return
-    addToCart({
-      variantId: variant.id,
-      artworkId: artwork.id,
-      handle: artwork.shopifyHandle,
-      label: variant.title,
-    })
-    // stay on the wall — the header's Cart link leads to /cart when they're done
-    setAdded(true)
   }
 
   /**
@@ -131,7 +107,6 @@ export function ArtworkPanel() {
                   aria-pressed={selection[option.name] === value}
                   onClick={() => {
                     setSelection((s) => ({ ...s, [option.name]: value }))
-                    setAdded(false)
                   }}
                 >
                   {value}
@@ -169,18 +144,8 @@ export function ArtworkPanel() {
       )}
 
       <div className="panel-actions">
-        {buyable && (
-          <>
-            <button className="btn btn-primary" onClick={buy}>
-              Buy now
-            </button>
-            <button className="btn btn-ghost" onClick={add}>
-              {added ? 'Added ✓' : 'Add to cart'}
-            </button>
-          </>
-        )}
         <button
-          className={`btn ${buyable ? 'btn-quiet' : 'btn-primary'}`}
+          className="btn btn-primary"
           onClick={() => openInquiry(artwork.id)}
         >
           Inquire
