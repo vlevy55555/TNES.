@@ -185,3 +185,40 @@ The grid is the same show seen as a contact sheet: the room's index.
 5. **Light is per-piece.** Lamps scallop each print; the base stays even.
 6. **The `[O]` is the whisper mark** — cursor and corner stamp, never a logo slap.
 7. **Nothing snaps.** Every move is eased; mobile is slower and lighter.
+
+---
+
+## 10. Never do this
+
+A short list of things that are banned outright. They are not trade-offs to be
+weighed per screen — they are settled.
+
+### 10.1 No wash, fade, or blur behind a sticky header
+
+The header is a wordmark and a row of links. It gets **no background at all**:
+no `linear-gradient` fading the paper out under the nav, no `backdrop-filter:
+blur()`, no translucent plate, no scrim.
+
+```css
+/* banned */
+.header { background: linear-gradient(180deg, var(--paper) 62%, transparent); }
+.header { backdrop-filter: blur(8px); background: rgba(255,255,255,0.7); }
+
+/* the rule */
+.header { background: none; }
+```
+
+**Why.** The fade never solves the problem it claims to solve. Over paper it is
+invisible and pointless. Over a photograph — which is what every full-bleed
+cover on this site is — it hazes the top of the picture into a grey smear and
+announces that the interface does not trust its own contrast. It is the single
+most common tell of a templated site, and it damages the one thing this site
+sells: the photograph, undisturbed, edge to edge.
+
+**What to do instead**, when the nav genuinely must sit over something busy:
+- set the nav ink to a colour that survives the image (white over photography),
+- or use `mix-blend-mode: difference` on the header, which is legible over light
+  and dark with no plate and no theme branch,
+- or let the header scroll away instead of sticking.
+
+Never reach for a blur to buy legibility. Earn it with ink.

@@ -27,7 +27,21 @@ async function subscribe(email: string) {
   if (!response.ok) throw new Error(`notify: ${response.status}`)
 }
 
-export default function EarlyAccess({ showCountdown = false }: { showCountdown?: boolean }) {
+/** The copy is the only thing that changes between the pages that carry this —
+ *  the countdown, the list and the validation are the same everywhere. */
+export default function EarlyAccess({
+  showCountdown = false,
+  className = '',
+  eyebrow = 'early access',
+  title = 'be the first to know.',
+  copy = 'early access to new work, limited objects, and studio collaborations.',
+}: {
+  showCountdown?: boolean
+  className?: string
+  eyebrow?: string
+  title?: string
+  copy?: string
+}) {
   const [email, setEmail] = useState('')
   const [message, setMessage] = useState('')
   const [sending, setSending] = useState(false)
@@ -61,14 +75,14 @@ export default function EarlyAccess({ showCountdown = false }: { showCountdown?:
   }
 
   return (
-    <div className={`studio__signup ${showCountdown ? 'studio__signup--with-countdown' : ''}`}>
+    <div
+      className={`studio__signup ${showCountdown ? 'studio__signup--with-countdown' : ''} ${className}`}
+    >
       <div className="studio__signup-layout">
         <div className="studio__signup-content">
-          <p className="studio__signup-eyebrow">early access</p>
-          <h3 className="studio__signup-title">be the first to know.</h3>
-          <p className="studio__signup-copy">
-            early access to new work, limited objects, and studio collaborations.
-          </p>
+          <p className="studio__signup-eyebrow">{eyebrow}</p>
+          <h3 className="studio__signup-title">{title}</h3>
+          <p className="studio__signup-copy">{copy}</p>
           <form className="studio__signup-form" onSubmit={submit} noValidate>
             <input
               className="studio__signup-input"
