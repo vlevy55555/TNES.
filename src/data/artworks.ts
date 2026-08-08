@@ -80,7 +80,7 @@ export const HERO_ID = 'the-pool'
 
 // the About wall: Victor's portrait, a wall-text, and a link out to VSL — the
 // immersive site that is the artist's mind behind this exhibition.
-export const VSL_URL = 'https://vsl-vux0.onrender.com/'
+export const VSL_URL = 'https://vsl.photography/'
 
 // inquiries are composed client-side and handed to the visitor's mail app
 export const INQUIRY_EMAIL = 'vlevy@tnes.studio'
