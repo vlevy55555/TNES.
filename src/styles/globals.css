@@ -66,6 +66,10 @@
   /* the specimen voice — system mono, no new font file. Lives here rather than
      on `.shop` so the chrome that every page shares can reach it. */
   --mono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  /* The wordmark's size, in one place. /about measures its sticky header off
+     this to know how far to pull its opening up — a second copy of the number
+     silently misaligns that page every time the mark is resized. */
+  --wordmark: clamp(28px, 2.4vw, 38px);
   --interactive-cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="34" height="22" viewBox="0 0 34 22"><text x="17" y="17" font-family="Helvetica,Arial,sans-serif" font-size="18" fill="%232f2a24" text-anchor="middle">[O]</text></svg>') 17 11, pointer;
 }
 

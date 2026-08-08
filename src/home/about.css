@@ -21,7 +21,7 @@ body:has(.about),
 .about {
   /* the sticky header's own height: its padding plus the wordmark's line box.
      Declared once — the opening both slides under it and clears it. */
-  --about-header: calc(var(--pad-y) * 2 + clamp(22px, 1.9vw, 30px));
+  --about-header: calc(var(--pad-y) * 2 + var(--wordmark));
 }
 
 .about__hero {
