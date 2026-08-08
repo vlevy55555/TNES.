@@ -224,7 +224,7 @@ export default function Shop() {
       <section className="shop__catalogs" id="catalogs" ref={catalogs}>
         <h2 className="shop__section-title"><RevealText block>catalogs.</RevealText></h2>
         <p className="shop__section-sub">
-          <RevealText>a wider body of work for custom orders, collectors and interiors.</RevealText>
+          <RevealText>a wider body of work than the shop selection — shown for custom prints, interiors, and collectors working at scale.</RevealText>
         </p>
 
         <div className="shop__catalog-grid">
