@@ -68,7 +68,12 @@ const fromPrice = (product?: ShopProduct) => {
 
 // two large pieces standing in for the wider bodies of work
 const CATALOGS = [
-  { title: 'the hamptons', image: works.find((w) => w.id === 'playa-roja')!.image },
+  {
+    title: 'the hamptons',
+    image: works.find((w) => w.id === 'playa-roja')!.image,
+    description: 'the body of work shown for the east coast summer — coastline, light, and the hours around it. available as custom prints framed to the room.',
+    details: '36 works  ·  seasonal selection',
+  },
   { title: 'selected works', image: '/catalogs/product4-cows-tall.webp' },
 ]
 
@@ -235,6 +240,12 @@ export default function Shop() {
               </figure>
               <div className="shop__catalog-info">
                 <p className="shop__catalog-title">{catalog.title}.</p>
+                {catalog.description && (
+                  <p className="shop__catalog-description">{catalog.description}</p>
+                )}
+                {catalog.details && (
+                  <p className="shop__catalog-details">{catalog.details}</p>
+                )}
                 <p className="shop__catalog-link">
                   view catalog <span className="shop__arrow" aria-hidden="true">→</span>
                 </p>

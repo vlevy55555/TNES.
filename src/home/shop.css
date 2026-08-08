@@ -413,6 +413,23 @@ body:has(.shop),
   letter-spacing: -0.045em;
 }
 
+.shop__catalog-description {
+  max-width: 430px;
+  margin: clamp(14px, 1.5vw, 22px) 0 0;
+  color: var(--paper-muted);
+  font-family: var(--serif);
+  font-size: clamp(12px, 0.9vw, 15px);
+  line-height: 1.45;
+}
+
+.shop__catalog-details {
+  margin: clamp(18px, 2vw, 28px) 0 0;
+  color: var(--paper-muted);
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.02em;
+}
+
 .shop__catalog-link {
   margin: clamp(24px, 3vw, 44px) 0 0;
   font-family: var(--mono);
