@@ -707,7 +707,7 @@ body:has(.home--black),
 }
 
 .studio__signup {
-  padding: clamp(82px, 10vw, 150px) var(--pad-x) clamp(16px, 2vw, 30px);
+  padding: clamp(58px, 7vw, 100px) var(--pad-x) clamp(16px, 2vw, 30px);
   color: var(--paper-ink);
 }
 
@@ -720,9 +720,9 @@ body:has(.home--black),
 }
 
 .studio__signup-title {
-  margin: clamp(54px, 6vw, 88px) 0 0;
+  margin: clamp(38px, 4vw, 58px) 0 0;
   font-family: var(--sans);
-  font-size: clamp(58px, 7.2vw, 122px);
+  font-size: clamp(44px, 5.4vw, 92px);
   font-style: normal;
   font-weight: 500;
   line-height: 0.92;
@@ -730,7 +730,7 @@ body:has(.home--black),
 }
 
 .studio__signup-copy {
-  margin: clamp(52px, 5vw, 76px) 0 0;
+  margin: clamp(30px, 3.4vw, 50px) 0 0;
   color: var(--paper-muted);
   font-size: clamp(16px, 1.3vw, 22px);
   line-height: 1.4;
@@ -740,8 +740,8 @@ body:has(.home--black),
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   gap: 0;
-  width: min(100%, 690px);
-  margin-top: clamp(62px, 6vw, 92px);
+  width: min(100%, 620px);
+  margin-top: clamp(40px, 4.5vw, 64px);
   border-bottom: 1px solid var(--paper-line);
 }
 
@@ -761,7 +761,7 @@ body:has(.home--black),
   color: var(--paper-muted);
 }
 
-.home .studio__signup-submit {
+.studio__signup-submit {
   min-width: 52px;
   padding: 0 0 20px;
   border: 0;
@@ -772,11 +772,11 @@ body:has(.home--black),
   transition: transform 180ms ease;
 }
 
-.home .studio__signup-submit:hover {
+.studio__signup-submit:hover {
   transform: translateX(5px);
 }
 
-.home .studio__signup-submit:disabled {
+.studio__signup-submit:disabled {
   cursor: wait;
   opacity: 0.55;
 }
@@ -881,7 +881,7 @@ body:has(.home--black),
     grid-template-columns: minmax(0, 1fr) auto;
   }
 
-  .home .studio__signup-submit {
+  .studio__signup-submit {
     justify-self: end;
   }
 

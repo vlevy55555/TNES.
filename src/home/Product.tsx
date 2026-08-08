@@ -90,6 +90,7 @@ export default function Product({ id }: { id: string }) {
   }
 
   const [where, year] = work.subtitle.split(' · ')
+  const orientation = work.size[1] > work.size[0] ? 'portrait' : 'landscape'
 
   return (
     <main className="shop product">
@@ -105,7 +106,10 @@ export default function Product({ id }: { id: string }) {
             <p className="shop__meta">{`${where.toLowerCase()} · ${year}`}</p>
           </div>
 
-          <figure className="product__media" aria-label={`${work.title}, ${work.subtitle}`}>
+          <figure
+            className={`product__media product__media--${orientation}`}
+            aria-label={`${work.title}, ${work.subtitle}`}
+          >
             <ProductFrame artwork={work} style={frame} />
           </figure>
         </section>

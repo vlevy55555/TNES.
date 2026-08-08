@@ -1,28 +1,12 @@
-import { useEffect, useLayoutEffect, useRef, useState, type FormEvent } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { artworks, BRAND_STATEMENT, HERO_ID } from '../data/artworks'
-import { SHOP_DOMAIN } from '../lib/shopify'
 import { RevealText, useSectionTextReveal } from './reveal'
+import EarlyAccess from './EarlyAccess'
 import './home.css'
 
 gsap.registerPlugin(ScrollTrigger)
-
-const NOTIFY_URL = import.meta.env.VITE_NOTIFY_URL as string | undefined
-
-async function subscribeToStudio(email: string) {
-  const list = JSON.parse(localStorage.getItem('tnes-subscribers') ?? '[]')
-  if (!list.includes(email)) list.push(email)
-  localStorage.setItem('tnes-subscribers', JSON.stringify(list))
-
-  if (!NOTIFY_URL) return
-  const response = await fetch(NOTIFY_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-    body: JSON.stringify({ email, at: new Date().toISOString(), source: 'studio' }),
-  })
-  if (!response.ok) throw new Error(`notify: ${response.status}`)
-}
 
 // The works the hero cycles, in order. The first one is the signature work and
 // carries the [O] instead of its title — it is the brand's own entry in the
@@ -39,9 +23,6 @@ const projects = HOME_IDS.map((id) => {
     year: a.subtitle.match(/\d{4}/)?.[0] ?? '',
     poster: a.image,
     price: a.price,
-    shopUrl: a.shopifyHandle
-      ? `https://${SHOP_DOMAIN}/products/${a.shopifyHandle}`
-      : undefined,
   }
 })
 
@@ -204,7 +185,7 @@ function Statement() {
         <div className="statement__artwork-caption">
           <RevealText>{STATEMENT_ARTWORK.title}</RevealText>
           <RevealText>{STATEMENT_ARTWORK.price}</RevealText>
-          <a href={STATEMENT_ARTWORK.shopifyHandle ? `https://${SHOP_DOMAIN}/products/${STATEMENT_ARTWORK.shopifyHandle}` : '/shop'}>
+          <a href="/shop">
             <RevealText>shop <span aria-hidden="true">→</span></RevealText>
           </a>
         </div>
@@ -330,31 +311,7 @@ function SelectedWorks() {
 
 function TheStudio() {
   const [ref, seen] = useInView<HTMLElement>()
-  const [email, setEmail] = useState('')
-  const [message, setMessage] = useState('')
-  const [sending, setSending] = useState(false)
   useSectionTextReveal(ref)
-
-  const submit = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault()
-    if (sending) return
-    if (!/^\S+@\S+\.\S+$/.test(email)) {
-      setMessage('please enter a valid email')
-      return
-    }
-
-    setSending(true)
-    setMessage('')
-    try {
-      await subscribeToStudio(email)
-      setEmail('')
-      setMessage('you’re on the list.')
-    } catch {
-      setMessage('couldn’t save that — please try again')
-    } finally {
-      setSending(false)
-    }
-  }
 
   return (
     <section className="studio" id="studio" ref={ref}>
@@ -382,36 +339,7 @@ function TheStudio() {
           </video>
         )}
       </div>
-      <div className="studio__signup">
-        <p className="studio__signup-eyebrow">early access</p>
-        <h3 className="studio__signup-title">be the first to know.</h3>
-        <p className="studio__signup-copy">
-          early access to new work, limited objects, and studio collaborations.
-        </p>
-        <form className="studio__signup-form" onSubmit={submit} noValidate>
-          <input
-            className="studio__signup-input"
-            type="email"
-            value={email}
-            onChange={(event) => {
-              setEmail(event.target.value)
-              setMessage('')
-            }}
-            placeholder="email address"
-            aria-label="Email address"
-            aria-invalid={message.startsWith('please')}
-          />
-          <button
-            className="studio__signup-submit"
-            type="submit"
-            disabled={sending}
-            aria-label="Join early access"
-          >
-            {sending ? '…' : <span aria-hidden="true">→</span>}
-          </button>
-        </form>
-        <p className="studio__signup-message" aria-live="polite">{message}</p>
-      </div>
+      <EarlyAccess />
     </section>
   )
 }
@@ -535,7 +463,7 @@ export default function Home({ dark = false }: { dark?: boolean }) {
         <div className="hero__buy">
           <span className="hero__price"><RevealText>{active.price}</RevealText></span>
 
-          <a className="hero__shop" href={active.shopUrl ?? '/shop'}>
+          <a className="hero__shop" href="/shop">
             <RevealText>shop <span className="hero__shop-arrow" aria-hidden="true">-&gt;</span></RevealText>
           </a>
         </div>

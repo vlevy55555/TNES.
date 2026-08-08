@@ -616,6 +616,13 @@ body:has(.shop),
   margin-left: calc(var(--stage) * -0.12);
 }
 
+/* Portraits carry more visual weight near the buying rule. Lift their canvas
+   without changing the stage's total footprint, so the options never jump. */
+.product__media--portrait {
+  margin-top: calc(var(--stage) * -0.16);
+  margin-bottom: calc(var(--stage) * -0.29);
+}
+
 .product__media canvas {
   display: block;
   /* the drag rotates the frame; a vertical swipe still scrolls the page */
@@ -726,6 +733,14 @@ button.product__cart {
   /* the print leads on a phone; the name sits under it, as in the grid */
   .product__media {
     order: -1;
+    justify-self: center;
+    width: min(100%, 560px);
+    height: clamp(280px, 58svh, 500px);
+    margin: 0 auto;
+  }
+
+  .product__media--portrait {
+    margin: 0 auto;
   }
 
   .product__options {
@@ -736,6 +751,18 @@ button.product__cart {
 @media (max-width: 560px) {
   .product__options {
     grid-template-columns: 1fr;
+  }
+
+  .product__media {
+    width: min(100%, 440px);
+    height: clamp(250px, 52svh, 390px);
+  }
+}
+
+@media (max-width: 390px), (max-height: 700px) and (max-width: 560px) {
+  .product__media {
+    width: min(94%, 380px);
+    height: clamp(220px, 46svh, 330px);
   }
 }
 

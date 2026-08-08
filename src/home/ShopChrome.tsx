@@ -16,7 +16,10 @@ const NAV = [
 export const PRICE = '$236'
 
 /** Every catalog reference opens the complete catalog presentation. */
-export const catalogHref = (_title?: string) => '/shop#catalogs'
+export const catalogHref = (title?: string) => {
+  if (!title || title === 'private') return '/shop#catalogs'
+  return `/shop?catalog=${encodeURIComponent(title.replaceAll(' ', '-'))}`
+}
 
 /**
  * The wordmark always returns to the landing page, which is the site root.
