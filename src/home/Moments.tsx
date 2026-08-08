@@ -168,7 +168,6 @@ function Intro() {
             start: 'top top',
             end: 'bottom top',
             scrub: 1.2,
-            invalidateOnRefresh: true,
           },
         })
       }
@@ -204,6 +203,76 @@ function Intro() {
   )
 }
 
+/** the anchor a chapter answers to, and the index links to */
+const anchorId = (moment: Moment) => `moment-${moment.index}`
+
+/**
+ * The contact sheet. Four plates in a row, each one a link into its chapter —
+ * the whole record readable at a glance before anyone commits to 14,000px of
+ * scrolling.
+ *
+ * The jump is a plain `href="#…"`. No script, and the address bar carries it,
+ * so `/moments#moment-03` opens on whatever is showing now.
+ *
+ * Nothing here says `current` or `next` — those words were pulled off this
+ * page for reading as orphan labels. The state is the frame: the moment on
+ * view is outlined, the one that has not happened yet is an empty frame.
+ */
+function Index({ moments }: { moments: Moment[] }) {
+  const root = useRef<HTMLElement>(null)
+
+  useLayoutEffect(() => {
+    const section = root.current
+    if (!section) return
+
+    const context = gsap.context(() => {
+      revealLines(section)
+      gsap.from(gsap.utils.toArray<HTMLElement>('.moments__index-plate img', section), {
+        yPercent: 102,
+        duration: 1,
+        stagger: 0.08,
+        ease: 'expo.out',
+        scrollTrigger: { trigger: section, start: 'top 85%', once: true },
+      })
+    }, section)
+
+    return () => context.revert()
+  }, [])
+
+  return (
+    <section className="moments__index" ref={root}>
+      <div className="moment__inner">
+        <p className="moments__index-label" data-lines>
+          four moments
+        </p>
+
+        <ul className="moments__index-list">
+          {moments.map((moment) => (
+            <li className="moments__index-item" key={moment.index}>
+              <a
+                className={`moments__index-link ${moment.status ? `-is-${moment.status}` : ''}`}
+                href={`#${anchorId(moment)}`}
+              >
+                <span className="moments__index-plate">
+                  {moment.status !== 'next' && (
+                    <img src={photo(moment.seed)} alt="" loading="lazy" decoding="async" />
+                  )}
+                </span>
+                <span className="moments__index-meta">
+                  <b>{moment.index}</b>
+                  {moment.place}
+                </span>
+                <span className="moments__index-title">{moment.titleLines.join(' ')}</span>
+                <span className="moments__index-date">{moment.date}</span>
+              </a>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </section>
+  )
+}
+
 function Chapter({ moment }: { moment: Moment }) {
   const root = useRef<HTMLElement>(null)
   const head = useRef<HTMLElement>(null)
@@ -218,6 +287,7 @@ function Chapter({ moment }: { moment: Moment }) {
     const chapter = root.current
     if (!chapter) return
 
+    let coverObserver: IntersectionObserver | undefined
     const context = gsap.context(() => {
       const q = gsap.utils.selector(chapter)
       const mobile = window.matchMedia('(max-width: 63.99em)').matches
@@ -234,17 +304,35 @@ function Chapter({ moment }: { moment: Moment }) {
           start: 'top bottom',
           end: () => 'top+=100% bottom',
           scrub: true,
-          invalidateOnRefresh: true,
         },
       })
 
-      gsap.from(q('.moment__cover-line'), {
-        yPercent: 110,
-        duration: 1,
-        stagger: 0.08,
-        ease: 'expo.out',
-        scrollTrigger: { trigger: chapter, start: 'top top', invalidateOnRefresh: true },
-      })
+      // This one reveal is driven by IntersectionObserver rather than a
+      // ScrollTrigger, because a ScrollTrigger fires on a CROSSING and this
+      // element can be reached without one. `/moments#moment-03` opened
+      // directly lands the browser deep in the page, and — worse — it lands at
+      // exactly `top: 0`, which is where the trigger's own start mark sits.
+      // Nothing ever crosses, so the name stays parked in its mask for good.
+      // An observer reports state: on screen is on screen, however you got
+      // here. It is what the shared §5.1 reveal uses, for the same reason.
+      const coverLines = q('.moment__cover-line')
+      if (coverLines.length) {
+        gsap.set(coverLines, { yPercent: 110 })
+        coverObserver = new IntersectionObserver(
+          ([entry]) => {
+            if (!entry.isIntersecting) return
+            coverObserver?.disconnect()
+            gsap.to(coverLines, {
+              yPercent: 0,
+              duration: 1,
+              stagger: 0.08,
+              ease: 'expo.out',
+            })
+          },
+          { rootMargin: '0px 0px -20% 0px' },
+        )
+        coverObserver.observe(chapter)
+      }
 
       // §travel — the chapter behind sinks and recedes while this cover
       // arrives. This is what stitches the list into one descent instead of
@@ -278,22 +366,22 @@ function Chapter({ moment }: { moment: Moment }) {
         gsap.from(q('.moment__side--a'), {
           ...entrance,
           yPercent: 75,
-          scrollTrigger: { trigger: row, start: columnMark, invalidateOnRefresh: true },
+          scrollTrigger: { trigger: row, start: columnMark },
         })
         gsap.from(q('.moment__side--a img'), {
           ...entrance,
           yPercent: 102,
-          scrollTrigger: { trigger: row, start: plateMark, invalidateOnRefresh: true },
+          scrollTrigger: { trigger: row, start: plateMark },
         })
         gsap.from(q('.moment__side--b'), {
           ...entrance,
           yPercent: -75,
-          scrollTrigger: { trigger: row, start: columnMark, invalidateOnRefresh: true },
+          scrollTrigger: { trigger: row, start: columnMark },
         })
         gsap.from(q('.moment__side--b img'), {
           ...entrance,
           yPercent: -102,
-          scrollTrigger: { trigger: row, start: plateMark, invalidateOnRefresh: true },
+          scrollTrigger: { trigger: row, start: plateMark },
         })
 
         // the centre plate never slides — it only breathes, so the eye has one
@@ -306,7 +394,6 @@ function Chapter({ moment }: { moment: Moment }) {
             start: 'top bottom',
             end: 'bottom top',
             scrub: 1.2,
-            invalidateOnRefresh: true,
           },
         })
       }
@@ -325,11 +412,14 @@ function Chapter({ moment }: { moment: Moment }) {
 
     }, chapter)
 
-    return () => context.revert()
+    return () => {
+      coverObserver?.disconnect()
+      context.revert()
+    }
   }, [])
 
   return (
-    <section className="moments__chapter" ref={root}>
+    <section className="moments__chapter" id={anchorId(moment)} ref={root}>
       <div className="moment__cover">
         <img src={photo(moment.seed)} alt="" loading="lazy" decoding="async" />
         <p className="moment__cover-name">
@@ -434,6 +524,14 @@ export default function Moments() {
       gsap.globalTimeline.timeScale(1000)
       ScrollTrigger.defaults({ fastScrollEnd: true })
     }
+
+    // A hash on first load is dropped on the floor: the browser goes looking
+    // for `#moment-03` while the page is still an empty root, finds nothing,
+    // and never tries again — so `/moments#moment-03` would open at the top.
+    // Do it ourselves, now that the chapters exist. Instant, not smooth: no
+    // one wants to sit through a 9,000px flight they did not ask for.
+    const target = window.location.hash && document.querySelector(window.location.hash)
+    if (target) target.scrollIntoView({ behavior: 'instant' as ScrollBehavior })
   }, [])
 
   return (
@@ -441,6 +539,8 @@ export default function Moments() {
       <ShopHeader current="moments" />
 
       <Intro />
+
+      <Index moments={MOMENT_ENTRIES} />
 
       {MOMENT_ENTRIES.map((moment) => (
         <Chapter key={moment.index} moment={moment} />

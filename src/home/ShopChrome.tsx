@@ -1,5 +1,6 @@
 import { INQUIRY_EMAIL, ABOUT } from '../data/artworks'
 import { useCartCount } from '../store/useCartStore'
+import { SiteNav } from './SiteNav'
 
 // ponytail: placeholder hrefs for what does not exist yet — only the landing,
 // the shop, the cart, the store and moments are real today.
@@ -28,20 +29,16 @@ export const catalogHref = (title?: string) => {
  */
 export function ShopHeader({ current = 'shop' }: { current?: string }) {
   const count = useCartCount()
+  const items = [...NAV, { label: count > 0 ? `cart (${count})` : 'cart', href: '/cart' }]
 
   return (
     <header className="shop__header">
       <a className="shop__logo" href="/">TNES.</a>
-      <nav className="shop__nav" aria-label="Navegação principal">
-        {NAV.map((item) => (
-          <a key={item.label} href={item.href} aria-current={item.label === current ? 'page' : undefined}>
-            {item.label}
-          </a>
-        ))}
-        <a href="/cart" aria-current={current === 'cart' ? 'page' : undefined}>
-          cart{count > 0 && ` (${count})`}
-        </a>
-      </nav>
+      <SiteNav
+        items={items}
+        current={current === 'cart' ? items[items.length - 1].label : current}
+        className="shop__nav"
+      />
     </header>
   )
 }
@@ -74,7 +71,7 @@ export function ShopFooter() {
       </div>
       <div className="shop__footer-base">
         <span>new york · são paulo</span>
-        <span>© victor safdie levy</span>
+        <span>© Victor Safdie Levy</span>
       </div>
     </footer>
   )

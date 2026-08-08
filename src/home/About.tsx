@@ -227,7 +227,7 @@ export default function About() {
 
       <section className="about__closer" ref={closer}>
         <a className="about__vsl" href={VSL_URL} target="_blank" rel="noopener noreferrer">
-          <RevealText>enter the vsl <span className="shop__arrow" aria-hidden="true">→</span></RevealText>
+          <RevealText>{ABOUT.cta} <span className="shop__arrow" aria-hidden="true">→</span></RevealText>
         </a>
         <p className="shop__meta">
           <RevealText>the studio behind the exhibition</RevealText>
