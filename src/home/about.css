@@ -14,13 +14,6 @@ body:has(.about),
   overflow: visible;
 }
 
-/* No paper gradient over the photograph: on the shop it fades the page out from
-   under the nav, here it just hazes the top of the picture. The header keeps its
-   own ink — the studio wall behind it is white. */
-.about .shop__header {
-  background: none;
-}
-
 /* The opening. One sticky stage carries the whole sequence: the words, the
    photograph climbing over them, the shrink, the signature, and the ride out.
    The track's height is how long that takes — the scrub runs over

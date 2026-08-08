@@ -2,3 +2,7 @@ node_modules/
 dist/
 .test-build/
 .superpowers/
+
+# full-page capture of indigo-laboratory.it kept locally as a motion reference —
+# 42MB, and nothing in the build reads it
+reference-moments/indingo-reference.png

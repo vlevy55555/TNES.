@@ -2,12 +2,12 @@ import { INQUIRY_EMAIL, ABOUT } from '../data/artworks'
 import { useCartCount } from '../store/useCartStore'
 
 // ponytail: placeholder hrefs for what does not exist yet — only the landing,
-// the shop, the cart and the store are real today. `moments` stays out per
-// CLAUDE.md.
+// the shop, the cart, the store and moments are real today.
 const NAV = [
   { label: 'shop', href: '/shop' },
   { label: 'studio', href: '/#studio' },
   { label: 'catalogs', href: '/shop#catalogs' },
+  { label: 'moments', href: '/moments' },
   { label: 'about', href: '/about' },
 ]
 
@@ -61,6 +61,7 @@ export function ShopFooter() {
             <a href="/shop">shop</a>
             <a href="/#studio">studio</a>
             <a href="/shop#catalogs">catalogs</a>
+            <a href="/moments">moments</a>
             <a href="/about">about</a>
           </div>
           <div>

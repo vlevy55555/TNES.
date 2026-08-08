@@ -66,7 +66,9 @@ body:has(.shop),
   justify-content: space-between;
   gap: 24px;
   padding: var(--pad-y) var(--pad-x);
-  background: linear-gradient(180deg, var(--paper) 62%, rgba(255, 255, 255, 0));
+  /* No wash, no fade, no backdrop blur behind the nav — see DESIGN.md §10.
+     The header is ink on the page, nothing else. */
+  background: none;
 }
 
 .shop__logo {
