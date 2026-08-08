@@ -452,6 +452,18 @@ export default function Home({ dark = false }: { dark?: boolean }) {
     new Image().src = next.poster
   }, [activeIndex])
 
+  // When arriving from another page (for example, the shop navbar), the Home
+  // tree may mount after the browser's native fragment jump has already run.
+  useEffect(() => {
+    if (window.location.hash !== '#studio') return
+
+    const frame = requestAnimationFrame(() => {
+      document.getElementById('studio')?.scrollIntoView({ block: 'start' })
+    })
+
+    return () => cancelAnimationFrame(frame)
+  }, [])
+
   return (
     <main className={`home ${dark ? 'home--black' : ''}`}>
       <section

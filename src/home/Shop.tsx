@@ -74,7 +74,12 @@ const CATALOGS = [
     description: 'the body of work shown for the east coast summer — coastline, light, and the hours around it. available as custom prints framed to the room.',
     details: '36 works  ·  seasonal selection',
   },
-  { title: 'selected works', image: '/catalogs/product4-cows-tall.webp' },
+  {
+    title: 'selected works',
+    image: '/catalogs/product4-cows-tall.webp',
+    description: 'a wider selection from the archive across brazil, malta, peru, italy, and switzerland — shown for custom orders, interiors, and collectors working at scale.',
+    details: '60+ works  ·  archive selection',
+  },
 ]
 
 function Filter({
