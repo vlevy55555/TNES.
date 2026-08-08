@@ -13,6 +13,12 @@ services:
       # countdown's email capture stays local-only and no address reaches anyone.
       - key: VITE_NOTIFY_URL
         sync: false
+      # Apps Script /exec URL that appends a row to the messages sheet — its own
+      # deployment, since the signup script only reads `{ email }`. Snippet is in
+      # ContactOverlay.tsx. Unset, the contact panel hands the finished message
+      # to the visitor's mail app instead of posting it.
+      - key: VITE_CONTACT_URL
+        sync: false
     routes:
       # single-page app: deep links use ?artwork= on the same index.html
       - type: rewrite

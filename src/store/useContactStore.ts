@@ -1,0 +1,22 @@
+import { create } from 'zustand'
+
+/**
+ * The contact panel is opened from places that do not know about each other —
+ * the footer on every page, a work's inquiry link, the moments chapter that is
+ * currently on view. One store, so any of them can raise it and pass along what
+ * the message is about.
+ */
+type ContactStore = {
+  open: boolean
+  /** prefills the subject field, e.g. `works on view — east hampton` */
+  subject: string
+  openContact: (subject?: string) => void
+  closeContact: () => void
+}
+
+export const useContactStore = create<ContactStore>((set) => ({
+  open: false,
+  subject: '',
+  openContact: (subject = '') => set({ open: true, subject }),
+  closeContact: () => set({ open: false }),
+}))
