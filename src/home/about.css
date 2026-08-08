@@ -101,7 +101,7 @@ body:has(.about),
   margin: 0;
   color: var(--paper-muted);
   font-family: var(--mono);
-  font-size: 10px;
+  font-size: 12px;
   letter-spacing: 0.1em;
 }
 
@@ -158,7 +158,7 @@ body:has(.about),
 
   .about__role {
     margin-top: 26px;
-    font-size: 10px;
+    font-size: 12px;
   }
 
   .about__statement {

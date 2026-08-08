@@ -1,9 +1,10 @@
 import { Suspense, useEffect, useRef } from 'react'
-import { Text } from '@react-three/drei'
+import { Text, useTexture } from '@react-three/drei'
 import { AdditiveBlending, CanvasTexture, type Object3D, type SpotLight } from 'three'
 import {
   artworks,
   FONT_SANS,
+  FONT_HELVETICA,
   FONT_SERIF,
   WALL_CENTER_Y,
   WALL_HEIGHT,
@@ -82,24 +83,13 @@ const headerGlow = makeGlowTexture()
 // column stacks two of them in ADJACENT rows — a column reads P / L / P at
 // worst. That is what lets the whole hang sit ~0.25 lower than it used to and
 // hand the freed headroom to the instruction above it.
-type Slot = { id: string; x: number; y: number; s: number }
+type Slot = { id: string; x: number; y: number; s: number; mark: string; markY: number }
 const SLOTS: Slot[] = [
-  // top row — portrait, landscape, landscape, portrait
-  { id: 'calpe-muralla-roja', x: -3.7, y: 1.78, s: 0.58 },
-  { id: 'the-pool', x: -1.25, y: 1.84, s: 0.62 },
-  { id: 'playa-roja', x: 1.25, y: 1.8, s: 0.66 },
-  { id: 'ischia-mezzatorre', x: 3.7, y: 1.74, s: 0.6 },
-  // middle row — the short row: only one portrait, and its column is landscape
-  // above and below
-  { id: 'wied-il-ghasri', x: -3.7, y: 0.3, s: 0.7 },
-  { id: 'florence-dogman', x: -1.25, y: 0.24, s: 0.56 },
-  { id: 'appenzell-alpine-lake', x: 1.25, y: 0.3, s: 0.66 },
-  { id: 'runner', x: 3.7, y: 0.26, s: 0.6 },
-  // bottom row
-  { id: 'ditch-plains-far', x: -3.7, y: -1.2, s: 0.58 },
-  { id: 'praia-da-baleia', x: -1.25, y: -1.28, s: 0.6 },
-  { id: 'moreira-crowded-beach', x: 1.25, y: -1.22, s: 0.62 },
-  { id: 'lauterbrunnen', x: 3.7, y: -1.24, s: 0.6 },
+  { id: 'playa-roja', x: -2.75, y: 1.32, s: 0.78, mark: 'T', markY: 2.28 },
+  { id: 'appenzell-alpine-lake', x: 2.75, y: 1.32, s: 0.76, mark: 'N', markY: 2.28 },
+  { id: 'ditch-plains-far', x: -2.75, y: -1.02, s: 0.7, mark: 'E', markY: -0.04 },
+  { id: 'ischia-mezzatorre', x: 2.75, y: -1.02, s: 0.68, mark: 'S.', markY: -0.04 },
+  { id: 'runner', x: 0, y: -0.04, s: 0.86, mark: '[O]', markY: 0.94 },
 ]
 
 /**
@@ -112,31 +102,12 @@ const SLOTS: Slot[] = [
  * Same rule as the desktop hang: no column stacks two portraits in adjacent
  * rows, which is what keeps the three rows inside one screen.
  */
-const MOBILE_COL = 0.63
-const MOBILE_ROW_Y = [1.58, 0.2, -1.2]
-const m = (id: string, col: 0 | 1, row: 0 | 1 | 2, s: number): Slot => ({
-  id,
-  x: col ? MOBILE_COL : -MOBILE_COL,
-  y: MOBILE_ROW_Y[row],
-  s,
-})
-const MOBILE_PAGES: Slot[][] = [
-  [
-    m('calpe-muralla-roja', 0, 0, 0.56),
-    m('the-pool', 1, 0, 0.6),
-    m('wied-il-ghasri', 0, 1, 0.6),
-    m('ischia-mezzatorre', 1, 1, 0.56),
-    m('florence-dogman', 0, 2, 0.56),
-    m('playa-roja', 1, 2, 0.6),
-  ],
-  [
-    m('ditch-plains-far', 0, 0, 0.56),
-    m('appenzell-alpine-lake', 1, 0, 0.6),
-    m('praia-da-baleia', 0, 1, 0.6),
-    m('lauterbrunnen', 1, 1, 0.56),
-    m('moreira-crowded-beach', 0, 2, 0.56),
-    m('runner', 1, 2, 0.6),
-  ],
+const MOBILE_SLOTS: Slot[] = [
+  { id: 'playa-roja', x: -0.72, y: 1.38, s: 0.42, mark: 'T', markY: 2.08 },
+  { id: 'appenzell-alpine-lake', x: 0.72, y: 1.38, s: 0.42, mark: 'N', markY: 2.08 },
+  { id: 'ditch-plains-far', x: -0.72, y: -1.04, s: 0.4, mark: 'E', markY: -0.36 },
+  { id: 'ischia-mezzatorre', x: 0.72, y: -1.04, s: 0.4, mark: 'S.', markY: -0.36 },
+  { id: 'runner', x: 0, y: 0.06, s: 0.5, mark: '[O]', markY: 0.78 },
 ]
 
 /**
@@ -167,14 +138,18 @@ const MOBILE_HEAD = {
 
 const byId = new Map<string, Artwork>(artworks.map((a) => [a.id, a]))
 
+// Only the five works on Prints are warmed eagerly. This keeps initial loading
+// bounded while ensuring the first wall transition never starts an image fetch.
+SLOTS.forEach((slot) => {
+  const image = byId.get(slot.id)?.image
+  if (image) useTexture.preload(image)
+})
+
 export function Archive({ position }: { position: [number, number, number] }) {
   const isMobile = useGalleryStore((s) => s.isMobile)
-  const printsPage = useGalleryStore((s) => s.printsPage)
-  // the header is part of each SCREEN, not of the section: a phone visitor who
-  // lands on the second six still has to be told the works are made to order
-  const slots = isMobile ? MOBILE_PAGES[printsPage] : SLOTS
+  const slots = isMobile ? MOBILE_SLOTS : SLOTS
   const head = isMobile ? MOBILE_HEAD : DESKTOP_HEAD
-  const scaleBoost = isMobile && window.innerWidth <= 390 ? 1.02 : 1.06
+  const scaleBoost = isMobile && window.innerWidth <= 390 ? 0.96 : 1
 
   return (
     <group position={position}>
@@ -216,7 +191,7 @@ export function Archive({ position }: { position: [number, number, number] }) {
       </Text>
 
       {/* general wall wash (not per-frame) — one per column, tight and close */}
-      {(isMobile ? [-MOBILE_COL, MOBILE_COL] : [-3.7, -1.25, 1.25, 3.7]).map((x) => (
+      {(isMobile ? [0] : [-2.75, 0, 2.75]).map((x) => (
         <WallWash key={x} x={x} />
       ))}
       {/* the header's own pool of light. The type is troika text —
@@ -242,15 +217,26 @@ export function Archive({ position }: { position: [number, number, number] }) {
         if (!artwork) return null
         return (
           <Suspense key={slot.id} fallback={null}>
-            <group position={[slot.x, slot.y, 0]} scale={slot.s * scaleBoost}>
-              {/* zoom into the slot itself, never its source-data placement */}
-              <ArtworkFrame
-                artwork={artwork}
-                position={[0, 0, 0.07]}
-                frameStyle="white"
-                zoomInPlace
-              />
-            </group>
+            <>
+              <Text
+                font={FONT_HELVETICA}
+                fontSize={isMobile ? 0.23 : 0.36}
+                color="#2f2a24"
+                anchorX="center"
+                anchorY="middle"
+                position={[slot.x, slot.markY, 0.075]}
+              >
+                {slot.mark}
+              </Text>
+              <group position={[slot.x, slot.y, 0]} scale={slot.s * scaleBoost}>
+                <ArtworkFrame
+                  artwork={artwork}
+                  position={[0, 0, 0.07]}
+                  frameStyle="white"
+                  zoomInPlace
+                />
+              </group>
+            </>
           </Suspense>
         )
       })}

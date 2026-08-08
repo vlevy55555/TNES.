@@ -20,6 +20,16 @@ export default function App() {
     return () => mq.removeEventListener('change', apply)
   }, [])
 
+  // Returning from VSL can restore this page from the browser's back-forward
+  // cache with the Zustand state intact. Always remove the signature veil when
+  // the gallery becomes the active history entry again.
+  useEffect(() => {
+    const resetExit = () => useGalleryStore.getState().resetVslExit()
+    resetExit()
+    window.addEventListener('pageshow', resetExit)
+    return () => window.removeEventListener('pageshow', resetExit)
+  }, [])
+
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
       const {

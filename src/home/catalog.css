@@ -8,7 +8,7 @@
   margin: 0;
   color: var(--paper-muted);
   font-family: var(--mono);
-  font-size: 10px;
+  font-size: 12px;
   letter-spacing: 0.04em;
 }
 
@@ -42,7 +42,7 @@
   border-top: 1px solid var(--paper-line);
   color: var(--paper-muted);
   font-family: var(--mono);
-  font-size: 10px;
+  font-size: 12px;
 }
 
 .catalog-page__facts {
@@ -107,6 +107,19 @@
 .catalog-page__timeline {
   padding: 0 var(--pad-x);
   border-top: 1px solid var(--paper-line);
+}
+
+/* The private catalogs close on a dark archive-signup plate. The shared home
+   component remains white; only the two complete catalog pages inherit this
+   local paper inversion. */
+.catalog-page > .studio__signup {
+  --paper: #050505;
+  --paper-ink: #ffffff;
+  --paper-muted: #ffffff;
+  --paper-line: rgba(255, 255, 255, 0.42);
+
+  background: var(--paper);
+  color: var(--paper-ink);
 }
 
 .catalog-page > .studio__signup {
@@ -291,10 +304,15 @@
   letter-spacing: 0.04em;
 }
 
+.catalog-gate__password-field {
+  position: relative;
+  width: 100%;
+}
+
 .catalog-gate__form input {
   width: 100%;
   height: 72px;
-  padding: 0 22px;
+  padding: 0 70px 0 22px;
   border: 1px solid var(--paper-line);
   border-radius: 0;
   outline: none;
@@ -308,7 +326,7 @@
   border-color: var(--paper-ink);
 }
 
-.catalog-gate__form button {
+.catalog-gate__form button[type='submit'] {
   min-width: 205px;
   min-height: 70px;
   border: 1px solid var(--paper-ink);
@@ -326,22 +344,186 @@
   margin-top: 28px;
 }
 
-.catalog-gate__form button:hover {
+.catalog-gate__form button[type='submit']:hover {
   background: transparent;
   color: var(--paper-ink);
+}
+
+.catalog-gate__password-toggle {
+  position: absolute;
+  top: 50%;
+  right: 18px;
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--paper-ink);
+  cursor: pointer;
+  transform: translateY(-50%);
+}
+
+.catalog-gate__password-toggle svg {
+  width: 22px;
+  height: 22px;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.35;
+}
+
+.catalog-gate__password-toggle:focus-visible {
+  outline: 1px solid var(--paper-ink);
+  outline-offset: 2px;
 }
 
 .catalog-gate__error {
   min-height: 18px;
   margin: 12px 0 0;
   color: var(--paper-muted);
-  font: 11px var(--mono);
+  font: 12px var(--mono);
 }
 
 .catalog-gate__contact {
   margin: 0;
   font: 12px var(--mono);
   letter-spacing: 0.03em;
+}
+
+.catalog-gate__contact button {
+  padding: 0 0 5px;
+  border: 0;
+  border-bottom: 1px solid var(--paper-line);
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  letter-spacing: inherit;
+  cursor: pointer;
+}
+
+.catalog-inquiry {
+  position: fixed;
+  z-index: 50;
+  inset: 0;
+  overflow-y: auto;
+  padding: clamp(24px, 4vw, 64px);
+  background: rgba(255, 255, 255, 0.98);
+}
+
+.catalog-inquiry__panel {
+  width: min(1120px, 100%);
+  margin: 0 auto;
+}
+
+.catalog-inquiry__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding-bottom: clamp(32px, 5vw, 70px);
+  border-bottom: 1px solid var(--paper-line);
+}
+
+.catalog-inquiry__header p {
+  margin: 0 0 22px;
+  font-family: var(--mark);
+  font-size: clamp(34px, 4vw, 62px);
+}
+
+.catalog-inquiry__header h2 {
+  margin: 0;
+  font-size: clamp(42px, 5vw, 78px);
+  font-weight: 400;
+  line-height: 0.95;
+  letter-spacing: -0.05em;
+}
+
+.catalog-inquiry__header > button {
+  width: 48px;
+  height: 48px;
+  padding: 0;
+  border: 1px solid var(--paper-line);
+  background: transparent;
+  color: var(--paper-ink);
+  font: 300 30px/1 var(--sans);
+  cursor: pointer;
+}
+
+.catalog-inquiry__form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: clamp(28px, 4vw, 54px) clamp(32px, 6vw, 90px);
+  padding: clamp(42px, 6vw, 86px) 0;
+}
+
+.catalog-inquiry__form label {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.catalog-inquiry__form label > span {
+  font-family: var(--mono);
+  font-size: 12px;
+  letter-spacing: 0.05em;
+}
+
+.catalog-inquiry__form em {
+  color: var(--paper-muted);
+  font-style: normal;
+}
+
+.catalog-inquiry__form input,
+.catalog-inquiry__form select,
+.catalog-inquiry__form textarea {
+  width: 100%;
+  padding: 15px 0;
+  border: 0;
+  border-bottom: 1px solid var(--paper-line);
+  border-radius: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--paper-ink);
+  font: 400 clamp(18px, 1.55vw, 25px) var(--sans);
+}
+
+.catalog-inquiry__form input:focus,
+.catalog-inquiry__form select:focus,
+.catalog-inquiry__form textarea:focus {
+  border-color: var(--paper-ink);
+}
+
+.catalog-inquiry__form textarea {
+  resize: vertical;
+}
+
+.catalog-inquiry__message,
+.catalog-inquiry__submit {
+  grid-column: 1 / -1;
+}
+
+.catalog-inquiry__submit {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+}
+
+.catalog-inquiry__submit button {
+  min-width: 220px;
+  min-height: 68px;
+  border: 1px solid var(--paper-ink);
+  background: var(--paper-ink);
+  color: var(--paper);
+  font: 400 17px var(--sans);
+  cursor: pointer;
+}
+
+.catalog-inquiry__submit p {
+  margin: 0;
+  color: var(--paper-muted);
+  font: 12px var(--mono);
 }
 
 .catalog-gate__contact a {
@@ -360,7 +542,7 @@
     height: 62px;
   }
 
-  .catalog-gate__form button {
+  .catalog-gate__form button[type='submit'] {
     width: 100%;
   }
 
@@ -373,5 +555,27 @@
 
   .catalog-gate__contact {
     text-align: center;
+  }
+
+  .catalog-inquiry {
+    padding: 22px var(--pad-x) 56px;
+  }
+
+  .catalog-inquiry__form {
+    grid-template-columns: 1fr;
+  }
+
+  .catalog-inquiry__message,
+  .catalog-inquiry__submit {
+    grid-column: auto;
+  }
+
+  .catalog-inquiry__submit {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .catalog-inquiry__submit button {
+    width: 100%;
   }
 }

@@ -74,12 +74,14 @@ const CATALOGS = [
     image: works.find((w) => w.id === 'playa-roja')!.image,
     description: 'the body of work shown for the east coast summer — coastline, light, and the hours around it. available as custom prints framed to the room.',
     details: '36 works  ·  seasonal selection',
+    note: '',
   },
   {
     title: 'selected works',
     image: '/catalogs/product4-cows-tall.webp',
-    description: 'a wider selection from the archive across brazil, malta, peru, italy, and switzerland — shown for custom orders, interiors, and collectors working at scale.',
-    details: '60+ works  ·  archive selection',
+    description: 'a wider selection from the archive. brazil, malta, peru, italy, switzerland. shown for custom orders, interiors, and collectors working at scale.',
+    details: '60+ works.',
+    note: 'this is a selection, not the archive. if the place you are looking for is not here, write to the studio.',
   },
 ]
 
@@ -235,7 +237,10 @@ function ShopIndex() {
       <section className="shop__catalogs" id="catalogs" ref={catalogs}>
         <h2 className="shop__section-title"><RevealText block>catalogs.</RevealText></h2>
         <p className="shop__section-sub">
-          <RevealText>a wider body of work than the shop selection — shown for custom prints, interiors, and collectors working at scale.</RevealText>
+          <RevealText>work from the archive, gathered into sets. a place, a season, a way of looking.</RevealText>
+          <span className="shop__section-sub-access">
+            <RevealText>opened with a password from the studio.</RevealText>
+          </span>
         </p>
 
         <div className="shop__catalog-grid">
@@ -252,6 +257,9 @@ function ShopIndex() {
                 )}
                 {catalog.details && (
                   <p className="shop__catalog-details">{catalog.details}</p>
+                )}
+                {catalog.note && (
+                  <p className="shop__catalog-note">{catalog.note}</p>
                 )}
                 <p className="shop__catalog-link">
                   view catalog <span className="shop__arrow" aria-hidden="true">→</span>

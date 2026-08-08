@@ -10,7 +10,17 @@ function Print({ artwork, style }: { artwork: Artwork; style: FrameStyle }) {
     t.colorSpace = SRGBColorSpace
   })
   const [w, h] = artwork.size
-  return <FrameLayers texture={texture} w={w} h={h} style={style} backdrop={false} />
+  return (
+    <FrameLayers
+      texture={texture}
+      w={w}
+      h={h}
+      style={style}
+      backdrop={false}
+      flushPhoto
+      brandedBack
+    />
+  )
 }
 
 /**

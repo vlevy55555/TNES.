@@ -41,6 +41,59 @@ const PLATE_INK = '#2b2419'
  */
 const PORTRAIT_LIFT = 0.34
 
+const GLOBE_LABELS = [
+  { mark: '[O]', place: 'New York', x: -0.34, y: 0.5 },
+  { mark: '[O]', place: 'Switzerland', x: 0.34, y: 0.42 },
+  { mark: '[O]', place: 'Peru', x: -0.48, y: -0.05 },
+  { mark: '[O]', place: 'São Paulo', x: 0.02, y: -0.33 },
+  { mark: '[O]', place: 'Malta', x: 0.5, y: 0.12 },
+] as const
+
+function ArchiveGlobe({ y }: { y: number }) {
+  return (
+    <group position={[0, y, -1.9]} scale={1.25}>
+      <mesh position={[0, 0, -0.04]}>
+        <circleGeometry args={[0.92, 64]} />
+        <meshBasicMaterial color="#030303" />
+      </mesh>
+      <points>
+        <sphereGeometry args={[0.82, 72, 48]} />
+        <pointsMaterial
+          color="#f2f0eb"
+          size={0.012}
+          transparent
+          opacity={0.78}
+          depthWrite={false}
+          sizeAttenuation
+        />
+      </points>
+      {GLOBE_LABELS.map((label) => (
+        <group key={label.place} position={[label.x, label.y, 0.76]}>
+          <Text
+            font={FONT_HELVETICA}
+            fontSize={0.09}
+            color="#f2f0eb"
+            anchorX="center"
+            anchorY="bottom"
+          >
+            {label.mark}
+          </Text>
+          <Text
+            font={FONT_SANS}
+            fontSize={0.045}
+            color="#c7bda6"
+            anchorX="center"
+            anchorY="top"
+            position={[0, -0.025, 0]}
+          >
+            {label.place}
+          </Text>
+        </group>
+      ))}
+    </group>
+  )
+}
+
 // wall texture pixel aspect — /materials/concrete.png is 7680x2970
 const CONCRETE_ASPECT = 7680 / 2970
 
@@ -261,6 +314,8 @@ function Corridor() {
         <planeGeometry args={[CORRIDOR_W, DOOR_H]} />
         <meshBasicMaterial color="#000000" />
       </mesh>
+
+      <ArchiveGlobe y={doorCenterY} />
 
       {/* open door leaves folded nearly flush against the corridor walls, so
           they read as thin edges instead of blocking the view */}
