@@ -1,6 +1,8 @@
-import { INQUIRY_EMAIL, ABOUT } from '../data/artworks'
+import { ABOUT } from '../data/artworks'
 import { useCartCount } from '../store/useCartStore'
+import { useContactStore } from '../store/useContactStore'
 import { SiteNav } from './SiteNav'
+import ContactOverlay from './ContactOverlay'
 
 // ponytail: placeholder hrefs for what does not exist yet — only the landing,
 // the shop, the cart, the store and moments are real today.
@@ -44,6 +46,8 @@ export function ShopHeader({ current = 'shop' }: { current?: string }) {
 }
 
 export function ShopFooter() {
+  const openContact = useContactStore((s) => s.openContact)
+
   return (
     <footer className="shop__footer">
       <span className="shop__mark">[O]</span>
@@ -63,8 +67,10 @@ export function ShopFooter() {
           </div>
           <div>
             <a href={ABOUT.contact.instagramUrl} target="_blank" rel="noopener noreferrer">instagram</a>
-            <a href={`mailto:${INQUIRY_EMAIL}`}>contact</a>
-            <a href={`mailto:${INQUIRY_EMAIL}?subject=Inquiry`}>inquiries</a>
+            {/* `contact` and `inquiries` used to be the same mailto twice, one
+                of them with a subject line. One entry now, and it opens a real
+                form instead of guessing at the visitor's mail app. */}
+            <button type="button" onClick={() => openContact()}>contact</button>
             <a href={catalogHref('private')}>private catalogs</a>
           </div>
         </div>
@@ -73,6 +79,9 @@ export function ShopFooter() {
         <span>new york · são paulo</span>
         <span>© Victor Safdie Levy</span>
       </div>
+
+      {/* the footer is on every screen, so the panel it raises is too */}
+      <ContactOverlay />
     </footer>
   )
 }

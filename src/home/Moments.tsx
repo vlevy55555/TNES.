@@ -2,7 +2,7 @@ import { useLayoutEffect, useRef } from 'react'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { SplitText } from 'gsap/SplitText'
-import { INQUIRY_EMAIL } from '../data/artworks'
+import { useContactStore } from '../store/useContactStore'
 import { RevealText, useSectionTextReveal } from './reveal'
 import EarlyAccess from './EarlyAccess'
 import { ShopFooter, ShopHeader } from './ShopChrome'
@@ -56,7 +56,8 @@ type Moment = {
   titleLines: string[]
   date: string
   abstract: string
-  links: { label: string; href: string }[]
+  /** either a destination or a subject that raises the contact panel */
+  links: { label: string; href?: string; contact?: string }[]
   /** where this chapter starts drawing from the pool */
   seed: number
 }
@@ -90,10 +91,8 @@ const MOMENT_ENTRIES: Moment[] = [
     abstract:
       'works from the archive on view for a temporary summer presentation — two days, one wall, printed for the room.',
     links: [
-      {
-        label: 'inquire about works on view',
-        href: `mailto:${INQUIRY_EMAIL}?subject=Works on view — east hampton art affair`,
-      },
+      // no href: this one raises the contact panel with its subject written
+      { label: 'inquire about works on view', contact: 'works on view — east hampton art affair' },
       { label: 'shop the archive', href: '/shop' },
     ],
     seed: 6,
@@ -274,6 +273,7 @@ function Index({ moments }: { moments: Moment[] }) {
 }
 
 function Chapter({ moment }: { moment: Moment }) {
+  const openContact = useContactStore((s) => s.openContact)
   const root = useRef<HTMLElement>(null)
   const head = useRef<HTMLElement>(null)
 
@@ -498,11 +498,21 @@ function Chapter({ moment }: { moment: Moment }) {
         <section className="moment__outro">
           <div className="moment__inner">
             <p className="moment__links">
-              {moment.links.map((link) => (
-                <a key={link.label} href={link.href}>
-                  {link.label} <span className="shop__arrow" aria-hidden="true">→</span>
-                </a>
-              ))}
+              {moment.links.map((link) =>
+                link.href ? (
+                  <a key={link.label} href={link.href}>
+                    {link.label} <span className="shop__arrow" aria-hidden="true">→</span>
+                  </a>
+                ) : (
+                  <button
+                    key={link.label}
+                    type="button"
+                    onClick={() => openContact(link.contact)}
+                  >
+                    {link.label} <span className="shop__arrow" aria-hidden="true">→</span>
+                  </button>
+                ),
+              )}
             </p>
           </div>
         </section>

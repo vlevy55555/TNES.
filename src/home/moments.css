@@ -485,7 +485,17 @@ html:has(.moments) {
   margin: 0;
 }
 
-.moment__links a {
+.moment__links a,
+.moment__links button {
+  font: inherit;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+}
+
+.moment__links a,
+.moment__links button {
   color: var(--paper-ink);
   text-decoration: none;
   border-bottom: 1px solid transparent;
@@ -493,7 +503,9 @@ html:has(.moments) {
 }
 
 .moment__links a:hover,
-.moment__links a:focus-visible {
+.moment__links a:focus-visible,
+.moment__links button:hover,
+.moment__links button:focus-visible {
   border-color: var(--paper-line);
 }
 

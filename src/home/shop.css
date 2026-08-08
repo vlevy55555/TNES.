@@ -530,7 +530,12 @@ body:has(.shop),
   gap: 7px;
 }
 
-.shop__footer-links a {
+.shop__footer-links a,
+.shop__footer-links button {
+  padding: 0;
+  border: 0;
+  background: none;
+  text-align: left;
   color: var(--paper-muted);
   font-family: var(--mono);
   font-size: 12px;
@@ -538,7 +543,8 @@ body:has(.shop),
   transition: color 220ms ease;
 }
 
-.shop__footer-links a:hover {
+.shop__footer-links a:hover,
+.shop__footer-links button:hover {
   color: var(--paper-ink);
 }
 
@@ -992,5 +998,266 @@ button.product__cart {
   .shop__nav a,
   .shop__footer-links a {
     transition-duration: 1ms !important;
+  }
+}
+
+/* ── Contact ────────────────────────────────────────────────────────────────
+   Shared chrome, like the footer that carries it: one panel, raised from any
+   contact link on any page. It states its own paper and ink for the same
+   reason the footer does — the landing's root is set white for a dark hero. */
+
+.contact__scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  background: rgba(11, 11, 11, 0.55);
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity 380ms ease,
+    visibility 380ms;
+}
+
+.contact__scrim.-is-open {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* Two columns: his hand on the left, the sheet on the right. The plate is the
+   reason this is not a form in a box — you are writing to a person, and the
+   panel shows you which one before you start. */
+.contact {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 61;
+  display: grid;
+  grid-template-columns: minmax(0, 0.72fr) minmax(0, 1fr);
+  width: min(94vw, 880px);
+  background: #fff;
+  color: #0b0b0b;
+  /* closed, it must be out of the tab order too — off-screen is not enough */
+  transform: translateX(100%);
+  visibility: hidden;
+  transition:
+    transform 460ms cubic-bezier(0.22, 1, 0.36, 1),
+    visibility 460ms;
+}
+
+.contact__plate {
+  position: relative;
+  margin: 0;
+  overflow: hidden;
+  background: #e8e8e8;
+}
+
+.contact__plate img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* a hairline of ink down the seam, so the picture reads as a facing page rather
+   than a background the form is floating on */
+.contact__plate::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 1px;
+  background: rgba(11, 11, 11, 0.2);
+}
+
+.contact__sheet {
+  overflow-y: auto;
+  padding: clamp(28px, 4vw, 64px) clamp(20px, 3.3vw, 52px) clamp(40px, 5vw, 72px);
+}
+
+.contact.-is-open {
+  transform: none;
+  visibility: visible;
+}
+
+.contact__close {
+  position: absolute;
+  z-index: 1;
+  top: clamp(20px, 2.4vw, 34px);
+  right: clamp(20px, 3.3vw, 52px);
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font-size: 26px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.contact__eyebrow {
+  margin: 0;
+  color: #5d5d5d;
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.contact__title {
+  margin: clamp(14px, 1.4vw, 22px) 0 0;
+  font-size: clamp(34px, 3.4vw, 52px);
+  font-weight: 400;
+  line-height: 0.95;
+  letter-spacing: -0.05em;
+}
+
+.contact__copy {
+  margin: clamp(12px, 1.2vw, 18px) 0 0;
+  max-width: 34ch;
+  color: #5d5d5d;
+  font-size: 15px;
+  line-height: 1.5;
+  letter-spacing: -0.02em;
+}
+
+.contact__form {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(18px, 2vw, 28px);
+  margin-top: clamp(28px, 3vw, 44px);
+}
+
+.contact__field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.contact__field > span {
+  color: #5d5d5d;
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.contact__field input,
+.contact__field textarea {
+  padding: 0 0 9px;
+  border: 0;
+  border-bottom: 1px solid rgba(11, 11, 11, 0.2);
+  border-radius: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  font-size: 16px;
+  letter-spacing: -0.02em;
+  transition: border-color 220ms ease;
+}
+
+.contact__field textarea {
+  resize: vertical;
+  min-height: 96px;
+  line-height: 1.5;
+}
+
+.contact__field input:focus,
+.contact__field textarea:focus {
+  outline: none;
+  border-bottom-color: #0b0b0b;
+}
+
+/* the honeypot: present for a bot, gone for everyone else */
+.contact__trap {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+}
+
+.contact__send,
+.contact__again {
+  align-self: flex-start;
+  padding: 13px 22px;
+  border: 1px solid #0b0b0b;
+  background: none;
+  color: #0b0b0b;
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition:
+    background-color 260ms ease,
+    color 260ms ease;
+}
+
+.contact__send:hover:not(:disabled),
+.contact__again:hover {
+  background: #0b0b0b;
+  color: #fff;
+}
+
+.contact__send:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.contact__message {
+  margin: 0;
+  min-height: 1.2em;
+  color: #5d5d5d;
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+}
+
+.contact__done {
+  padding-top: clamp(40px, 8vw, 120px);
+}
+
+.contact__again {
+  margin-top: clamp(24px, 2.6vw, 40px);
+}
+
+.contact__address {
+  color: #0b0b0b;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .contact,
+  .contact__scrim {
+    transition-duration: 1ms;
+  }
+}
+
+/* Under 900px there is no room for two columns: the plate becomes a band across
+   the top and the sheet takes the rest. */
+@media (max-width: 900px) {
+  .contact {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto minmax(0, 1fr);
+    width: min(94vw, 460px);
+  }
+
+  .contact__plate {
+    height: clamp(120px, 26vw, 200px);
+  }
+
+  .contact__plate::after {
+    top: auto;
+    left: 0;
+    width: auto;
+    height: 1px;
+  }
+
+  /* stacked, the close sits over the photograph instead of over the sheet.
+     DESIGN.md §10: earn it with ink, not with a plate behind the glyph. */
+  .contact__close {
+    color: #fff;
+    mix-blend-mode: difference;
   }
 }
