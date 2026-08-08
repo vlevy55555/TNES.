@@ -9,7 +9,87 @@ import './catalog.css'
 
 type CatalogSlug = 'the-hamptons' | 'selected-works'
 
-const CATALOG_PASSWORD = 'victor'
+const CATALOG_PASSWORDS: Record<CatalogSlug, string> = {
+  'the-hamptons': 'hampTNES.',
+  'selected-works': 'victor',
+}
+
+const CATALOG_INQUIRY_TYPES = [
+  'acquisition',
+  'commission',
+  'interior / hospitality',
+  'collaboration',
+  'East Hampton works on view',
+  'general inquiry',
+] as const
+
+function CatalogInquiry({ onClose }: { onClose: () => void }) {
+  const [name, setName] = useState('')
+  const [email, setEmail] = useState('')
+  const [phone, setPhone] = useState('')
+  const [type, setType] = useState(CATALOG_INQUIRY_TYPES[0])
+  const [interest, setInterest] = useState('none / general')
+  const [message, setMessage] = useState('')
+  const [formError, setFormError] = useState('')
+
+  const sendInquiry = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    if (!name.trim() || !/^\S+@\S+\.\S+$/.test(email)) {
+      setFormError('add your name and a valid email to continue.')
+      return
+    }
+
+    const body = [
+      `Name: ${name.trim()}`,
+      `Email: ${email.trim()}`,
+      ...(phone.trim() ? [`Phone: ${phone.trim()}`] : []),
+      `Inquiry type: ${type}`,
+      `Work of interest: ${interest}`,
+      '',
+      message.trim() || '(no message)',
+    ].join('\n')
+
+    window.location.href = `mailto:${INQUIRY_EMAIL}?subject=${encodeURIComponent(`TNES. inquiry — ${type}`)}&body=${encodeURIComponent(body)}`
+  }
+
+  return (
+    <div className="catalog-inquiry" role="dialog" aria-modal="true" aria-labelledby="catalog-inquiry-title">
+      <div className="catalog-inquiry__panel">
+        <header className="catalog-inquiry__header">
+          <div>
+            <p>[O]</p>
+            <h2 id="catalog-inquiry-title">write to the studio.</h2>
+          </div>
+          <button type="button" onClick={onClose} aria-label="close inquiry">×</button>
+        </header>
+
+        <form className="catalog-inquiry__form" onSubmit={sendInquiry} noValidate>
+          <label><span>name.</span><input value={name} onChange={(event) => setName(event.target.value)} placeholder="your name." /></label>
+          <label><span>email.</span><input type="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="you@domain.com" /></label>
+          <label><span>phone. <em>(optional)</em></span><input value={phone} onChange={(event) => setPhone(event.target.value)} placeholder="+1 555 555 5555" /></label>
+          <label>
+            <span>inquiry type.</span>
+            <select value={type} onChange={(event) => setType(event.target.value as typeof type)}>
+              {CATALOG_INQUIRY_TYPES.map((option) => <option value={option} key={option}>{option}.</option>)}
+            </select>
+          </label>
+          <label>
+            <span>work of interest. <em>(optional)</em></span>
+            <select value={interest} onChange={(event) => setInterest(event.target.value)}>
+              <option value="none / general">none / general.</option>
+              {artworks.map((work) => <option value={work.title} key={work.id}>{work.title.toLowerCase()}.</option>)}
+            </select>
+          </label>
+          <label className="catalog-inquiry__message"><span>message.</span><textarea rows={4} value={message} onChange={(event) => setMessage(event.target.value)} placeholder="tell us what you're considering." /></label>
+          <div className="catalog-inquiry__submit">
+            <button type="submit">send inquiry <span aria-hidden="true">→</span></button>
+            <p aria-live="polite">{formError}</p>
+          </div>
+        </form>
+      </div>
+    </div>
+  )
+}
 
 const catalogCopy = {
   'the-hamptons': {
@@ -40,6 +120,8 @@ export function isCatalogSlug(value: string | null): value is CatalogSlug {
 export default function Catalog({ slug }: { slug: CatalogSlug }) {
   const [unlocked, setUnlocked] = useState(false)
   const [password, setPassword] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
+  const [inquiryOpen, setInquiryOpen] = useState(false)
   const [error, setError] = useState('')
   const catalog = catalogCopy[slug]
   const selected = catalog.ids
@@ -53,7 +135,7 @@ export default function Catalog({ slug }: { slug: CatalogSlug }) {
 
   const unlockCatalog = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
-    if (password !== CATALOG_PASSWORD) {
+    if (password !== CATALOG_PASSWORDS[slug]) {
       setError('incorrect password. please try again.')
       return
     }
@@ -70,26 +152,42 @@ export default function Catalog({ slug }: { slug: CatalogSlug }) {
           <p className="catalog-gate__intro">enter the password from the studio to view the photographs.</p>
           <form className="catalog-gate__form" onSubmit={unlockCatalog}>
             <label htmlFor="catalog-password">password</label>
-            <input
-              id="catalog-password"
-              type="password"
-              value={password}
-              onChange={(event) => {
-                setPassword(event.target.value)
-                setError('')
-              }}
-              autoComplete="current-password"
-              autoFocus
-            />
+            <div className="catalog-gate__password-field">
+              <input
+                id="catalog-password"
+                type={showPassword ? 'text' : 'password'}
+                value={password}
+                onChange={(event) => {
+                  setPassword(event.target.value)
+                  setError('')
+                }}
+                autoComplete="current-password"
+                autoFocus
+              />
+              <button
+                className="catalog-gate__password-toggle"
+                type="button"
+                aria-label={showPassword ? 'hide password' : 'show password'}
+                aria-pressed={showPassword}
+                onClick={() => setShowPassword((visible) => !visible)}
+              >
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z" />
+                  <circle cx="12" cy="12" r="2.75" />
+                  {showPassword && <path d="m4 4 16 16" />}
+                </svg>
+              </button>
+            </div>
             <div className="catalog-gate__actions">
               <button type="submit">enter catalog <span aria-hidden="true">→</span></button>
               <p className="catalog-gate__contact">
-                no password? <a href={`mailto:${INQUIRY_EMAIL}?subject=Private catalog access`}>write to the studio</a>
+                no password? <button type="button" onClick={() => setInquiryOpen(true)}>write to the studio</button>
               </p>
             </div>
             <p className="catalog-gate__error" aria-live="polite">{error}</p>
           </form>
         </section>
+        {inquiryOpen && <CatalogInquiry onClose={() => setInquiryOpen(false)} />}
       </main>
     )
   }

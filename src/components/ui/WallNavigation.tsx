@@ -1,6 +1,14 @@
 import { ARCHIVE_WALL, artworks, SIGNATURE_WALL, walls } from '../../data/artworks'
 import { useGalleryStore } from '../../store/useGalleryStore'
 
+const PRINT_IDS = new Set([
+  'playa-roja',
+  'appenzell-alpine-lake',
+  'ditch-plains-far',
+  'runner',
+  'ischia-mezzatorre',
+])
+
 export function WallNavigation() {
   const currentWall = useGalleryStore((s) => s.currentWall)
   const goToWall = useGalleryStore((s) => s.goToWall)
@@ -13,8 +21,6 @@ export function WallNavigation() {
   const openManifestoRoom = useGalleryStore((s) => s.openManifestoRoom)
   const hidden = selectedArtworkId !== null
 
-  // mobile splits Prints across two screens — say which one you're on, or the
-  // arrows look like they did nothing
   const atLastWall = currentWall === walls.length - 1
 
   return (
@@ -27,7 +33,7 @@ export function WallNavigation() {
             <button onClick={openManifestoRoom}>Enter studio</button>
           </>
         )}
-        {(currentWall === ARCHIVE_WALL ? artworks : [])
+        {(currentWall === ARCHIVE_WALL ? artworks.filter((artwork) => PRINT_IDS.has(artwork.id)) : [])
           .map((a) => (
             <button key={a.id} onClick={() => selectArtwork(a.id)}>
               View “{a.title}” — {a.subtitle}

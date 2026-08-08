@@ -37,14 +37,15 @@ export function ArtworkFrame({
     t.colorSpace = SRGBColorSpace
   })
   const maxAnisotropy = useThree((state) => state.gl.capabilities.getMaxAnisotropy())
+  const isMobile = useGalleryStore((s) => s.isMobile)
 
   useEffect(() => {
-    texture.anisotropy = Math.min(16, maxAnisotropy)
+    texture.anisotropy = Math.min(isMobile ? 4 : 8, maxAnisotropy)
     texture.minFilter = LinearMipmapLinearFilter
     texture.magFilter = LinearFilter
     texture.generateMipmaps = true
     texture.needsUpdate = true
-  }, [maxAnisotropy, texture])
+  }, [isMobile, maxAnisotropy, texture])
   const selectArtwork = useGalleryStore((s) => s.selectArtwork)
   const selectedArtworkId = useGalleryStore((s) => s.selectedArtworkId)
   const selectedFrameStyle = useGalleryStore((s) => s.selectedFrameStyle)

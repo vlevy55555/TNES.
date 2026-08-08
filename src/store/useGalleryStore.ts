@@ -42,13 +42,6 @@ type GalleryState = {
   zoomAt: ZoomAt | null
   manifestoRoomOpen: boolean
   isMobile: boolean
-  /**
-   * Which half of the Prints hang is showing. A phone can't hold twelve works
-   * at a legible size, so on mobile that wall becomes two screens of six and
-   * the wall arrows step through them before moving on. Ignored on desktop,
-   * which hangs all twelve at once.
-   */
-  printsPage: 0 | 1
   printsIntroPhase: PrintsIntroPhase
   /** Resets on a full page load, but prevents a repeat when returning to Prints. */
   printsIntroSeen: boolean
@@ -77,6 +70,7 @@ type GalleryState = {
   // leaving for VSL: the signature writes itself, then the site navigates
   vslExitActive: boolean
   startVslExit: () => void
+  resetVslExit: () => void
 }
 
 export const useGalleryStore = create<GalleryState>((set, get) => ({
@@ -88,7 +82,6 @@ export const useGalleryStore = create<GalleryState>((set, get) => ({
   zoomAt: null,
   manifestoRoomOpen: false,
   isMobile: mqIsMobile(),
-  printsPage: 0,
   printsIntroPhase: 'hidden',
   printsIntroSeen: true,
   pendingIntroArtwork: null,
@@ -109,7 +102,6 @@ export const useGalleryStore = create<GalleryState>((set, get) => ({
       selectedArtworkId: null,
       zoomAt: null,
       manifestoRoomOpen: false,
-      printsPage: 0,
       printsIntroPhase: 'hidden',
       printsIntroSeen: true,
       pendingIntroArtwork: null,
@@ -117,11 +109,7 @@ export const useGalleryStore = create<GalleryState>((set, get) => ({
   },
 
   goToNextWall: () => {
-    const { currentWall, isMobile, printsPage } = get()
-    // mobile hangs Prints as two screens of six — walk them before leaving
-    if (isMobile && currentWall === ARCHIVE_WALL && printsPage === 0) {
-      return set({ printsPage: 1, selectedArtworkId: null, zoomAt: null })
-    }
+    const { currentWall } = get()
     const wall = Math.min(currentWall + 1, walls.length - 1)
     const showPrintsIntro = wall === ARCHIVE_WALL && !get().printsIntroSeen
     set({
@@ -129,7 +117,6 @@ export const useGalleryStore = create<GalleryState>((set, get) => ({
       selectedArtworkId: null,
       zoomAt: null,
       manifestoRoomOpen: false,
-      printsPage: 0,
       printsIntroPhase: showPrintsIntro ? 'entering' : 'hidden',
       printsIntroSeen: get().printsIntroSeen || showPrintsIntro,
       pendingIntroArtwork: null,
@@ -137,10 +124,7 @@ export const useGalleryStore = create<GalleryState>((set, get) => ({
   },
 
   goToPreviousWall: () => {
-    const { currentWall, isMobile, printsPage } = get()
-    if (isMobile && currentWall === ARCHIVE_WALL && printsPage === 1) {
-      return set({ printsPage: 0, selectedArtworkId: null, zoomAt: null })
-    }
+    const { currentWall } = get()
     const wall = Math.max(currentWall - 1, 0)
     const showPrintsIntro = wall === ARCHIVE_WALL && !get().printsIntroSeen
     set({
@@ -148,9 +132,6 @@ export const useGalleryStore = create<GalleryState>((set, get) => ({
       selectedArtworkId: null,
       zoomAt: null,
       manifestoRoomOpen: false,
-      // stepping back INTO Prints lands on its last screen, the one nearest
-      // the wall you came from
-      printsPage: isMobile && wall === ARCHIVE_WALL ? 1 : 0,
       printsIntroPhase: showPrintsIntro ? 'entering' : 'hidden',
       printsIntroSeen: get().printsIntroSeen || showPrintsIntro,
       pendingIntroArtwork: null,
@@ -210,4 +191,5 @@ export const useGalleryStore = create<GalleryState>((set, get) => ({
 
   vslExitActive: false,
   startVslExit: () => set({ vslExitActive: true }),
+  resetVslExit: () => set({ vslExitActive: false }),
 }))

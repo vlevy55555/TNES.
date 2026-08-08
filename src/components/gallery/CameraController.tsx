@@ -73,14 +73,13 @@ const HOME_MOBILE_Y = -0.35
 const COUNTDOWN_MOBILE_FIELD: [number, number] = [3.4, 3.9]
 const COUNTDOWN_MOBILE_Y = -0.1
 
-// Prints hangs twelve works plus a two-line header above them — a wider field
-// than the bare wall, so the camera sits back far enough to hold the lot
-const PRINTS_FIELD: [number, number] = [11.3, 6.1]
+// Prints is one five-work composition on a single wall.
+const PRINTS_FIELD: [number, number] = [9.8, 5.7]
 // A portrait viewport is framed by its WIDTH, so the desktop field would put
 // the camera ~36 units back — the whole room, works the size of stamps. Mobile
 // hangs six at a time in two columns instead, and this frames that block.
-const PRINTS_MOBILE_FIELD: [number, number] = [2.45, 5.0]
-const PRINTS_MOBILE_Y = 0.24
+const PRINTS_MOBILE_FIELD: [number, number] = [2.35, 4.75]
+const PRINTS_MOBILE_Y = 0.18
 
 // About, on a phone: same problem, and here the fix is to CROP. The doorway
 // (wall-local x ≈ 2.0–3.9) falls outside this field on purpose — the portrait,

@@ -1,7 +1,6 @@
-import { useTexture } from '@react-three/drei'
 import { useMemo } from 'react'
 import { CanvasTexture, Color, Path, Shape, type Texture } from 'three'
-import { artworks, type FrameStyle } from '../../data/artworks'
+import { type FrameStyle } from '../../data/artworks'
 
 // ponytail: radial-gradient canvas as fake soft shadow — no shadow maps needed
 function makeShadowTexture() {
@@ -16,10 +15,23 @@ function makeShadowTexture() {
   ctx.fillRect(0, 0, 128, 128)
   return new CanvasTexture(canvas)
 }
+
+function makeBackMarkTexture(color: string) {
+  const canvas = document.createElement('canvas')
+  canvas.width = canvas.height = 512
+  const ctx = canvas.getContext('2d')!
+  ctx.clearRect(0, 0, 512, 512)
+  ctx.fillStyle = color
+  ctx.font = '400 230px Helvetica, Arial, sans-serif'
+  ctx.textAlign = 'center'
+  ctx.textBaseline = 'middle'
+  ctx.fillText('[O]', 256, 266)
+  const texture = new CanvasTexture(canvas)
+  texture.colorSpace = 'srgb'
+  return texture
+}
 /** shared by anything that needs to sit proud of a wall — frames, the Countdown plate */
 export const shadowTexture = makeShadowTexture()
-
-artworks.forEach((a) => useTexture.preload(a.image))
 
 /**
  * A flat gain on the print material. The photographs are unlit and exempt from
@@ -200,20 +212,31 @@ export function FrameLayers({
   /** The painted-on wall shadow. Off for anything free-standing, which casts a
    *  real one and would otherwise show this plane edge-on when turned. */
   backdrop = true,
+  flushPhoto = false,
+  brandedBack = false,
 }: {
   texture: Texture
   w: number
   h: number
   style: FrameStyle
   backdrop?: boolean
+  /** Product previews omit the paper mat so the print reaches the moulding. */
+  flushPhoto?: boolean
+  /** Product previews carry the TNES. [O] mark on the reverse. */
+  brandedBack?: boolean
 }) {
   const spec = frameSpec(style)
+  const backMark = useMemo(
+    () => makeBackMarkTexture(style === 'black' ? '#ffffff' : '#111111'),
+    [style],
+  )
   const [frameW, frameH] = frameOuterDimensions(w, h, style)
   const [photoW, photoH] = framePhotoDimensions(w, h, style)
-  const innerW = photoW + spec.mat * 2
-  const innerH = photoH + spec.mat * 2
+  const innerW = photoW + (flushPhoto ? 0 : spec.mat * 2)
+  const innerH = photoH + (flushPhoto ? 0 : spec.mat * 2)
   const matZ = Math.max(0.018, spec.depth - 0.024)
   const photoZ = Math.max(0.028, spec.depth - 0.006)
+  const backColor = style === 'black' ? '#171614' : style === 'gold' ? '#c89532' : '#e6dfd1'
 
   return (
     <>
@@ -241,10 +264,25 @@ export function FrameLayers({
         bevelThickness={spec.bevelThickness}
       />
 
-      <mesh position={[0, 0, matZ]} castShadow>
-        <boxGeometry args={[innerW, innerH, 0.03]} />
-        <meshStandardMaterial color={spec.matColor} roughness={0.8} />
-      </mesh>
+      {!flushPhoto && (
+        <mesh position={[0, 0, matZ]} castShadow>
+          <boxGeometry args={[innerW, innerH, 0.03]} />
+          <meshStandardMaterial color={spec.matColor} roughness={0.8} />
+        </mesh>
+      )}
+
+      {brandedBack && (
+        <>
+          <mesh position={[0, 0, -0.013]} castShadow>
+            <boxGeometry args={[frameW - 0.035, frameH - 0.035, 0.024]} />
+            <meshStandardMaterial color={backColor} roughness={0.72} />
+          </mesh>
+          <mesh position={[0, 0, -0.026]} rotation={[0, Math.PI, 0]}>
+            <planeGeometry args={[Math.min(frameW, frameH) * 0.5, Math.min(frameW, frameH) * 0.5]} />
+            <meshBasicMaterial map={backMark} transparent toneMapped={false} />
+          </mesh>
+        </>
+      )}
 
       <mesh position={[0, 0, photoZ]} castShadow>
         <planeGeometry args={[photoW, photoH]} />

@@ -14,6 +14,7 @@ import {
   ABOUT_DOOR_W,
 } from '../../data/artworks'
 import { MarbleWallSurface } from './MarbleWallSurface'
+import { useGalleryStore } from '../../store/useGalleryStore'
 
 // Includes the side Manifesto room as well as the four visible navigation walls.
 const minRoomX = MANIFESTO_ROOM_X
@@ -54,6 +55,7 @@ const beamXs = Array.from(
 )
 
 export function Room() {
+  const isMobile = useGalleryStore((state) => state.isMobile)
   const floorTexture = useTexture('/materials/floor.png', (image) => {
     image.colorSpace = SRGBColorSpace
     // mirrored wrap: adjacent tiles share edge pixels, so no visible seam
@@ -62,7 +64,7 @@ export function Room() {
     image.repeat.set(WIDTH / FLOOR_TILE_WIDTH, DEPTH / FLOOR_TILE_DEPTH)
     image.offset.x = FLOOR_OFFSET_X
     // floors are seen at grazing angles — without anisotropy the mipmaps smear
-    image.anisotropy = 16
+    image.anisotropy = isMobile ? 4 : 8
   })
 
   return (
@@ -79,7 +81,7 @@ export function Room() {
             bright specular pools of light on the polished surface */}
         <MeshReflectorMaterial
           map={floorTexture}
-          resolution={1024}
+          resolution={isMobile ? 256 : 512}
           mirror={0.22}
           mixStrength={2.2}
           mixBlur={1}
