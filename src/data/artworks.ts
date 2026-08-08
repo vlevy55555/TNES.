@@ -102,7 +102,9 @@ export const ABOUT = {
   // one first-person block, in his voice — the reference layout has no room for
   // a pull-quote AND a separate bio, and this is the wording it carries
   statement: `I photograph the in-between. The pause. The threshold. The space where something shifts from one state to another. TNES. is the world that holds that moment.`,
-  cta: 'Enter VSL',
+  // the one label for the doorway out to VSL — the 3D wall and /about both read
+  // it from here, so the two surfaces cannot say different things
+  cta: 'enter the mind in VSL',
   contact: {
     email: 'vlevy@tnes.studio',
     phone: '+1 917 445 4067',

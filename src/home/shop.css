@@ -19,8 +19,6 @@ body:has(.shop),
   --media-fallback: #e8e8e8;
   --pad-x: clamp(20px, 3.3vw, 52px);
   --pad-y: clamp(20px, 3.4vw, 54px);
-  /* the specimen voice — system mono, no new font file */
-  --mono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
 
   display: block;
   min-height: 100svh;
@@ -57,41 +55,19 @@ body:has(.shop),
 
 /* Header — wordmark left, sections right, same rhythm as the hero's */
 
+/* position and ink only — the type is settled in the shared navbar block */
 .shop__header {
   position: sticky;
   top: 0;
   z-index: 5;
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 24px;
-  padding: var(--pad-y) var(--pad-x);
   /* No wash, no fade, no backdrop blur behind the nav — see DESIGN.md §10.
      The header is ink on the page, nothing else. */
   background: none;
 }
 
-.shop__logo {
-  font-family: var(--mark);
-  font-size: clamp(22px, 1.9vw, 30px);
-  font-weight: 500;
-  line-height: 1;
-  letter-spacing: 0.14em;
-}
-
-.shop__nav {
-  display: flex;
-  align-items: baseline;
-  gap: clamp(14px, 1.8vw, 28px);
-}
-
 .shop__nav a,
 .shop__nav button {
   color: rgba(11, 11, 11, 0.6);
-  font-size: clamp(11px, 0.85vw, 13px);
-  line-height: 1;
-  letter-spacing: 0.08em;
-  transition: color 220ms ease;
 }
 
 /* `cart` is a button — it opens the drawer — so undo the UA chrome that the
@@ -100,8 +76,6 @@ body:has(.shop),
   padding: 0;
   border: 0;
   background: transparent;
-  font-family: inherit;
-  font-weight: inherit;
 }
 
 .shop__nav a:hover,
@@ -493,9 +467,17 @@ body:has(.shop),
 
 /* Footer */
 
+/* The footer is shared chrome — the landing renders it too, and that page's
+   root carries white ink for its dark hero. So it states its own ink and kills
+   its own underlines rather than inheriting whatever the page happens to be. */
 .shop__footer {
   padding: clamp(32px, 4vw, 56px) var(--pad-x) clamp(28px, 3vw, 44px);
   border-top: 1px solid var(--paper-line);
+  color: var(--paper-ink);
+}
+
+.shop__footer a {
+  text-decoration: none;
 }
 
 .shop__mark {

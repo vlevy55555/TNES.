@@ -17,6 +17,18 @@ body:has(.moments),
   overflow: visible;
 }
 
+/* the index jumps by plain anchor — html is the scroller here, so this is what
+   makes the jump a travel rather than a cut */
+html:has(.moments) {
+  scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html:has(.moments) {
+    scroll-behavior: auto;
+  }
+}
+
 /* The page runs on the shop's white paper — the site's main system. Two
    stretches are deliberately dark and carry their own ink: the covers, which
    are edge-to-edge photography, and the release at the end. */
@@ -55,6 +67,7 @@ body:has(.moments),
 .moments .shop__nav button:hover {
   color: #fff;
 }
+
 
 .moments .shop__footer {
   position: relative;
@@ -146,6 +159,109 @@ body:has(.moments),
   width: clamp(140px, 15.27vw, 262px);
   aspect-ratio: 3 / 4;
   overflow: hidden;
+}
+
+/* ── index ──────────────────────────────────────────────────────────────── */
+
+.moments__index {
+  padding-bottom: clamp(96px, 8vw, 140px);
+}
+
+.moments__index-label {
+  margin: 0 0 clamp(18px, 1.4vw, 26px);
+  padding-top: clamp(16px, 1.2vw, 22px);
+  border-top: 1px solid var(--paper-line);
+  font-family: var(--mono);
+  font-size: clamp(13px, 0.972vw, 16.7px);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--paper-muted);
+}
+
+.moments__index-list {
+  display: flex;
+  gap: var(--gap-tile);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* four across, by the formula the gallery uses for five */
+.moments__index-item {
+  width: calc((100% - var(--gap-tile) * 3) / 4);
+}
+
+.moments__index-link {
+  display: block;
+  color: inherit;
+  text-decoration: none;
+}
+
+.moments__index-plate {
+  display: block;
+  aspect-ratio: 3 / 4;
+  overflow: hidden;
+  transition: outline-offset 400ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* the state is the frame, never a word: the moment on view is outlined, the
+   one that has not happened yet is an empty one */
+.-is-current .moments__index-plate {
+  outline: 1px solid var(--paper-ink);
+  outline-offset: 6px;
+}
+
+.-is-next .moments__index-plate {
+  border: 1px dashed var(--paper-line);
+  background: none;
+}
+
+.moments__index-link:hover .moments__index-plate {
+  outline: 1px solid var(--paper-line);
+  outline-offset: 6px;
+}
+
+.-is-current:hover .moments__index-plate {
+  outline-color: var(--paper-ink);
+  outline-offset: 10px;
+}
+
+.moments__index-meta,
+.moments__index-date {
+  display: block;
+  font-family: var(--mono);
+  font-size: clamp(11px, 0.83vw, 14px);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--paper-muted);
+}
+
+.moments__index-meta {
+  margin-top: clamp(12px, 1vw, 18px);
+}
+
+.moments__index-meta b {
+  margin-right: clamp(10px, 0.9vw, 15px);
+  font-weight: 400;
+  color: var(--paper-line);
+}
+
+.-is-current .moments__index-meta,
+.-is-current .moments__index-meta b {
+  color: var(--paper-ink);
+}
+
+.moments__index-title {
+  display: block;
+  margin-top: clamp(5px, 0.5vw, 8px);
+  font-size: clamp(16px, 1.25vw, 21.5px);
+  line-height: 1.1;
+  letter-spacing: -0.06em;
+  color: var(--paper-ink);
+}
+
+.moments__index-date {
+  margin-top: clamp(6px, 0.6vw, 10px);
 }
 
 /* ── chapter ────────────────────────────────────────────────────────────── */
@@ -492,11 +608,13 @@ body:has(.moments),
     margin-top: clamp(96px, 22vw, 168px);
   }
 
-  /* The five-up row becomes the landing's carousel: one horizontal track the
-     thumb pushes, same geometry as `.works__track` — 58vw plates, the same
-     gap, no scrollbar, and no snap. It bleeds past the shell's gutter so the
-     row reads as continuing off-screen rather than ending at a margin. */
-  .moment__tiles {
+  /* Both rows — the index at the top and the five-up gallery in each chapter —
+     become the landing's carousel: one horizontal track the thumb pushes, same
+     geometry as `.works__track` (58vw plates, the same gap, no scrollbar, no
+     snap). They bleed past the shell's gutter so the row reads as continuing
+     off-screen rather than ending at a margin. */
+  .moment__tiles,
+  .moments__index-list {
     flex-direction: row;
     align-items: flex-end;
     justify-content: flex-start;
@@ -509,11 +627,13 @@ body:has(.moments),
     -webkit-overflow-scrolling: touch;
   }
 
-  .moment__tiles::-webkit-scrollbar {
+  .moment__tiles::-webkit-scrollbar,
+  .moments__index-list::-webkit-scrollbar {
     display: none;
   }
 
-  .moment__tile {
+  .moment__tile,
+  .moments__index-item {
     flex: none;
     width: 58vw;
   }

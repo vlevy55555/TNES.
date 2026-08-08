@@ -63,6 +63,9 @@
   --brand: 'Playfair Display', Georgia, serif;
   /* The [O] is reserved for elements that can be activated or selected — always Helvetica. */
   --mark: 'Helvetica', 'Helvetica Neue', Arial, sans-serif;
+  /* the specimen voice — system mono, no new font file. Lives here rather than
+     on `.shop` so the chrome that every page shares can reach it. */
+  --mono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
   --interactive-cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="34" height="22" viewBox="0 0 34 22"><text x="17" y="17" font-family="Helvetica,Arial,sans-serif" font-size="18" fill="%232f2a24" text-anchor="middle">[O]</text></svg>') 17 11, pointer;
 }
 

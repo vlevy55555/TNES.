@@ -17,6 +17,11 @@ body:has(.home),
   --paper-muted: #5d5d5d;
   --paper-line: rgba(11, 11, 11, 0.2);
   --media-fallback: #e8e8e8;
+  /* the page margin, at the page — the hero and the carousel each declared
+     their own copy of these, which left anything outside them (the header, the
+     footer) with no value at all */
+  --pad-x: clamp(20px, 3.3vw, 52px);
+  --pad-y: clamp(20px, 3.4vw, 54px);
   color: #fff;
   background: var(--paper);
   /* the reference face — the project already ships Helvetica for the [O] mark */
@@ -82,6 +87,188 @@ body:has(.home--black),
 .text-reveal__content {
   display: block;
   will-change: transform, opacity;
+}
+
+/* ── The navbar ─────────────────────────────────────────────────────────────
+   One definition for every screen: the landing, the shop, a work, the cart,
+   about, moments. This block lives in home.css because that is the one sheet
+   all of them load.
+
+   A page may set two things and nothing else: where the header sits
+   (`absolute` over the hero, `sticky` on the paper pages) and what colour the
+   ink is. Type, size, rhythm and casing are settled here.
+
+   NOTE on the selectors: `.home a` and `.shop a` both declare `font: inherit`
+   at (0,1,1), which outranks a lone `.hero__logo` / `.shop__logo` class. That
+   is why the wordmark used to render at body size no matter what it asked for.
+   Two classes deep is what it takes to survive them. */
+.home .hero__header,
+.shop .shop__header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 24px;
+  padding: var(--pad-y) var(--pad-x);
+}
+
+.home .hero__logo,
+.shop .shop__logo {
+  font-family: var(--mark);
+  font-size: clamp(28px, 2.4vw, 38px);
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: 0.14em;
+  text-decoration: none;
+}
+
+.home .hero__nav,
+.shop .shop__nav {
+  display: flex;
+  align-items: baseline;
+  gap: clamp(14px, 1.8vw, 28px);
+}
+
+.home .hero__nav a,
+.shop .shop__nav a,
+.shop .shop__nav button {
+  font-family: var(--mark);
+  font-size: clamp(12px, 0.92vw, 15px);
+  font-weight: 400;
+  line-height: 1;
+  letter-spacing: 0.08em;
+  /* the site speaks in lower case — the mono specimen labels are the only
+     thing on it set in caps, and the nav is not one of them */
+  text-transform: lowercase;
+  text-decoration: none;
+  transition: color 220ms ease;
+}
+
+/* the three-line button belongs to the phone; on a desktop the row IS the nav */
+.site-nav__toggle,
+.site-nav__scrim {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  /* The desktop row aligns on the baseline, because the sections are text and
+     they belong on the wordmark's line. The button is not text: a baseline
+     hangs its bottom edge off the wordmark's, dropping it half its own height.
+     With an icon beside the wordmark it is the two centres that must meet. */
+  .home .hero__header,
+  .shop .shop__header {
+    align-items: center;
+  }
+
+  /* Six sections do not fit one 390px line, so the wordmark keeps the left and
+     everything else folds into the button on the right. */
+  .site-nav__toggle {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 5px;
+    width: 30px;
+    height: 22px;
+    padding: 0;
+    border: 0;
+    background: none;
+    /* the header sets the ink; the bars are made of it */
+    color: inherit;
+    cursor: pointer;
+    z-index: 41;
+  }
+
+  .site-nav__toggle > span {
+    display: block;
+    width: 100%;
+    height: 1.5px;
+    background: currentColor;
+    transition:
+      transform 380ms cubic-bezier(0.22, 1, 0.36, 1),
+      opacity 200ms ease;
+  }
+
+  /* the three lines fold into the cross that closes the panel */
+  .site-nav__toggle.-is-open > span:nth-child(1) {
+    transform: translateY(6.5px) rotate(45deg);
+  }
+
+  .site-nav__toggle.-is-open > span:nth-child(2) {
+    opacity: 0;
+  }
+
+  .site-nav__toggle.-is-open > span:nth-child(3) {
+    transform: translateY(-6.5px) rotate(-45deg);
+  }
+
+  /* No plate, no dim — this only exists so a tap anywhere else closes the
+     list. It is the click target and nothing more. */
+  .site-nav__scrim {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 39;
+    background: none;
+    visibility: hidden;
+  }
+
+  .site-nav__scrim.-is-open {
+    visibility: visible;
+  }
+
+  /* Not a drawer. The sections simply appear where the button is — set to the
+     same right edge, stacked, in the page's own header ink at part strength.
+     Nothing is rendered twice: this is the same <nav> the desktop row uses. */
+  .home .site-nav,
+  .shop .site-nav {
+    position: fixed;
+    top: calc(var(--pad-y) + 44px);
+    right: var(--pad-x);
+    z-index: 40;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: clamp(10px, 3vw, 16px);
+    text-align: right;
+    /* closed, it must be unreachable by keyboard too — transparent is not
+       enough, `visibility` is what takes it out of the tab order */
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-8px);
+    transition:
+      opacity 320ms ease,
+      transform 420ms cubic-bezier(0.22, 1, 0.36, 1),
+      visibility 420ms;
+  }
+
+  .home .site-nav.-is-open,
+  .shop .site-nav.-is-open {
+    opacity: 1;
+    visibility: visible;
+    transform: none;
+  }
+
+  /* Both classes are named so the size wins over the page's own `…__nav a`
+     rule; the colour is deliberately left to the page, which is what keeps
+     each screen's ink correct without a surface behind the words. */
+  .home .hero__nav.site-nav a,
+  .shop .shop__nav.site-nav a {
+    font-size: clamp(17px, 4.6vw, 22px);
+    letter-spacing: 0.04em;
+  }
+
+  .home .hero__logo,
+  .shop .shop__logo {
+    font-size: 26px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .site-nav__toggle > span,
+  .site-nav__scrim,
+  .home .site-nav,
+  .shop .site-nav {
+    transition-duration: 1ms;
+  }
 }
 
 .home .hero {
@@ -164,44 +351,21 @@ body:has(.home--black),
 
 /* Header — wordmark left, sections right */
 
+/* position and ink only — the type is settled in the shared navbar block */
 .hero__header {
   position: absolute;
   top: 0;
   right: 0;
   left: 0;
   z-index: 5;
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 24px;
-  padding: var(--pad-y) var(--pad-x);
 }
 
 .hero__logo {
   color: #fff;
-  text-decoration: none;
-  font-family: var(--mark);
-  font-size: clamp(22px, 1.9vw, 30px);
-  font-weight: 500;
-  line-height: 1;
-  letter-spacing: 0.14em;
-}
-
-.hero__nav {
-  display: flex;
-  align-items: baseline;
-  gap: clamp(14px, 1.8vw, 28px);
 }
 
 .hero__nav a {
   color: rgba(255, 255, 255, 0.82);
-  text-decoration: none;
-  font-size: clamp(11px, 0.85vw, 13px);
-  font-weight: 400;
-  line-height: 1;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  transition: color 220ms ease;
 }
 
 .hero__nav a:hover {
@@ -858,25 +1022,6 @@ body:has(.home--black),
   .home .hero {
     --pad-x: 18px;
     --pad-y: 20px;
-  }
-
-  .hero__header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 12px;
-  }
-
-  .hero__logo {
-    font-size: 20px;
-  }
-
-  .hero__nav {
-    flex-wrap: wrap;
-    gap: 14px;
-  }
-
-  .hero__nav a {
-    font-size: 12px;
   }
 
   .hero__slide--runner .hero__poster {

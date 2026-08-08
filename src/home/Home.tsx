@@ -3,8 +3,12 @@ import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { artworks, BRAND_STATEMENT, HERO_ID } from '../data/artworks'
 import { RevealText, useSectionTextReveal } from './reveal'
+import { useCartCount } from '../store/useCartStore'
+import { SiteNav } from './SiteNav'
+import { ShopFooter } from './ShopChrome'
 import EarlyAccess from './EarlyAccess'
 import './home.css'
+import './shop.css'
 
 gsap.registerPlugin(ScrollTrigger)
 
@@ -349,6 +353,7 @@ export default function Home({ dark = false }: { dark?: boolean }) {
   const swipeStartX = useRef<number | null>(null)
   const heroRef = useRef<HTMLElement>(null)
   const canHover = useMediaQuery('(hover: hover) and (pointer: fine)')
+  const cartCount = useCartCount()
   useSectionTextReveal(heroRef, true)
 
   const active = projects[activeIndex]
@@ -430,13 +435,17 @@ export default function Home({ dark = false }: { dark?: boolean }) {
             <RevealText>TNES.</RevealText>
           </a>
 
-          <nav className="hero__nav" aria-label="Navegação principal">
-            {NAV.map((item) => (
-              <a key={item.label} href={item.href}>
-                <RevealText>{item.label}</RevealText>
-              </a>
-            ))}
-          </nav>
+          {/* the same nav every other screen renders — cart carries its count
+              here too, and on a phone it collapses into the three-line menu */}
+          <SiteNav
+            items={NAV.map((item) =>
+              item.label === 'cart' && cartCount > 0
+                ? { ...item, label: `cart (${cartCount})` }
+                : item,
+            )}
+            className="hero__nav"
+            reveal
+          />
         </header>
 
         <nav className="hero__list" aria-label="Selecionar obra">
@@ -472,6 +481,7 @@ export default function Home({ dark = false }: { dark?: boolean }) {
       <Statement />
       <SelectedWorks />
       <TheStudio />
+      <ShopFooter />
     </main>
   )
 }
