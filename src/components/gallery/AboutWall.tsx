@@ -260,6 +260,8 @@ function Corridor() {
   const [hovered, setHovered] = useState(false)
   useCursor(hovered, INTERACTIVE_CURSOR)
   const startVslExit = useGalleryStore((s) => s.startVslExit)
+  const startGlobeVslExit = useGalleryStore((s) => s.startGlobeVslExit)
+  const isMobile = useGalleryStore((s) => s.isMobile)
 
   const doorCenterY = FLOOR_Y + DOOR_H / 2
   // one more lamp than the corridor used to have: the receding chain is what
@@ -378,7 +380,8 @@ function Corridor() {
         position={[0, doorCenterY, 0.02]}
         onClick={(e) => {
           e.stopPropagation()
-          startVslExit()
+          if (isMobile) startVslExit()
+          else startGlobeVslExit()
         }}
         onPointerOver={(e) => {
           e.stopPropagation()

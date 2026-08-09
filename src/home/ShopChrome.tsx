@@ -77,7 +77,7 @@ export function ShopFooter() {
       </div>
       <div className="shop__footer-base">
         <span>new york · são paulo</span>
-        <span>© Victor Safdie Levy</span>
+        <span>© victor safdie levy</span>
       </div>
 
       {/* the footer is on every screen, so the panel it raises is too */}

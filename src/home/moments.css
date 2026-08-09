@@ -68,6 +68,23 @@ html:has(.moments) {
   color: #fff;
 }
 
+@media (max-width: 768px) {
+  .moments .shop__header {
+    z-index: 100;
+    pointer-events: auto;
+    color: #000;
+    mix-blend-mode: normal;
+  }
+
+  /* Moments crosses black covers and white reading sheets. White ink under
+     the header's difference blend remains visible on both; the shared shop
+     mobile override must not force these links to ordinary black. */
+  .moments .shop__nav.site-nav a,
+  .moments .shop__nav.site-nav button {
+    color: #000 !important;
+  }
+}
+
 
 .moments .shop__footer {
   position: relative;
@@ -555,7 +572,7 @@ html:has(.moments) {
 .moments .moments__signup .archive-countdown {
   padding-left: 0;
   border-left: 0;
-  border-top: 1px solid var(--paper-line);
+  border-top: 0;
   padding-top: clamp(32px, 3vw, 52px);
   width: 100%;
 }

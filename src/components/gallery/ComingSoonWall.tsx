@@ -74,8 +74,8 @@ const PLATE_H = 2.16
 const PLATE_Z = 0.13
 
 /** the email capture, directly under the plate */
-const FORM_X = -2.24
-const FORM_Y = -1.34
+const FORM_X = PLATE_X
+const FORM_Y = -1.28
 
 /** the countdown, pushed right of centre — the plate is what balances it */
 const COUNT_X0 = -0.63
@@ -284,7 +284,7 @@ function EditorialPlate() {
         anchorY="middle"
         position={[left, 0.72, 0.026]}
       >
-        object 01
+        Full Acess
       </Text>
       <Text
         font={FONT_BRAND}
@@ -294,7 +294,7 @@ function EditorialPlate() {
         anchorY="middle"
         position={[left, 0.5, 0.026]}
       >
-        revealed in
+        3D studio
       </Text>
 
       <Rule x={left} y={0.3} w={0.52} />
@@ -423,6 +423,19 @@ function NotifyForm({ position }: { position: [number, number, number] }) {
           </form>
         )}
         {error && <p className="wall-notify-error">{error}</p>}
+      </div>
+    </Html>
+  )
+}
+
+function BuyPass({ position }: { position: [number, number, number] }) {
+  return (
+    <Html center transform position={position} scale={0.2} zIndexRange={[10, 0]} occlude={false}>
+      <div className="wall-buy-pass-wrap">
+        <a className="wall-buy-pass" href="/shop">
+          BUY YOU PASS <span aria-hidden="true">→</span>
+        </a>
+        <span className="wall-buy-pass-note">limited</span>
       </div>
     </Html>
   )
@@ -579,28 +592,37 @@ function MobileReleaseBrief() {
   return (
     <group>
       <Text
-        font={FONT_HELVETICA}
-        fontSize={0.18}
-        letterSpacing={0.005}
+        font={FONT_BRAND_ITALIC}
+        fontSize={0.22}
         color={INK}
         anchorX="center"
         anchorY="middle"
-        position={[0, MOBILE_RELEASE_Y, MOBILE_RELEASE_Z]}
+        position={[0, MOBILE_RELEASE_Y + 0.08, MOBILE_RELEASE_Z]}
       >
-        The first TNES. archive release
+        Full Acess
       </Text>
       <Text
-        font={FONT_SERIF}
-        fontSize={0.118}
-        lineHeight={1.5}
+        font={FONT_BRAND}
+        fontSize={0.22}
+        color={INK}
+        anchorX="center"
+        anchorY="middle"
+        position={[0, MOBILE_RELEASE_Y - 0.18, MOBILE_RELEASE_Z]}
+      >
+        3D studio
+      </Text>
+      <Text
+        font={FONT_HELVETICA}
+        fontSize={0.095}
+        lineHeight={1.45}
         color={SECOND}
-        maxWidth={2.8}
+        maxWidth={2.7}
         textAlign="center"
         anchorX="center"
         anchorY="top"
-        position={[0, MOBILE_RELEASE_Y - 0.22, MOBILE_RELEASE_Z]}
+        position={[0, MOBILE_RELEASE_Y - 0.46, MOBILE_RELEASE_Z]}
       >
-        {'Join the list for first access\nwhen the archive opens.'}
+        {'an exclusive TNES. object release\nlimited first access'}
       </Text>
     </group>
   )
@@ -637,7 +659,7 @@ export function ComingSoonWall() {
           anchorY="middle"
           position={[0, 1.35, NICHE_FACE_Z]}
         >
-          THE ARCHIVE OPENS IN
+          FULL ACESS 3D STUDIO
         </Text>
         {slots.map((s) => (
           <UnitLabel key={s.unit} x={s.x} y={s.y} unit={s.unit} />
@@ -645,7 +667,7 @@ export function ComingSoonWall() {
         {/* was -1.5, exactly NICHE_MOBILE.y1 — the input rule landed on the
             recess's bottom edge and the two lines read as one broken frame.
             Clear of it now, and still inside COUNTDOWN_MOBILE_FIELD. */}
-        <NotifyForm position={[0, -1.86, 0.22]} />
+        <BuyPass position={[0, -1.86, 0.22]} />
         {[-1.6, 1.6].map((x) => (
           <Cone key={x} x={x} intensity={8} />
         ))}
@@ -658,7 +680,7 @@ export function ComingSoonWall() {
     <group>
       <Niche rect={NICHE} groups={slots} size={NUMBER_SIZE} />
       <EditorialPlate />
-      <NotifyForm position={[FORM_X, FORM_Y, 0.22]} />
+      <BuyPass position={[FORM_X, FORM_Y, 0.22]} />
 
       {/* wide, but not so wide the letters stop reading as a word — 0.9 broke
           it into loose dots. This is the knob if it needs to span further */}
@@ -671,7 +693,7 @@ export function ComingSoonWall() {
         anchorY="middle"
         position={[COUNT_MID, TITLE_Y, NICHE_FACE_Z]}
       >
-        THE ARCHIVE OPENS IN
+        FULL ACESS 3D STUDIO
       </Text>
 
       {slots.map((s) => (

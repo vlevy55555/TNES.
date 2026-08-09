@@ -1,6 +1,6 @@
 import { useEffect, useState, type FormEvent } from 'react'
+import { subscribeToKlaviyo } from '../lib/klaviyo'
 
-const NOTIFY_URL = import.meta.env.VITE_NOTIFY_URL as string | undefined
 const ARCHIVE_OPENING = new Date('2026-09-21T00:00:00-03:00')
 
 const remainingUntilOpening = () => {
@@ -18,13 +18,7 @@ async function subscribe(email: string) {
   if (!list.includes(email)) list.push(email)
   localStorage.setItem('tnes-subscribers', JSON.stringify(list))
 
-  if (!NOTIFY_URL) return
-  const response = await fetch(NOTIFY_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-    body: JSON.stringify({ email, at: new Date().toISOString(), source: 'studio' }),
-  })
-  if (!response.ok) throw new Error(`notify: ${response.status}`)
+  await subscribeToKlaviyo(email, 'TNES. early access')
 }
 
 /** The copy is the only thing that changes between the pages that carry this —

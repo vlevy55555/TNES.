@@ -697,19 +697,19 @@ select:not(:disabled),
 
   .wall-nav-arrow {
     top: auto;
-    bottom: calc(18px + env(safe-area-inset-bottom));
+    bottom: calc(92px + env(safe-area-inset-bottom));
     width: 42px;
     height: 42px;
     transform: none;
   }
 
   .wall-nav-prev {
-    left: calc(50% - 48px);
+    left: calc(50% - 58px);
   }
 
   .wall-nav-next {
     right: auto;
-    left: calc(50% + 6px);
+    left: calc(50% + 16px);
   }
 
   .wall-nav-indicator {
@@ -1083,6 +1083,147 @@ select:not(:disabled),
   color: #8c4a3a;
 }
 
+.inquiry-panel__form,
+.inquiry-panel__form label {
+  display: flex;
+  flex-direction: column;
+}
+
+.inquiry-panel__form {
+  flex: 1;
+  gap: 20px;
+}
+
+.inquiry-panel__form label {
+  gap: 7px;
+  min-width: 0;
+}
+
+.inquiry-panel__form label > span {
+  color: var(--muted);
+  font-size: 12px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+
+.inquiry-panel__form input,
+.inquiry-panel__form select,
+.inquiry-panel__form textarea {
+  width: 100%;
+  padding: 9px 0;
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  border-radius: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--ink);
+  font: 15px var(--sans);
+}
+
+.inquiry-panel__form textarea {
+  resize: vertical;
+  line-height: 1.45;
+}
+
+.inquiry-panel__row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.inquiry-panel__error {
+  color: #9b4738;
+  font-size: 12px;
+}
+
+.inquiry-panel__send {
+  width: 100%;
+  margin-top: auto;
+}
+
+@media (max-width: 700px), (orientation: portrait) {
+  .inquiry-panel {
+    top: auto;
+    left: 0;
+    right: 0;
+    width: 100%;
+    max-height: min(78vh, 680px);
+    padding: 54px 20px 24px;
+    border-top: 1px solid var(--line);
+    border-left: 0;
+    animation-name: inquiry-panel-up;
+  }
+
+  .inquiry-panel .panel-close {
+    top: 18px;
+    right: 20px;
+  }
+
+  .inquiry-panel .eyebrow {
+    margin-bottom: 10px;
+  }
+
+  .inquiry-panel .panel-title {
+    font-size: 27px;
+  }
+
+  .inquiry-panel .panel-subtitle {
+    margin-bottom: 20px;
+  }
+
+  .inquiry-panel__form {
+    gap: 15px;
+  }
+}
+
+@keyframes inquiry-panel-up {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+.wall-buy-pass-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.wall-buy-pass {
+  display: inline-flex;
+  min-width: 340px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 40px;
+  border: 2px solid #17130e;
+  padding: 25px 28px;
+  background: #17130e;
+  color: #f5f0e6;
+  font-family: var(--sans);
+  font-size: 23px;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: var(--interactive-cursor);
+  transition: background 180ms ease, color 180ms ease;
+}
+
+.wall-buy-pass-note {
+  color: #3d3428;
+  font-family: var(--sans);
+  font-size: 19px;
+  font-weight: 500;
+  letter-spacing: 0.24em;
+  text-transform: lowercase;
+}
+
+.wall-buy-pass:hover,
+.wall-buy-pass:focus-visible {
+  background: transparent;
+  color: #17130e;
+  outline: none;
+}
+
 /* keyboard/screen-reader path to artworks */
 .sr-only {
   position: absolute;
@@ -1372,6 +1513,57 @@ select:not(:disabled),
 .letter-send:disabled {
   opacity: 0.6;
   cursor: default;
+}
+
+@media (max-width: 700px), (orientation: portrait) {
+  .letter3d-form {
+    width: 380px;
+    max-height: calc(100vh - 116px);
+    padding: 28px 25px 24px;
+  }
+
+  .letter-close {
+    top: 14px;
+    right: 14px;
+    width: 34px;
+    height: 34px;
+    font-size: 16px;
+  }
+
+  .letter-head {
+    padding-right: 32px;
+    margin-bottom: 16px;
+  }
+
+  .letter-mark {
+    font-size: 23px;
+  }
+
+  .letter-kicker,
+  .letter-field > span {
+    font-size: 12px;
+  }
+
+  .letter-fields {
+    gap: 16px;
+    padding-right: 3px;
+  }
+
+  .letter-row {
+    gap: 14px;
+  }
+
+  .letter-field input,
+  .letter-field select,
+  .letter-field textarea {
+    min-height: 32px;
+    font-size: 16px;
+  }
+
+  .letter-send {
+    padding: 16px 20px;
+    font-size: 13px;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

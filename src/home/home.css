@@ -256,6 +256,10 @@ body:has(.home--black),
     letter-spacing: 0.04em;
   }
 
+  .shop .shop__nav.site-nav a {
+    color: var(--paper-ink) !important;
+  }
+
   .home .hero__logo,
   .shop .shop__logo {
     font-size: 26px;
@@ -845,6 +849,21 @@ body:has(.home--black),
   text-decoration: none;
   text-transform: uppercase;
   transition: background-color 180ms ease, color 180ms ease;
+}
+
+.studio__visit-wrap {
+  display: flex;
+  flex: 0 0 auto;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.studio__preview {
+  color: var(--paper-muted);
+  font-size: 12px;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
 }
 
 .studio__visit:hover {

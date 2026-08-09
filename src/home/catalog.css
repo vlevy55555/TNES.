@@ -89,17 +89,22 @@
   margin-top: clamp(26px, 3vw, 44px);
 }
 
-.catalog-page__actions a {
+.catalog-page__actions a,
+.catalog-page__actions button {
   padding: 13px 18px;
   border: 1px solid var(--paper-ink);
+  background: transparent;
+  color: var(--paper-ink);
   font-family: var(--mono);
   font-size: 9px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
+  cursor: pointer;
   transition: background-color 180ms ease, color 180ms ease;
 }
 
-.catalog-page__actions a:hover {
+.catalog-page__actions a:hover,
+.catalog-page__actions button:hover {
   background: var(--paper-ink);
   color: var(--paper);
 }

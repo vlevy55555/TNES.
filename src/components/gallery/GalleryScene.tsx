@@ -4,7 +4,6 @@ import { Archive } from './Archive'
 import { Room } from './Room'
 import { GalleryLights } from './GalleryLights'
 import { CameraController } from './CameraController'
-import { InquiryLetter } from '../ui/InquiryOverlay'
 import { ManifestoRoom } from './ManifestoRoom'
 
 export function GalleryScene() {
@@ -24,8 +23,6 @@ export function GalleryScene() {
         )
       ))}
 
-      {/* the inquiry letter renders as an overlay scene in this same canvas */}
-      <InquiryLetter />
     </>
   )
 }

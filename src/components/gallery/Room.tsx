@@ -1,4 +1,4 @@
-import { MeshReflectorMaterial, useTexture } from '@react-three/drei'
+import { useTexture } from '@react-three/drei'
 import { MirroredRepeatWrapping, SRGBColorSpace } from 'three'
 import {
   walls,
@@ -79,16 +79,8 @@ export function Room() {
         {/* low mirror + heavy blur: the frames only ghost faintly in the floor,
             while the low roughness makes the spotlights themselves bloom into
             bright specular pools of light on the polished surface */}
-        <MeshReflectorMaterial
+        <meshStandardMaterial
           map={floorTexture}
-          resolution={isMobile ? 256 : 512}
-          mirror={0.22}
-          mixStrength={2.2}
-          mixBlur={1}
-          blur={[680, 240]}
-          minDepthThreshold={0.4}
-          maxDepthThreshold={1.4}
-          depthScale={1}
           roughness={0.32}
           roughnessMap={floorTexture}
           metalness={0.05}

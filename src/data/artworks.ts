@@ -70,7 +70,7 @@ export const ABOUT_WALL = 3
 export const ABOUT_DOOR_X = 2.95
 export const ABOUT_DOOR_W = 1.9
 export const ABOUT_DOOR_H = 3.5
-export const OPENING_DATE = new Date('2026-08-15T18:00:00')
+export const OPENING_DATE = new Date('2026-09-09T18:00:00-03:00')
 
 // the opening (Signature) wall's one-line brand statement, cut into the concrete
 export const BRAND_STATEMENT = 'nothing happens twice'

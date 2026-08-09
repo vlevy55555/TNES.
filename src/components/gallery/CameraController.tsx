@@ -4,6 +4,8 @@ import { Vector3, type PerspectiveCamera } from 'three'
 import gsap from 'gsap'
 import {
   ABOUT_WALL,
+  ABOUT_DOOR_H,
+  ABOUT_DOOR_X,
   ARCHIVE_WALL,
   artworks,
   CAMERA_Z,
@@ -13,6 +15,7 @@ import {
   SIGNATURE_WALL,
   WALL_VIEW_HEIGHT,
   WALL_SPACING,
+  WALL_BOTTOM_Y,
   WALL_WIDTH,
   walls,
 } from '../../data/artworks'
@@ -104,6 +107,7 @@ export function CameraController() {
   const isMobile = useGalleryStore((s) => s.isMobile)
   const zoomAt = useGalleryStore((s) => s.zoomAt)
   const manifestoRoomOpen = useGalleryStore((s) => s.manifestoRoomOpen)
+  const vslGlobeZoomActive = useGalleryStore((s) => s.vslGlobeZoomActive)
 
   const startWall = useGalleryStore.getState().currentWall
   const startAngle = walls[startWall].angle
@@ -238,6 +242,35 @@ export function CameraController() {
     gsap.killTweensOf(look.current)
     dollyTarget.current = 0 // each scene starts freshly framed
 
+    if (vslGlobeZoomActive && !mobile) {
+      const wall = walls[ABOUT_WALL]
+      const sinA = Math.sin(wall.angle)
+      const cosA = Math.cos(wall.angle)
+      const localX = ABOUT_DOOR_X
+      const localZ = -1.9
+      const targetX = ABOUT_WALL * WALL_SPACING + localX * cosA + localZ * sinA
+      const targetY = WALL_BOTTOM_Y + ABOUT_DOOR_H / 2
+      const targetZ = -localX * sinA + localZ * cosA
+      const distance = 2.15
+
+      gsap.to(look.current, {
+        x: targetX,
+        y: targetY,
+        z: targetZ,
+        duration: 1.05,
+        ease: 'power3.inOut',
+      })
+      gsap.to(base.current, {
+        x: targetX + sinA * distance,
+        y: targetY,
+        z: targetZ + cosA * distance,
+        duration: 1.05,
+        ease: 'power3.inOut',
+        onComplete: () => useGalleryStore.getState().startVslExit(),
+      })
+      return
+    }
+
     if (manifestoRoomOpen) {
       gsap.to(look.current, {
         x: MANIFESTO_ROOM_X,
@@ -349,7 +382,7 @@ export function CameraController() {
       duration: WALL_MS,
       ease: ZOOM_EASE,
     })
-  }, [currentWall, selectedArtworkId, zoomAt, isMobile, manifestoRoomOpen, camera, size])
+  }, [currentWall, selectedArtworkId, zoomAt, isMobile, manifestoRoomOpen, vslGlobeZoomActive, camera, size])
 
   return null
 }
