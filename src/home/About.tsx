@@ -17,13 +17,17 @@ gsap.registerPlugin(ScrollTrigger)
 // never depends on the column width.
 const NAME_LINES = ['victor', 'safdie', 'levy']
 
-// ponytail: placeholder copy for the split section — the wireframe reuses the
-// landing's `nothing happens twice` there, which already carries the home page.
-// Replace both strings with Victor's real second passage when it exists.
-const SPLIT_TITLE = ['the work', 'is the', 'looking.']
-const SPLIT_COPY = `Placeholder. A second passage belongs here — the part that
-says what the studio does between the photographs: the printing, the sequencing,
-the years of walking the same streets until one of them gives something back.`
+// Victor's second passage. The title is hand-broken so the rag never depends on
+// the column width — each line is its own §5.1 mask, and a line that re-wrapped
+// inside one would slide as a slab and get clipped.
+const SPLIT_TITLE = ['the photograph', 'is what is left', 'of the looking.']
+const SPLIT_COPY = [
+  `no one goes back for a moment. stand in the same place a year later and it
+   hands you something else. what is here is one person's record of time and
+   space. not a group show, not a marketplace.`,
+  `owning a piece is keeping the minute someone stopped, and deciding it was
+   worth keeping. good or bad, nothing happens twice.`,
+]
 
 /**
  * Wraps a paragraph into lines of at most `max` characters. Every line becomes
@@ -217,11 +221,15 @@ export default function About() {
               <RevealText block key={line}>{line}</RevealText>
             ))}
           </h2>
-          <p className="about__split-copy">
-            {lines(SPLIT_COPY, 40).map((line) => (
-              <RevealText block key={line}>{line}</RevealText>
-            ))}
-          </p>
+          {/* one <p> per passage — `lines` collapses whitespace, so a single
+              paragraph would swallow the break between them */}
+          {SPLIT_COPY.map((passage) => (
+            <p className="about__split-copy" key={passage}>
+              {lines(passage, 40).map((line) => (
+                <RevealText block key={line}>{line}</RevealText>
+              ))}
+            </p>
+          ))}
         </div>
       </section>
 

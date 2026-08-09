@@ -192,10 +192,14 @@ body:has(.about),
   will-change: clip-path;
 }
 
+/* The measure is the column, not a character count: this title is a sentence,
+   not two words, and a 10ch cap re-wrapped its lines INSIDE their own masks —
+   which slides two lines as one slab and clips the top of it. Sized so the
+   longest hand-broken line clears the column at every width. */
 .about__split-title {
   margin: 0;
-  max-width: 10ch;
-  font-size: clamp(40px, 5.4vw, 96px);
+  max-width: 100%;
+  font-size: clamp(30px, 4.3vw, 74px);
   font-weight: 500;
   line-height: 0.86;
   letter-spacing: -0.055em;
