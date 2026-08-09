@@ -184,6 +184,7 @@ export function InquiryLetter() {
   const open = useGalleryStore((s) => s.inquiryOpen)
   const workId = useGalleryStore((s) => s.inquiryWorkId)
   const close = useGalleryStore((s) => s.closeInquiry)
+  const isMobile = useGalleryStore((s) => s.isMobile)
 
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
@@ -254,7 +255,13 @@ export function InquiryLetter() {
   }
 
   const form = (
-    <Html transform position={[0, 0.35, 0.2]} scale={0.19} zIndexRange={[20, 0]} pointerEvents="auto">
+    <Html
+      transform
+      position={[0, isMobile ? 0.5 : 0.35, 0.2]}
+      scale={isMobile ? 0.205 : 0.19}
+      zIndexRange={[20, 0]}
+      pointerEvents="auto"
+    >
       <form className="letter3d-form" onSubmit={submit} noValidate>
         <button type="button" className="letter-close" onClick={close} aria-label="Close">
           ✕

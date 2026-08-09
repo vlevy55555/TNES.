@@ -2,6 +2,7 @@ import { useState, type FormEvent } from 'react'
 import { artworks, INQUIRY_EMAIL } from '../data/artworks'
 import { RevealText } from './reveal'
 import { ShopFooter, ShopHeader } from './ShopChrome'
+import { useContactStore } from '../store/useContactStore'
 import EarlyAccess from './EarlyAccess'
 import './home.css'
 import './shop.css'
@@ -118,6 +119,7 @@ export function isCatalogSlug(value: string | null): value is CatalogSlug {
 }
 
 export default function Catalog({ slug }: { slug: CatalogSlug }) {
+  const openContact = useContactStore((state) => state.openContact)
   const [unlocked, setUnlocked] = useState(false)
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
@@ -217,9 +219,9 @@ export default function Catalog({ slug }: { slug: CatalogSlug }) {
               <div><dt>orders</dt><dd>all orders placed upon inquiry.</dd></div>
             </dl>
             <div className="catalog-page__actions">
-              <a href={`mailto:${INQUIRY_EMAIL}?subject=${encodeURIComponent(`${catalog.title} print inquiry`)}`}>
+              <button type="button" onClick={() => openContact(`${catalog.title} print inquiry`)}>
                 inquire about prints <span aria-hidden="true">→</span>
-              </a>
+              </button>
               <a href="/shop#catalogs">all catalogs <span aria-hidden="true">→</span></a>
             </div>
           </div>

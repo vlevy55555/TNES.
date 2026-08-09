@@ -324,9 +324,12 @@ function TheStudio() {
           <RevealText block>the</RevealText>
           <RevealText block>studio.</RevealText>
         </h2>
-        <a className="studio__visit" href="/gallery">
-          <RevealText>visit studio <span aria-hidden="true">→</span></RevealText>
-        </a>
+        <div className="studio__visit-wrap">
+          <span className="studio__preview">preview</span>
+          <a className="studio__visit" href="/gallery">
+            <RevealText>visit studio <span aria-hidden="true">→</span></RevealText>
+          </a>
+        </div>
       </div>
       <div className="studio__stage">
         {seen && (

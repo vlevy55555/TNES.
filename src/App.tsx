@@ -5,6 +5,7 @@ import { Header } from './components/ui/Header'
 import { Footer } from './components/ui/Footer'
 import { WallNavigation } from './components/ui/WallNavigation'
 import { ArtworkPanel } from './components/ui/ArtworkPanel'
+import { InquiryPanel } from './components/ui/InquiryPanel'
 import { useGalleryStore } from './store/useGalleryStore'
 
 export default function App() {
@@ -74,6 +75,7 @@ export default function App() {
       <Header />
       <WallNavigation />
       <ArtworkPanel />
+      <InquiryPanel />
       <Footer />
       <VslExitOverlay />
     </>

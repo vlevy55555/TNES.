@@ -41,8 +41,8 @@ function WallWash({ x }: { x: number }) {
         ref={spot}
         position={[x, 3.6, 2.35]}
         color="#fff3e0"
-        intensity={13}
-        angle={0.7}
+        intensity={18}
+        angle={0.92}
         penumbra={0.85}
         decay={1.5}
         distance={11}
@@ -191,7 +191,7 @@ export function Archive({ position }: { position: [number, number, number] }) {
       </Text>
 
       {/* general wall wash (not per-frame) — one per column, tight and close */}
-      {(isMobile ? [0] : [-2.75, 0, 2.75]).map((x) => (
+      {[0].map((x) => (
         <WallWash key={x} x={x} />
       ))}
       {/* the header's own pool of light. The type is troika text —

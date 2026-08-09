@@ -69,6 +69,8 @@ type GalleryState = {
   closeManifesto: () => void
   // leaving for VSL: the signature writes itself, then the site navigates
   vslExitActive: boolean
+  vslGlobeZoomActive: boolean
+  startGlobeVslExit: () => void
   startVslExit: () => void
   resetVslExit: () => void
 }
@@ -190,6 +192,8 @@ export const useGalleryStore = create<GalleryState>((set, get) => ({
   closeManifesto: () => set({ manifestoOpen: false }),
 
   vslExitActive: false,
+  vslGlobeZoomActive: false,
+  startGlobeVslExit: () => set({ vslGlobeZoomActive: true }),
   startVslExit: () => set({ vslExitActive: true }),
-  resetVslExit: () => set({ vslExitActive: false }),
+  resetVslExit: () => set({ vslExitActive: false, vslGlobeZoomActive: false }),
 }))
