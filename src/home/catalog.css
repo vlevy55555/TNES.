@@ -449,7 +449,7 @@
   width: 48px;
   height: 48px;
   padding: 0;
-  border: 1px solid var(--paper-line);
+  border: 0;
   background: transparent;
   color: var(--paper-ink);
   font: 300 30px/1 var(--sans);
