@@ -28,8 +28,9 @@ gsap.registerPlugin(ScrollTrigger, SplitText)
  *   · the sticky cover pair, held by CSS, not by `pin`
  */
 
-// ponytail: the real installation photographs do not exist yet. These are the
-// v1 prints, cycled — swap the pool for `/moments/<slug>/…` when they land.
+// The last chapter has not happened yet, so it has no photographs of its own.
+// It alone still draws from the v1 prints as placeholders; every chapter that
+// already took place carries its real installation shots in `photos`.
 const POOL = [
   'appenzell_alpinelake_2025_v1.webp',
   'baleia_biker_2025_v1.webp',
@@ -60,7 +61,12 @@ type Moment = {
   links: { label: string; href?: string; contact?: string }[]
   /** where this chapter starts drawing from the pool */
   seed: number
+  /** the real installation shots: [cover, side a, centre, side b] */
+  photos?: [string, string, string, string]
 }
+
+/** a chapter's own photograph where it has one, the placeholder pool where not */
+const shot = (moment: Moment, i: number) => moment.photos?.[i] ?? photo(moment.seed + i)
 
 const MOMENT_ENTRIES: Moment[] = [
   {
@@ -72,6 +78,12 @@ const MOMENT_ENTRIES: Moment[] = [
       'the first private introduction to the work, shown to a short list of people in one evening.',
     links: [{ label: 'shop the archive', href: '/shop' }],
     seed: 0,
+    photos: [
+      '/moments/nyc-soft-launch/cover.webp',
+      '/moments/nyc-soft-launch/01.webp',
+      '/moments/nyc-soft-launch/02.webp',
+      '/moments/nyc-soft-launch/03.webp',
+    ],
   },
   {
     index: '02',
@@ -81,6 +93,12 @@ const MOMENT_ENTRIES: Moment[] = [
     abstract: 'the first room where the TNES. world took physical shape.',
     links: [{ label: 'shop the archive', href: '/shop' }],
     seed: 3,
+    photos: [
+      '/moments/encontros/cover.webp',
+      '/moments/encontros/01.webp',
+      '/moments/encontros/02.webp',
+      '/moments/encontros/03.webp',
+    ],
   },
   {
     index: '03',
@@ -96,6 +114,12 @@ const MOMENT_ENTRIES: Moment[] = [
       { label: 'shop the archive', href: '/shop' },
     ],
     seed: 6,
+    photos: [
+      '/moments/east-hampton-art-affair/cover.webp',
+      '/moments/east-hampton-art-affair/01.webp',
+      '/moments/east-hampton-art-affair/02.webp',
+      '/moments/east-hampton-art-affair/03.webp',
+    ],
   },
   {
     index: '04',
@@ -179,10 +203,10 @@ function Intro() {
     <section className="moments__intro" ref={root}>
       <div className="moments__sides" aria-hidden="true">
         <figure className="moments__side">
-          <img src={photo(11)} alt="" loading="lazy" decoding="async" />
+          <img src="/moments/east-hampton-art-affair/intro.webp" alt="" loading="lazy" decoding="async" />
         </figure>
         <figure className="moments__side">
-          <img src={photo(4)} alt="" loading="lazy" decoding="async" />
+          <img src="/moments/nyc-soft-launch/intro.webp" alt="" loading="lazy" decoding="async" />
         </figure>
       </div>
 
@@ -254,7 +278,7 @@ function Index({ moments }: { moments: Moment[] }) {
               >
                 <span className="moments__index-plate">
                   {moment.status !== 'next' && (
-                    <img src={photo(moment.seed)} alt="" loading="lazy" decoding="async" />
+                    <img src={shot(moment, 0)} alt="" loading="lazy" decoding="async" />
                   )}
                 </span>
                 <span className="moments__index-meta">
@@ -421,7 +445,7 @@ function Chapter({ moment }: { moment: Moment }) {
   return (
     <section className="moments__chapter" id={anchorId(moment)} ref={root}>
       <div className="moment__cover">
-        <img src={photo(moment.seed)} alt="" loading="lazy" decoding="async" />
+        <img src={shot(moment, 0)} alt="" loading="lazy" decoding="async" />
         <p className="moment__cover-name">
           <span className="moment__cover-mask">
             <span className="moment__cover-line">{moment.place}</span>
@@ -459,41 +483,46 @@ function Chapter({ moment }: { moment: Moment }) {
 
             <div className="moment__row">
               <div className="moment__side moment__side--a">
-                <img src={photo(moment.seed + 1)} alt="" loading="lazy" decoding="async" />
+                <img src={shot(moment, 1)} alt="" loading="lazy" decoding="async" />
               </div>
               <div className="moment__main">
-                <img src={photo(moment.seed + 2)} alt="" loading="lazy" decoding="async" />
+                <img src={shot(moment, 2)} alt="" loading="lazy" decoding="async" />
               </div>
               <div className="moment__side moment__side--b">
-                <img src={photo(moment.seed + 3)} alt="" loading="lazy" decoding="async" />
+                <img src={shot(moment, 3)} alt="" loading="lazy" decoding="async" />
               </div>
             </div>
           </div>
         </section>
 
-        <section className="moment__gallery">
-          <div className="moment__inner">
-            <h3 className="moment__gallery-title" data-lines>
-              {moment.status === 'next' ? 'what the release will hold' : 'from the room'}
-            </h3>
+        {/* Only the unreleased chapter carries a tile row. The rooms that have
+            already happened are shown with the photographs that exist — five
+            more plates each would mean five more placeholders. */}
+        {moment.status === 'next' && (
+          <section className="moment__gallery">
+            <div className="moment__inner">
+              <h3 className="moment__gallery-title" data-lines>
+                what the release will hold
+              </h3>
 
-            <ul className="moment__tiles">
-              {Array.from({ length: TILES }, (_, i) => (
-                <li className="moment__tile" key={i}>
-                  <figure>
-                    <img
-                      src={photo(moment.seed + 4 + i)}
-                      alt=""
-                      loading="lazy"
-                      decoding="async"
-                    />
-                  </figure>
-                  <figcaption>plate {String(i + 1).padStart(2, '0')}</figcaption>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </section>
+              <ul className="moment__tiles">
+                {Array.from({ length: TILES }, (_, i) => (
+                  <li className="moment__tile" key={i}>
+                    <figure>
+                      <img
+                        src={photo(moment.seed + 4 + i)}
+                        alt=""
+                        loading="lazy"
+                        decoding="async"
+                      />
+                    </figure>
+                    <figcaption>plate {String(i + 1).padStart(2, '0')}</figcaption>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </section>
+        )}
 
         <section className="moment__outro">
           <div className="moment__inner">
