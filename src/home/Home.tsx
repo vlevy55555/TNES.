@@ -16,6 +16,7 @@ gsap.registerPlugin(ScrollTrigger)
 // carries the [O] instead of its title — it is the brand's own entry in the
 // list, and behaves exactly like the others.
 const HOME_IDS = [HERO_ID, 'runner', 'wied-il-ghasri', 'praia-da-baleia']
+const HERO_AUTOPLAY_MS = 6000
 
 const projects = HOME_IDS.map((id) => {
   const a = artworks.find((w) => w.id === id)!
@@ -87,10 +88,11 @@ function useInView<T extends HTMLElement>() {
 
 const STATEMENT_TITLE_LINES = ['nothing', 'happens', 'twice']
 const STATEMENT_COPY_LINES = [
-  'fine art photography by victor',
-  'safdie levy. unposed moments,',
-  'printed archivally and made to',
-  'order.',
+  'the same moment never comes back.',
+  'TNES. is built around noticing the people,',
+  'places, and details that will never exist in',
+  'quite the same way again — and giving them',
+  'a life after they pass.',
 ]
 const STATEMENT_ARTWORK = artworks.find((work) => work.id === 'praia-da-baleia')!
 
@@ -386,6 +388,26 @@ export default function Home({ dark = false }: { dark?: boolean }) {
   useEffect(() => {
     const next = projects[(activeIndex + 1) % projects.length]
     new Image().src = next.poster
+  }, [activeIndex])
+
+  // Reuse the manual navigation state and restart the full viewing time after
+  // every change. Do not consume slides while the browser tab is hidden.
+  useEffect(() => {
+    let timer: number | undefined
+
+    const schedule = () => {
+      window.clearTimeout(timer)
+      if (document.hidden) return
+      timer = window.setTimeout(() => go(1), HERO_AUTOPLAY_MS)
+    }
+
+    schedule()
+    document.addEventListener('visibilitychange', schedule)
+
+    return () => {
+      window.clearTimeout(timer)
+      document.removeEventListener('visibilitychange', schedule)
+    }
   }, [activeIndex])
 
   // When arriving from another page (for example, the shop navbar), the Home
