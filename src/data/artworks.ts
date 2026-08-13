@@ -101,7 +101,7 @@ export const ABOUT = {
   role: 'ARTIST AND FOUNDER OF TNES.',
   // one first-person block, in his voice — the reference layout has no room for
   // a pull-quote AND a separate bio, and this is the wording it carries
-  statement: `I photograph the in-between. The pause. The threshold. The space where something shifts from one state to another. TNES. is the world that holds that moment.`,
+  statement: `I started taking photographs as a way of keeping track of time — where I was, who was there, and what was happening before it became something else. I was always more interested in people and places as I found them: unposed, unplanned, already in motion. Over time, that personal archive became TNES., a studio built around one idea: nothing happens twice.`,
   // the one label for the doorway out to VSL — the 3D wall and /about both read
   // it from here, so the two surfaces cannot say different things
   cta: 'enter the mind in VSL',

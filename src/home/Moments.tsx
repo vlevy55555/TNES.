@@ -75,7 +75,7 @@ const MOMENT_ENTRIES: Moment[] = [
     titleLines: ['nyc soft', 'launch.'],
     date: '03/27/26',
     abstract:
-      'the first private introduction to the work, shown to a short list of people in one evening.',
+      'the first private showing of TNES. one night in new york, shared with friends, family, and a small group of invited guests before the work had ever been shown publicly.',
     links: [{ label: 'shop the archive', href: '/shop' }],
     seed: 0,
     photos: [
@@ -90,7 +90,8 @@ const MOMENT_ENTRIES: Moment[] = [
     place: 'são paulo',
     titleLines: ['encontros.'],
     date: '04/28/26',
-    abstract: 'the first room where the TNES. world took physical shape.',
+    abstract:
+      'the first event in brazil, where TNES. began — and where the name came from. my cousins call me “vitones.” take out the o, and you get TNES.',
     links: [{ label: 'shop the archive', href: '/shop' }],
     seed: 3,
     photos: [
@@ -104,10 +105,10 @@ const MOMENT_ENTRIES: Moment[] = [
     index: '03',
     place: 'east hampton, new york',
     status: 'current',
-    titleLines: ['4th annual', 'east hampton', 'art affair,', 'herrick park.'],
+    titleLines: ['4th annual', 'east hampton', 'art affair.'],
     date: '06/27–06/28/26',
     abstract:
-      'works from the archive on view for a temporary summer presentation — two days, one wall, printed for the room.',
+      'the first public appearance of TNES. and my first art fair. shown alongside other artists, with work made in the same place I had always gone to slow down, wander, and follow my eye. the beginning of TNES. entering the world publicly.',
     links: [
       // no href: this one raises the contact panel with its subject written
       { label: 'inquire about works on view', contact: 'works on view — east hampton art affair' },
@@ -218,8 +219,8 @@ function Intro() {
           moments.
         </h1>
         <p className="moments__abstract" data-lines>
-          the work exists first as a room. a dated record of where TNES. has been shown, and where it
-          goes next.
+          these are the places where TNES. has existed in real life. each appearance changes a space
+          for a moment, then it is gone. this is the record of where the work has been.
         </p>
       </div>
     </section>
