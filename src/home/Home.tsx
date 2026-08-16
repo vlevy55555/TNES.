@@ -16,7 +16,7 @@ gsap.registerPlugin(ScrollTrigger)
 // carries the [O] instead of its title — it is the brand's own entry in the
 // list, and behaves exactly like the others.
 const HOME_IDS = [HERO_ID, 'runner', 'wied-il-ghasri', 'praia-da-baleia']
-const HERO_AUTOPLAY_MS = 6000
+const HERO_AUTOPLAY_MS = 10_000
 
 const projects = HOME_IDS.map((id) => {
   const a = artworks.find((w) => w.id === id)!
@@ -390,7 +390,7 @@ export default function Home({ dark = false }: { dark?: boolean }) {
     new Image().src = next.poster
   }, [activeIndex])
 
-  // Reuse the manual navigation state and restart the full viewing time after
+  // Reuse the manual navigation state and restart the full ten-second viewing time after
   // every change. Do not consume slides while the browser tab is hidden.
   useEffect(() => {
     let timer: number | undefined
