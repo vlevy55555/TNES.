@@ -7,7 +7,7 @@ const mqIsMobile = () =>
 const params = new URLSearchParams(window.location.search)
 const deepLinked = artworks.find((a) => a.id === params.get('artwork'))
 const initialArtwork = deepLinked?.id ?? null
-const initialFrameStyle: PreviewFrameStyle = deepLinked?.frameStyle === 'white' ? 'white' : 'black'
+const initialFrameStyle: PreviewFrameStyle = 'white'
 // a deep-linked artwork dictates the wall, so closing the panel stays on it
 const initialWall =
   (deepLinked ? ARCHIVE_WALL : undefined) ??
@@ -23,7 +23,7 @@ const initialWall =
  * reports its actual transform instead. null = frame the work on its wall.
  */
 export type ZoomAt = { x: number; y: number; z: number; scale: number }
-export type PreviewFrameStyle = Extract<FrameStyle, 'black' | 'white'>
+export type PreviewFrameStyle = FrameStyle
 export type PrintsIntroPhase = 'hidden' | 'entering' | 'active' | 'exiting'
 
 type PendingIntroArtwork = { id: string; zoomAt: ZoomAt | null }
@@ -144,7 +144,7 @@ export const useGalleryStore = create<GalleryState>((set, get) => ({
     const artwork = artworks.find((item) => item.id === id)
     set({
       selectedArtworkId: id,
-      selectedFrameStyle: artwork?.frameStyle === 'white' ? 'white' : 'black',
+      selectedFrameStyle: 'white',
       previewScale: 1,
       zoomAt,
     })
@@ -171,7 +171,7 @@ export const useGalleryStore = create<GalleryState>((set, get) => ({
       ...(pending
         ? {
             selectedArtworkId: pending.id,
-            selectedFrameStyle: artwork?.frameStyle === 'white' ? 'white' : 'black',
+            selectedFrameStyle: 'white',
             previewScale: 1,
             zoomAt: pending.zoomAt,
           }

@@ -50,7 +50,7 @@ export function ArtworkPanel() {
   const variant = product ? findVariant(product, selection) : null
   const buyable = !!variant?.available
 
-  const selectFrame = (style: 'black' | 'white') => {
+  const selectFrame = (style: 'unframed' | 'black' | 'white') => {
     setSelectedFrameStyle(style)
     // If the Shopify catalogue later exposes a Black/White frame option, keep
     // its real purchasable variant in sync with the live gallery preview.
@@ -78,7 +78,7 @@ export function ArtworkPanel() {
       <div className="panel-option">
         <p className="panel-option-name">Frame</p>
         <div className="panel-option-values">
-          {(['black', 'white'] as const).map((style) => (
+          {(['unframed', 'white', 'black'] as const).map((style) => (
             <button
               type="button"
               key={style}
