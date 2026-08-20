@@ -44,7 +44,7 @@ export type Artwork = {
   shopifyHandle?: string
 }
 
-export type FrameStyle = 'gold' | 'white' | 'black'
+export type FrameStyle = 'unframed' | 'white' | 'black'
 
 export const walls: Wall[] = [
   { index: 0, name: 'Home', roman: 'I', angle: 0 },

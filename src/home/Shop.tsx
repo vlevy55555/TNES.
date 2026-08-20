@@ -2,7 +2,7 @@ import { useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { artworks } from '../data/artworks'
-import { money, type ShopProduct } from '../lib/shopify'
+import { defaultSelection, findVariant, money, type ShopProduct } from '../lib/shopify'
 import { useProducts } from '../lib/useProduct'
 import { RevealText, useSectionTextReveal } from './reveal'
 import { catalogHref, PRICE, ShopFooter, ShopHeader } from './ShopChrome'
@@ -59,12 +59,15 @@ const works = artworks.map((work) => {
 
 const HANDLES = works.map((w) => w.shopifyHandle).filter((h): h is string => !!h)
 
-/** The cheapest purchasable size — what "from" means on a grid card. */
-const fromPrice = (product?: ShopProduct) => {
-  const sellable = product?.variants.filter((v) => v.available) ?? []
-  if (!sellable.length) return PRICE
-  const cheapest = sellable.reduce((a, b) => (b.price < a.price ? b : a))
-  return money(cheapest.price, cheapest.currency)
+/** Cards quote the same white-framed middle size that opens on the product. */
+const framedPrice = (product?: ShopProduct) => {
+  if (!product) return PRICE
+  const selection = defaultSelection(product)
+  const frame = product.options.find((option) => /frame/i.test(option.name))
+  const white = frame?.values.find((value) => value.toLowerCase() === 'white')
+  if (frame && white) selection[frame.name] = white
+  const variant = findVariant(product, selection)
+  return variant?.available ? money(variant.price, variant.currency) : PRICE
 }
 
 // two large pieces standing in for the wider bodies of work
@@ -222,7 +225,7 @@ function ShopIndex() {
             <p className="shop__caption">
               <span>{work.title.toLowerCase()}.</span>
               <span className="shop__price">
-                from {fromPrice(work.shopifyHandle ? products[work.shopifyHandle] : undefined)}
+                {framedPrice(work.shopifyHandle ? products[work.shopifyHandle] : undefined)}
               </span>
             </p>
             {/* the catalogs' own affordance, on every work: the arrow steps

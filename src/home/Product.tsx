@@ -14,7 +14,7 @@ import './shop.css'
 // The mouldings the room already builds in ArtworkFrame — the same three, named
 // the way a buyer reads them.
 const FRAMES: { value: FrameStyle; label: string }[] = [
-  { value: 'gold', label: 'gold' },
+  { value: 'unframed', label: 'unframed' },
   { value: 'white', label: 'white' },
   { value: 'black', label: 'black' },
 ]
@@ -38,7 +38,11 @@ export default function Product({ id }: { id: string }) {
   const sizeOption = product?.options.find((o) => o !== frameOption)
   const sizes = sizeOption?.values ?? (work ? sizesOf(work.dimensions) : [])
   const [size, setSize] = useState('')
-  const [frame, setFrame] = useState<FrameStyle>(work?.frameStyle ?? 'white')
+  const [frame, setFrame] = useState<FrameStyle>('white')
+
+  // A product route can be reused while navigating between works. Reset the
+  // purchasable presentation to White rather than leaking a prior choice.
+  useEffect(() => setFrame('white'), [work?.id])
 
   // open on the middle size — the smallest reads as the cheap option
   useEffect(() => {
