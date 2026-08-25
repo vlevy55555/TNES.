@@ -588,10 +588,9 @@ export default function Moments() {
 
       <section className="moments__release" id="release">
         <EarlyAccess
-          showCountdown
           className="moments__signup"
           eyebrow="seasonal release 01"
-          title="the archive opens in."
+          title="the archive opens."
           copy="release announced to the list first."
         />
       </section>

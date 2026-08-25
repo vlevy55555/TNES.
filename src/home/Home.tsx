@@ -205,6 +205,7 @@ const CAROUSEL_SPEED = 0.55
 
 const ratio = (work: (typeof artworks)[number]) => work.size[0] / work.size[1]
 const isWide = (work: (typeof artworks)[number]) => ratio(work) >= 1
+const workHref = (work: (typeof artworks)[number]) => work.shopifyHandle ? `/shop/${work.id}` : '/shop'
 
 /**
  * The works are grouped by orientation in `artworks` (they hang that way on the
@@ -301,12 +302,14 @@ function SelectedWorks() {
                   Both axes are computed: leaving one on `auto` makes the item
                   size to max-content, which for an <img> is the file's own
                   pixel width — thousands of px wide. */}
-              <div className="works__frame">
-                <img src={work.image} alt={isClone ? '' : work.title} loading="lazy" />
-              </div>
+              <a className="works__link" href={workHref(work)} tabIndex={isClone ? -1 : undefined}>
+                <div className="works__frame">
+                  <img src={work.image} alt={isClone ? '' : work.title} loading="lazy" />
+                </div>
 
-              <p className="works__title"><RevealText>{work.title}</RevealText></p>
-              <p className="works__meta"><RevealText>{work.subtitle}</RevealText></p>
+                <p className="works__title"><RevealText>{work.title}</RevealText></p>
+                <p className="works__meta"><RevealText>{work.subtitle}</RevealText></p>
+              </a>
             </li>
           )
         })}
@@ -348,7 +351,7 @@ function TheStudio() {
           </video>
         )}
       </div>
-      <EarlyAccess showCountdown />
+      <EarlyAccess />
     </section>
   )
 }

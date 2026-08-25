@@ -1,13 +1,18 @@
 import { Canvas } from '@react-three/fiber'
 import { Bounds, ContactShadows, Float, PresentationControls, useTexture } from '@react-three/drei'
 import { Suspense } from 'react'
-import { SRGBColorSpace } from 'three'
+import { LinearFilter, LinearMipmapLinearFilter, SRGBColorSpace } from 'three'
 import { FrameLayers, frameOuterDimensions } from '../components/gallery/FrameLayers'
 import type { Artwork, FrameStyle } from '../data/artworks'
 
 function Print({ artwork, style }: { artwork: Artwork; style: FrameStyle }) {
   const texture = useTexture(artwork.image, (t) => {
     t.colorSpace = SRGBColorSpace
+    t.generateMipmaps = true
+    t.minFilter = LinearMipmapLinearFilter
+    t.magFilter = LinearFilter
+    t.anisotropy = 16
+    t.needsUpdate = true
   })
   const [w, h] = artwork.size
   return (
@@ -49,8 +54,8 @@ export default function ProductFrame({
   return (
     <Canvas
       camera={{ position: [0, 0, 4], fov: 34 }}
-      dpr={[1, 1.75]}
-      gl={{ alpha: true, antialias: true }}
+      dpr={[1.5, 2.5]}
+      gl={{ alpha: true, antialias: true, powerPreference: 'high-performance' }}
       style={{ touchAction: 'pan-y' }}
     >
       <ambientLight intensity={1.5} color="#fff6e8" />
@@ -69,7 +74,7 @@ export default function ProductFrame({
               `damping` is a smoothing time, so small reads as light. */}
           <PresentationControls
             global={false}
-            cursor
+            cursor={false}
             speed={2.2}
             damping={0.1}
             rotation={[0.06, -0.34, 0]}

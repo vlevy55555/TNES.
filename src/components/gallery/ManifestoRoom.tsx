@@ -3,9 +3,11 @@ import { useFrame } from '@react-three/fiber'
 import { useEffect, useRef } from 'react'
 import { MirroredRepeatWrapping, Object3D, SRGBColorSpace, type SpotLight } from 'three'
 import { WALL_CENTER_Y, WALL_HEIGHT, WALL_WIDTH } from '../../data/artworks'
+import { useGalleryStore } from '../../store/useGalleryStore'
 
-/** The manifesto is a room, not a page: concrete, an aluminium slab and daylight. */
+/** The manifesto is a room, not a page: concrete, a warm brushed-metal slab and daylight. */
 export function ManifestoRoom({ position }: { position: [number, number, number] }) {
+  const isMobile = useGalleryStore((state) => state.isMobile)
   const concreteTexture = useTexture('/materials/concrete.png', (texture) => {
     texture.colorSpace = SRGBColorSpace
   })
@@ -15,9 +17,19 @@ export function ManifestoRoom({ position }: { position: [number, number, number]
     texture.repeat.set(2, 1)
     texture.anisotropy = 16
   })
-  const panelTexture = useTexture('/materials/manifesto-panel.webp', (texture) => {
+  const panelTexture = useTexture('/materials/manifesto-panel-silver-desktop-bright.png', (texture) => {
     texture.colorSpace = SRGBColorSpace
+    texture.anisotropy = 16
   })
+  const mobilePanelTexture = useTexture('/materials/manifesto-panel-silver-mobile.png', (texture) => {
+    texture.colorSpace = SRGBColorSpace
+    texture.anisotropy = 16
+  })
+  const panelWidth = isMobile ? 3.4 : 5.3
+  const panelHeight = isMobile ? 4.25 : 3.84
+  const faceWidth = panelWidth - 0.1
+  const faceHeight = panelHeight - 0.1
+  const panelY = isMobile ? 0.18 : 0.28
   const light = useRef<SpotLight>(null)
   const target = useRef<Object3D>(null)
 
@@ -47,26 +59,31 @@ export function ManifestoRoom({ position }: { position: [number, number, number]
         <meshStandardMaterial map={floorTexture} color="#e0ddd3" roughness={0.96} />
       </mesh>
 
-      <mesh position={[0.09, 0.22, 0.008]}>
-        <planeGeometry args={[5.46, 3.96]} />
+      <mesh position={[0.09, panelY - 0.06, 0.008]}>
+        <planeGeometry args={[panelWidth + 0.16, panelHeight + 0.12]} />
         <meshBasicMaterial color="#31312e" transparent opacity={0.18} depthWrite={false} />
       </mesh>
-      {/* A machined aluminium plaque: dark backing, thin silver lip, then the
-          brushed face and four visible screw heads from the supplied reference. */}
-      <mesh position={[0, 0.28, 0.058]} castShadow receiveShadow>
-        <boxGeometry args={[5.3, 3.84, 0.12]} />
-        <meshPhysicalMaterial color="#595a57" metalness={0.38} roughness={0.4} />
+      {/* Neutral brushed silver as in the supplied reference. The subtle warmth
+          comes from the room light, not from a bronze tint in the material. */}
+      <mesh position={[0, panelY, 0.058]} castShadow receiveShadow>
+        <boxGeometry args={[panelWidth, panelHeight, 0.12]} />
+        <meshPhysicalMaterial color="#8b8d8c" metalness={0.78} roughness={0.31} />
       </mesh>
-      <mesh position={[0, 0.28, 0.132]} castShadow receiveShadow>
-        <boxGeometry args={[5.2, 3.74, 0.035]} />
-        <meshStandardMaterial map={panelTexture} color="#ffffff" metalness={0.18} roughness={0.48} />
+      <mesh position={[0, panelY, 0.132]} castShadow receiveShadow>
+        <boxGeometry args={[faceWidth, faceHeight, 0.035]} />
+        <meshStandardMaterial
+          map={isMobile ? mobilePanelTexture : panelTexture}
+          color="#ffffff"
+          metalness={0.48}
+          roughness={0.34}
+        />
       </mesh>
 
       <spotLight
         ref={light}
         position={[0, 2.7, 2.4]}
-        color="#fff4df"
-        intensity={11}
+        color="#fffdf8"
+        intensity={12.5}
         angle={0.94}
         penumbra={0.86}
         decay={1.5}
@@ -74,7 +91,7 @@ export function ManifestoRoom({ position }: { position: [number, number, number]
         castShadow
       />
       <object3D ref={target} position={[0, 0.1, 0]} />
-      <ambientLight intensity={0.34} color="#ede9de" />
+      <ambientLight intensity={0.56} color="#f4f5f4" />
     </group>
   )
 }

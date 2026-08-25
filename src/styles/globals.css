@@ -70,7 +70,8 @@
      this to know how far to pull its opening up — a second copy of the number
      silently misaligns that page every time the mark is resized. */
   --wordmark: clamp(28px, 2.4vw, 38px);
-  --interactive-cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="34" height="22" viewBox="0 0 34 22"><text x="17" y="17" font-family="Helvetica,Arial,sans-serif" font-size="18" fill="%232f2a24" text-anchor="middle">[O]</text></svg>') 17 11, pointer;
+  --default-cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="34" height="22" viewBox="0 0 34 22"><text x="17" y="17" font-family="Helvetica,Arial,sans-serif" font-size="18" fill="%232f2a24" text-anchor="middle">[O]</text></svg>') 17 11, default;
+  --interactive-cursor: crosshair;
 }
 
 * {
@@ -87,6 +88,7 @@ body,
   background: var(--bg);
   color: var(--ink);
   font-family: var(--sans);
+  cursor: var(--default-cursor);
 }
 
 .gallery-canvas {
@@ -144,9 +146,19 @@ body,
 /* Use the mark only where an action or a selection is available. */
 button:not(:disabled),
 a[href],
+input:not(:disabled),
+textarea:not(:disabled),
 select:not(:disabled),
+[tabindex]:not([tabindex='-1']),
 [role='button']:not([aria-disabled='true']) {
-  cursor: var(--interactive-cursor);
+  cursor: var(--interactive-cursor) !important;
+}
+
+button:disabled,
+select:disabled,
+input:disabled,
+[aria-disabled='true'] {
+  cursor: var(--default-cursor) !important;
 }
 
 /* the ceiling lamps live in the 3D scene now — keep only a soft vignette */
@@ -698,9 +710,28 @@ select:not(:disabled),
   .wall-nav-arrow {
     top: auto;
     bottom: calc(92px + env(safe-area-inset-bottom));
+    display: grid;
+    place-items: center;
     width: 42px;
     height: 42px;
+    padding: 0;
     transform: none;
+    font-family: Arial, sans-serif;
+    font-size: 0;
+    line-height: 1;
+  }
+
+  .wall-nav-arrow::before {
+    font-size: 20px;
+    line-height: 1;
+  }
+
+  .wall-nav-prev::before {
+    content: '←';
+  }
+
+  .wall-nav-next::before {
+    content: '→';
   }
 
   .wall-nav-prev {

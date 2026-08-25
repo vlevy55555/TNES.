@@ -5,6 +5,7 @@ import type { FrameStyle } from '../data/artworks'
 import { defaultSelection, findVariant, money } from '../lib/shopify'
 import { useProduct } from '../lib/useProduct'
 import { useCartStore } from '../store/useCartStore'
+import { useContactStore } from '../store/useContactStore'
 import { RevealText, useSectionTextReveal } from './reveal'
 import { PRICE, ShopFooter, ShopHeader } from './ShopChrome'
 import ProductFrame from './ProductFrame'
@@ -25,12 +26,16 @@ const sizesOf = (dimensions: string) =>
     .split('·')
     .map((size) => `${size.replace(/cm/i, '').trim()} cm`)
 
+const sizeKey = (value: string) => value.toLowerCase().replace(/×/g, 'x').replace(/[^0-9x]/g, '')
+
 export default function Product({ id }: { id: string }) {
   const work = artworks.find((a) => a.id === id)
   const stage = useRef<HTMLElement>(null)
   const options = useRef<HTMLElement>(null)
+  const related = useRef<HTMLElement>(null)
   const product = useProduct(work?.shopifyHandle)
   const addToCart = useCartStore((s) => s.add)
+  const openContact = useContactStore((s) => s.openContact)
 
   // Live options win over the static cm list: Shopify is what the checkout
   // honours, so a size shown here has to be a size you can actually order.
@@ -38,17 +43,30 @@ export default function Product({ id }: { id: string }) {
   const sizeOption = product?.options.find((o) => o !== frameOption)
   const sizes = sizeOption?.values ?? (work ? sizesOf(work.dimensions) : [])
   const [size, setSize] = useState('')
-  const [frame, setFrame] = useState<FrameStyle>('white')
-
-  // A product route can be reused while navigating between works. Reset the
-  // purchasable presentation to White rather than leaking a prior choice.
-  useEffect(() => setFrame('white'), [work?.id])
+  const [frame, setFrame] = useState<FrameStyle>('unframed')
+  const isPortrait = !!work && work.size[1] > work.size[0]
 
   // open on the middle size — the smallest reads as the cheap option
   useEffect(() => {
-    if (product && sizeOption) setSize(defaultSelection(product)[sizeOption.name] ?? '')
-    else setSize(work ? sizesOf(work.dimensions)[0] ?? '' : '')
-  }, [product, sizeOption, work])
+    if (product) {
+      const initial = defaultSelection(product)
+      if (sizeOption) {
+        const portraitSize = isPortrait
+          ? sizeOption.values.find((value) => sizeKey(value).startsWith('30x20'))
+          : undefined
+        setSize(portraitSize ?? initial[sizeOption.name] ?? '')
+      }
+      const initialFrame = frameOption ? initial[frameOption.name]?.toLowerCase() : 'unframed'
+      setFrame(initialFrame === 'white' || initialFrame === 'black'
+        ? initialFrame
+        : 'unframed')
+    } else {
+      const staticSizes = work ? sizesOf(work.dimensions) : []
+      const preferredSize = isPortrait ? '30x20' : '20x30'
+      setSize(staticSizes.find((value) => sizeKey(value).startsWith(preferredSize)) ?? staticSizes[0] ?? '')
+      setFrame('unframed')
+    }
+  }, [product, sizeOption, work, isPortrait])
 
   // The room's three mouldings are a preview, not a merchandised option in this
   // store — but if Shopify ever sells the frame, keep the bought variant in sync.
@@ -78,6 +96,37 @@ export default function Product({ id }: { id: string }) {
     return () => context.revert()
   }, [id])
 
+  useLayoutEffect(() => {
+    const section = related.current
+    if (!section) return
+    const items = section.querySelectorAll('.product__related-work')
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      gsap.set(items, { clearProps: 'all' })
+      return
+    }
+
+    gsap.set(items, { opacity: 0, y: 16, scale: 0.9 })
+    const observer = new IntersectionObserver(([entry]) => {
+      if (!entry.isIntersecting) return
+      observer.disconnect()
+      gsap.to(items, {
+        opacity: 1,
+        y: 0,
+        scale: 1,
+        duration: 0.65,
+        stagger: 0.09,
+        ease: 'power3.out',
+        clearProps: 'transform',
+      })
+    }, { threshold: 0.18 })
+    observer.observe(section)
+
+    return () => {
+      observer.disconnect()
+      gsap.killTweensOf(items)
+    }
+  }, [id])
+
   if (!work) {
     return (
       <main className="shop product">
@@ -95,6 +144,11 @@ export default function Product({ id }: { id: string }) {
 
   const [where, year] = work.subtitle.split(' · ')
   const orientation = work.size[1] > work.size[0] ? 'portrait' : 'landscape'
+  const workIndex = artworks.findIndex((artwork) => artwork.id === work.id)
+  const relatedWorks = Array.from(
+    { length: Math.min(9, artworks.length - 1) },
+    (_, index) => artworks[(workIndex + index + 1) % artworks.length],
+  )
 
   return (
     <main className={`shop product product--${work.id}`}>
@@ -127,7 +181,7 @@ export default function Product({ id }: { id: string }) {
 
           <div className="product__field">
             <h2 className="product__label"><RevealText>frame</RevealText></h2>
-            <div className="product__choices" role="group" aria-label="Moldura">
+            <div className="product__choices product__choices--frames" role="group" aria-label="Moldura">
               {FRAMES.map((option) => (
                 <button
                   key={option.value}
@@ -139,12 +193,20 @@ export default function Product({ id }: { id: string }) {
                   {option.label}
                 </button>
               ))}
+              <button
+                type="button"
+                className="product__choice product__custom-size"
+                onClick={() => openContact(`${work.title} — custom size request`)}
+              >
+                <span className="product__custom-size-full">custom size upon request</span>
+                <span className="product__custom-size-short">custom size</span>
+              </button>
             </div>
           </div>
 
           <div className="product__field">
             <h2 className="product__label"><RevealText>size</RevealText></h2>
-            <div className="product__choices" role="group" aria-label="Tamanho">
+            <div className="product__choices product__choices--sizes" role="group" aria-label="Tamanho">
               {sizes.map((option) => {
                 const candidate = variantFor(option)
                 return (
@@ -161,6 +223,13 @@ export default function Product({ id }: { id: string }) {
                   </button>
                 )
               })}
+              <button
+                type="button"
+                className="product__choice product__custom-size product__custom-size--mobile"
+                onClick={() => openContact(`${work.title} — custom size request`)}
+              >
+                custom size
+              </button>
             </div>
           </div>
 
@@ -194,6 +263,26 @@ export default function Product({ id }: { id: string }) {
           )}
         </section>
       </div>
+
+      <section className="product__related" aria-labelledby="product-related-title" ref={related}>
+        <header className="product__related-head">
+          <h2 id="product-related-title">discover more.</h2>
+          <span aria-hidden="true" />
+        </header>
+        <div className="product__related-grid">
+          {relatedWorks.map((related) => (
+            <a
+              href={related.shopifyHandle ? `/shop/${related.id}` : '/shop'}
+              className="product__related-work"
+              key={related.id}
+              aria-label={`${related.title}, ${related.subtitle}`}
+            >
+              <img src={related.image} alt={`${related.title}, ${related.subtitle}`} loading="lazy" />
+              <span>{related.title.toLowerCase()}.</span>
+            </a>
+          ))}
+        </div>
+      </section>
 
       <ShopFooter />
     </main>

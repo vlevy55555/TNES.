@@ -59,15 +59,27 @@ const works = artworks.map((work) => {
 
 const HANDLES = works.map((w) => w.shopifyHandle).filter((h): h is string => !!h)
 
-/** Cards quote the same white-framed middle size that opens on the product. */
-const framedPrice = (product?: ShopProduct) => {
+/** Shop cards show the entry configuration: smallest size, unframed. */
+const sizeKey = (value: string) => value.toLowerCase().replace(/×/g, 'x').replace(/[^0-9x]/g, '')
+
+const fromPrice = (product?: ShopProduct, portrait = false) => {
   if (!product) return PRICE
-  const selection = defaultSelection(product)
-  const frame = product.options.find((option) => /frame/i.test(option.name))
-  const white = frame?.values.find((value) => value.toLowerCase() === 'white')
-  if (frame && white) selection[frame.name] = white
-  const variant = findVariant(product, selection)
-  return variant?.available ? money(variant.price, variant.currency) : PRICE
+  const productDefault = defaultSelection(product)
+  const cardSelection = Object.fromEntries(
+    product.options.map((option) => [
+      option.name,
+      /frame/i.test(option.name)
+        ? option.values.find((value) => value.toLowerCase().replace(/[^a-z]/g, '') === 'unframed')
+          ?? productDefault[option.name]
+        : portrait
+          ? option.values.find((value) => sizeKey(value).startsWith('30x20'))
+            ?? option.values[0]
+            ?? productDefault[option.name]
+          : option.values[0] ?? productDefault[option.name],
+    ]),
+  )
+  const variant = findVariant(product, cardSelection)
+  return variant ? money(variant.price, variant.currency) : PRICE
 }
 
 // two large pieces standing in for the wider bodies of work
@@ -225,7 +237,10 @@ function ShopIndex() {
             <p className="shop__caption">
               <span>{work.title.toLowerCase()}.</span>
               <span className="shop__price">
-                {framedPrice(work.shopifyHandle ? products[work.shopifyHandle] : undefined)}
+                from {fromPrice(
+                  work.shopifyHandle ? products[work.shopifyHandle] : undefined,
+                  work.ratio < 1,
+                )}
               </span>
             </p>
             {/* the catalogs' own affordance, on every work: the arrow steps

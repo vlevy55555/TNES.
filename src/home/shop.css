@@ -643,6 +643,19 @@ body:has(.shop),
   margin-bottom: calc(var(--stage) * -0.29);
 }
 
+/* Keep tall works entirely above the buying rules. Their previous oversized
+   canvas borrowed space below the stage and could overlap the option row. */
+@media (min-width: 901px) {
+  .product__media--portrait {
+    --stage: clamp(280px, 43svh, 520px);
+
+    height: calc(var(--stage) * 1.18);
+    margin-top: calc(var(--stage) * -0.1);
+    margin-bottom: calc(var(--stage) * -0.08);
+    margin-left: calc(var(--stage) * -0.06);
+  }
+}
+
 /* A normal browser window has less vertical room than fullscreen. Keep wide
    prints inside the stage instead of letting their oversized canvas descend
    into the options and add-to-cart row. Portrait tuning remains untouched. */
@@ -672,6 +685,7 @@ body:has(.shop),
   display: block;
   /* the drag rotates the frame; a vertical swipe still scrolls the page */
   touch-action: pan-y;
+  cursor: var(--interactive-cursor) !important;
 }
 
 /* The buying row: four fields, each opening on its own rule. */
@@ -709,28 +723,42 @@ body:has(.shop),
 .product__choices {
   display: flex;
   flex-wrap: wrap;
-  align-items: baseline;
-  gap: 4px 18px;
+  align-items: center;
+  gap: 8px;
 }
 
 .product__choice {
-  padding: 0;
-  border: 0;
+  min-height: 38px;
+  padding: 7px 12px;
+  border: 1px solid rgba(47, 42, 36, 0.24);
   background: transparent;
   color: var(--paper-muted);
   font-family: inherit;
   font-size: clamp(15px, 1.3vw, 21px);
   font-weight: 500;
   letter-spacing: -0.01em;
-  transition: color 200ms ease;
+  transition: color 180ms ease, background-color 180ms ease, border-color 180ms ease;
 }
 
 .product__choice:hover {
   color: var(--paper-ink);
+  border-color: var(--paper-muted);
 }
 
 .product__choice--on {
-  color: var(--paper-ink);
+  border-color: var(--paper-ink);
+  background: var(--paper-ink);
+  color: var(--paper);
+}
+
+.product__choice--on:hover {
+  color: var(--paper);
+  border-color: var(--paper-ink);
+}
+
+.product__choice:focus-visible {
+  outline: 2px solid var(--paper-ink);
+  outline-offset: 3px;
 }
 
 /* a size Shopify reports as sold out — still selectable, so the price and the
@@ -765,8 +793,112 @@ button.product__cart {
   color: var(--paper);
 }
 
+.product__choice.product__custom-size {
+  display: grid;
+  flex-basis: 86%;
+  place-items: center;
+  width: 86%;
+  min-height: clamp(50px, 4.4vw, 68px);
+  margin-top: 28px;
+  border-color: var(--paper-ink);
+  color: var(--paper-ink);
+  font-size: clamp(13px, 1.05vw, 17px);
+}
+
+.product__choice.product__custom-size:hover {
+  background: var(--paper-ink);
+  color: var(--paper);
+}
+
+.product__custom-size-short {
+  display: none;
+}
+
+.product__custom-size--mobile {
+  display: none !important;
+}
+
 .product__missing {
   padding: clamp(60px, 10vw, 160px) var(--pad-x);
+}
+
+.product__related {
+  width: clamp(360px, 31vw, 560px);
+  margin: -124px var(--pad-x) clamp(80px, 10vw, 150px) auto;
+}
+
+.product__related-head {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: end;
+  gap: 18px;
+  margin-bottom: 18px;
+}
+
+.product__related-head h2 {
+  margin: 0;
+  font-size: clamp(20px, 1.8vw, 29px);
+  font-weight: 500;
+  letter-spacing: -0.025em;
+  white-space: nowrap;
+}
+
+.product__related-head > span {
+  height: 1px;
+  margin-bottom: 4px;
+  background: var(--paper-ink);
+}
+
+.product__related-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: clamp(8px, 0.8vw, 14px);
+}
+
+.product__related-work {
+  position: relative;
+  display: block;
+  aspect-ratio: 1;
+  overflow: hidden;
+  border: 1px solid var(--paper-line);
+  background: var(--media-fallback);
+  color: #fff;
+  text-decoration: none;
+}
+
+.product__related-work img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 500ms cubic-bezier(0.22, 1, 0.36, 1), filter 300ms ease;
+}
+
+.product__related-work span {
+  position: absolute;
+  right: 7px;
+  bottom: 6px;
+  left: 7px;
+  overflow: hidden;
+  font-family: var(--mono);
+  color: #fff;
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  opacity: 1;
+  text-overflow: ellipsis;
+  text-shadow: 0 1px 5px rgba(0, 0, 0, 0.8);
+  white-space: nowrap;
+  transition: opacity 220ms ease;
+}
+
+.product__related-work:hover img {
+  filter: brightness(0.76);
+  transform: scale(1.045);
+}
+
+.product__related-work:hover span,
+.product__related-work:focus-visible span {
+  opacity: 1;
 }
 
 @media (max-width: 900px) {
@@ -791,6 +923,11 @@ button.product__cart {
   .product__options {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+
+  .product__related {
+    width: auto;
+    margin: -58px var(--pad-x) clamp(72px, 14vw, 110px);
+  }
 }
 
 @media (max-width: 560px) {
@@ -801,6 +938,44 @@ button.product__cart {
   .product__media {
     width: min(100%, 440px);
     height: clamp(250px, 52svh, 390px);
+  }
+
+  .product__choices--frames {
+    display: flex;
+  }
+
+  .product__choices--frames .product__custom-size {
+    display: none;
+  }
+
+  .product__choices--sizes {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, auto));
+    justify-content: start;
+    gap: 6px;
+  }
+
+  .product__choice.product__custom-size--mobile {
+    display: block !important;
+    width: auto;
+    min-height: 38px;
+    margin: 0;
+    padding: 6px 8px;
+    font-size: 11px;
+    line-height: 1.15;
+    white-space: normal;
+  }
+
+  .product__custom-size-full {
+    display: none;
+  }
+
+  .product__custom-size-short {
+    display: inline;
+  }
+
+  .product__related {
+    margin-top: -12px;
   }
 }
 
