@@ -20,6 +20,7 @@ import {
   walls,
 } from '../../data/artworks'
 import { useGalleryStore } from '../../store/useGalleryStore'
+import { INTERACTIVE_CURSOR } from './interactiveCursor'
 
 // set while the pointer is dragging so frame/wall clicks can ignore the release
 export const dragState = { moved: false }
@@ -145,7 +146,7 @@ export function CameraController() {
       startY = e.clientY
       lastY = e.clientY
       dragState.moved = false
-      document.body.style.cursor = 'grabbing'
+      document.body.style.cursor = INTERACTIVE_CURSOR
     }
     const onMove = (e: PointerEvent) => {
       if (!down) return

@@ -101,10 +101,10 @@ export function GalleryCanvas() {
     <div className="gallery-canvas">
       <Canvas
         camera={{ position: startPos, fov: 35 }}
-        dpr={isMobile ? 1 : [1, 1.25]}
+        dpr={isMobile ? [1.25, 1.5] : [1, 1.25]}
         shadows={false}
         performance={{ min: 0.65 }}
-        gl={{ powerPreference: 'high-performance', antialias: false }}
+        gl={{ powerPreference: 'high-performance', antialias: isMobile }}
       >
         <Suspense fallback={null}>
           <GalleryScene />

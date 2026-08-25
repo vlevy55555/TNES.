@@ -59,6 +59,23 @@ type FrameSpec = {
 }
 
 function frameSpec(style: FrameStyle): FrameSpec {
+  if (style === 'unframed') {
+    return {
+      outerBorder: 0.012,
+      mat: 0,
+      imageScale: 1,
+      frameColor: '#f7f4ed',
+      matColor: '#f7f4ed',
+      roughness: 0.86,
+      metalness: 0,
+      clearcoat: 0,
+      emissive: '#000000',
+      emissiveIntensity: 0,
+      depth: 0.018,
+      bevelSize: 0.001,
+      bevelThickness: 0.001,
+    }
+  }
   if (style === 'white') {
     return {
       outerBorder: 0.22,

@@ -754,6 +754,12 @@ body:has(.home--black),
   will-change: width;
 }
 
+.works__link {
+  display: block;
+  color: inherit;
+  text-decoration: none;
+}
+
 /* size comes from the inline long-edge rule — the aspect is each work's own */
 .works__frame {
   width: 100%;

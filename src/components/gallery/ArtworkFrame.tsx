@@ -40,7 +40,7 @@ export function ArtworkFrame({
   const isMobile = useGalleryStore((s) => s.isMobile)
 
   useEffect(() => {
-    texture.anisotropy = Math.min(isMobile ? 4 : 8, maxAnisotropy)
+    texture.anisotropy = Math.min(isMobile ? 6 : 8, maxAnisotropy)
     texture.minFilter = LinearMipmapLinearFilter
     texture.magFilter = LinearFilter
     texture.generateMipmaps = true

@@ -412,7 +412,7 @@ function EnterLink({ isMobile }: { isMobile: boolean }) {
 
   return (
     <group
-      position={[TEXT_X, at(0.96), 0.06]}
+      position={[TEXT_X, at(isMobile ? 0.96 : 0.975), 0.06]}
       onClick={(e) => {
         e.stopPropagation()
         startVslExit()
@@ -447,7 +447,7 @@ export function AboutWall() {
   const isMobile = useGalleryStore((s) => s.isMobile)
   const nameY = isMobile ? at(0.24) : at(0.31)
   const roleY = isMobile ? at(0.35) : at(0.41)
-  const statementY = isMobile ? at(0.47) : at(0.54)
+  const statementY = isMobile ? at(0.47) : at(0.51)
 
   return (
     <group>
@@ -485,12 +485,12 @@ export function AboutWall() {
       {/* one block, first person — no pull-quote / bio split */}
       <Text
         font={FONT_HELVETICA}
-        fontSize={isMobile ? 0.13 : 0.105}
-        lineHeight={isMobile ? 1.62 : 1.75}
+        fontSize={isMobile ? 0.13 : 0.09}
+        lineHeight={isMobile ? 1.62 : 1.5}
         color={PLATE_INK}
         anchorX="left"
         anchorY="top"
-        maxWidth={TEXT_W}
+        maxWidth={isMobile ? TEXT_W : 2.15}
         position={[TEXT_X, statementY, 0.06]}
       >
         {ABOUT.statement}

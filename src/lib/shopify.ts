@@ -75,6 +75,17 @@ export const findVariant = (
  */
 export const middleValue = (values: string[]) => values[Math.floor((values.length - 1) / 2)]
 
+const optionKey = (value: string) => value.toLowerCase().replace(/×/g, 'x').replace(/[^a-z0-9]/g, '')
+
+/** The merchandising baseline used everywhere a print first appears. */
+const preferredValue = (name: string, values: string[]) => {
+  const wanted = /frame/i.test(name) ? 'unframed' : /size/i.test(name) ? '20x30' : ''
+  return values.find((value) => {
+    const key = optionKey(value)
+    return /size/i.test(name) ? key.startsWith(wanted) : key === wanted
+  }) ?? middleValue(values)
+}
+
 /**
  * The selection to open on: the MIDDLE of every option — so a three-size print
  * opens on its middle size rather than its smallest, which read as the cheap
@@ -82,10 +93,10 @@ export const middleValue = (values: string[]) => values[Math.floor((values.lengt
  * (else the first) when that middle combination isn't sold.
  */
 export const defaultSelection = (product: ShopProduct): Record<string, string> => {
-  const middle = Object.fromEntries(
-    product.options.map((o) => [o.name, middleValue(o.values)]),
+  const preferred = Object.fromEntries(
+    product.options.map((o) => [o.name, preferredValue(o.name, o.values)]),
   )
-  if (findVariant(product, middle)?.available) return middle
+  if (findVariant(product, preferred)) return preferred
   const v = product.variants.find((x) => x.available) ?? product.variants[0]
   return v ? { ...v.options } : {}
 }

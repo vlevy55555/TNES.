@@ -2,7 +2,7 @@ import { useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { artworks } from '../data/artworks'
-import { money, type ShopProduct } from '../lib/shopify'
+import { defaultSelection, findVariant, money, type ShopProduct } from '../lib/shopify'
 import { useProducts } from '../lib/useProduct'
 import { RevealText, useSectionTextReveal } from './reveal'
 import { catalogHref, PRICE, ShopFooter, ShopHeader } from './ShopChrome'
@@ -59,12 +59,27 @@ const works = artworks.map((work) => {
 
 const HANDLES = works.map((w) => w.shopifyHandle).filter((h): h is string => !!h)
 
-/** The cheapest purchasable size — what "from" means on a grid card. */
-const fromPrice = (product?: ShopProduct) => {
-  const sellable = product?.variants.filter((v) => v.available) ?? []
-  if (!sellable.length) return PRICE
-  const cheapest = sellable.reduce((a, b) => (b.price < a.price ? b : a))
-  return money(cheapest.price, cheapest.currency)
+/** Shop cards show the entry configuration: smallest size, unframed. */
+const sizeKey = (value: string) => value.toLowerCase().replace(/×/g, 'x').replace(/[^0-9x]/g, '')
+
+const fromPrice = (product?: ShopProduct, portrait = false) => {
+  if (!product) return PRICE
+  const productDefault = defaultSelection(product)
+  const cardSelection = Object.fromEntries(
+    product.options.map((option) => [
+      option.name,
+      /frame/i.test(option.name)
+        ? option.values.find((value) => value.toLowerCase().replace(/[^a-z]/g, '') === 'unframed')
+          ?? productDefault[option.name]
+        : portrait
+          ? option.values.find((value) => sizeKey(value).startsWith('30x20'))
+            ?? option.values[0]
+            ?? productDefault[option.name]
+          : option.values[0] ?? productDefault[option.name],
+    ]),
+  )
+  const variant = findVariant(product, cardSelection)
+  return variant ? money(variant.price, variant.currency) : PRICE
 }
 
 // two large pieces standing in for the wider bodies of work
@@ -222,7 +237,10 @@ function ShopIndex() {
             <p className="shop__caption">
               <span>{work.title.toLowerCase()}.</span>
               <span className="shop__price">
-                from {fromPrice(work.shopifyHandle ? products[work.shopifyHandle] : undefined)}
+                from {fromPrice(
+                  work.shopifyHandle ? products[work.shopifyHandle] : undefined,
+                  work.ratio < 1,
+                )}
               </span>
             </p>
             {/* the catalogs' own affordance, on every work: the arrow steps

@@ -237,7 +237,7 @@ export default function Catalog({ slug }: { slug: CatalogSlug }) {
             </header>
             <div className={`catalog-page__mosaic catalog-page__mosaic--${works.length}`}>
               {works.map((work, workIndex) => (
-                <a className={`catalog-page__work catalog-page__work--${workIndex + 1} catalog-page__work--${work.id}`} href={`/shop/${work.id}`} key={work.id}>
+                <a className={`catalog-page__work catalog-page__work--${workIndex + 1} catalog-page__work--${work.id}`} href={work.shopifyHandle ? `/shop/${work.id}` : '/shop'} key={work.id}>
                   <figure><img src={work.image} alt={`${work.title}, ${work.subtitle}`} loading="lazy" /></figure>
                   <p><span>{work.title.toLowerCase()}.</span><span>{work.subtitle.toLowerCase()}</span></p>
                 </a>
@@ -247,7 +247,7 @@ export default function Catalog({ slug }: { slug: CatalogSlug }) {
         ))}
       </section>
 
-      <EarlyAccess showCountdown />
+      <EarlyAccess />
       <ShopFooter />
     </main>
   )
