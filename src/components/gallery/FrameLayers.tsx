@@ -61,19 +61,19 @@ type FrameSpec = {
 function frameSpec(style: FrameStyle): FrameSpec {
   if (style === 'unframed') {
     return {
-      outerBorder: 0.012,
+      outerBorder: 0,
       mat: 0,
       imageScale: 1,
-      frameColor: '#f7f4ed',
-      matColor: '#f7f4ed',
-      roughness: 0.86,
+      frameColor: '#f4f0e8',
+      matColor: '#f4f0e8',
+      roughness: 0.9,
       metalness: 0,
       clearcoat: 0,
       emissive: '#000000',
       emissiveIntensity: 0,
       depth: 0.018,
-      bevelSize: 0.001,
-      bevelThickness: 0.001,
+      bevelSize: 0,
+      bevelThickness: 0,
     }
   }
   if (style === 'white') {
@@ -113,23 +113,19 @@ function frameSpec(style: FrameStyle): FrameSpec {
     }
   }
   return {
-    outerBorder: 0.11,
-    mat: 0.06,
-    imageScale: 1,
-    // A true polished gilt rather than muted brass: this is shared by the
-    // signature hero and the archive's unified frame finish.
-    frameColor: '#c89532',
-    matColor: '#f4f0e7',
-    roughness: 0.3,
-    metalness: 0.42,
-    clearcoat: 0.42,
-    // Keeps gilt luminous in portions of the archive that sit outside a direct
-    // spotlight, without flattening the polished highlights under it.
-    emissive: '#b67a19',
-    emissiveIntensity: 0.58,
-    depth: 0.055,
-    bevelSize: 0.005,
-    bevelThickness: 0.005,
+    outerBorder: 0.21,
+    mat: 0.016,
+    imageScale: 1.15,
+    frameColor: '#262522',
+    matColor: '#171614',
+    roughness: 0.52,
+    metalness: 0.02,
+    clearcoat: 0.02,
+    emissive: '#000000',
+    emissiveIntensity: 0,
+    depth: 0.045,
+    bevelSize: 0.003,
+    bevelThickness: 0.003,
   }
 }
 
@@ -220,7 +216,7 @@ function Moulding({
   )
 }
 
-/** Shared physical construction for gold, white and black exhibition frames. */
+/** Shared physical construction for bare, white and black gallery prints. */
 export function FrameLayers({
   texture,
   w,
@@ -253,7 +249,38 @@ export function FrameLayers({
   const innerH = photoH + (flushPhoto ? 0 : spec.mat * 2)
   const matZ = Math.max(0.018, spec.depth - 0.024)
   const photoZ = Math.max(0.028, spec.depth - 0.006)
-  const backColor = style === 'black' ? '#171614' : style === 'gold' ? '#c89532' : '#e6dfd1'
+  const backColor = style === 'black' ? '#171614' : '#e6dfd1'
+
+  // A bare print is not a zero-width moulding: it is a thin sheet with only a
+  // close wall shadow, so the selected option visibly changes the 3D object.
+  if (style === 'unframed') {
+    return (
+      <>
+        {backdrop && (
+          <mesh position={[0.04, -0.06, -0.018]}>
+            <planeGeometry args={[frameW + 0.18, frameH + 0.18]} />
+            <meshBasicMaterial map={shadowTexture} transparent depthWrite={false} />
+          </mesh>
+        )}
+        {brandedBack && (
+          <>
+            <mesh position={[0, 0, -0.012]} castShadow>
+              <boxGeometry args={[frameW, frameH, 0.02]} />
+              <meshStandardMaterial color={spec.frameColor} roughness={0.9} />
+            </mesh>
+            <mesh position={[0, 0, -0.024]} rotation={[0, Math.PI, 0]}>
+              <planeGeometry args={[Math.min(frameW, frameH) * 0.5, Math.min(frameW, frameH) * 0.5]} />
+              <meshBasicMaterial map={backMark} transparent toneMapped={false} />
+            </mesh>
+          </>
+        )}
+        <mesh position={[0, 0, 0.014]} castShadow>
+          <planeGeometry args={[photoW, photoH]} />
+          <meshBasicMaterial map={texture} color={PRINT_GAIN} toneMapped={false} />
+        </mesh>
+      </>
+    )
+  }
 
   return (
     <>

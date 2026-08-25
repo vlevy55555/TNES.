@@ -57,7 +57,7 @@ export default function Product({ id }: { id: string }) {
         setSize(portraitSize ?? initial[sizeOption.name] ?? '')
       }
       const initialFrame = frameOption ? initial[frameOption.name]?.toLowerCase() : 'unframed'
-      setFrame(initialFrame === 'gold' || initialFrame === 'white' || initialFrame === 'black'
+      setFrame(initialFrame === 'white' || initialFrame === 'black'
         ? initialFrame
         : 'unframed')
     } else {
