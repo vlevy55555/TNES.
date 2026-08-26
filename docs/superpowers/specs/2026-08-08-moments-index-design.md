@@ -3,7 +3,7 @@
 **Data:** 2026-08-08
 **Estado:** aprovado, pronto para plano de implementação
 
-## Problema
+## Problemas
 
 `/moments` tem ~14.000px de altura: uma intro, quatro capítulos de ~2.900px cada,
 o bloco de release e o rodapé. Quem chega na página não tem como saber quantos
