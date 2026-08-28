@@ -14,9 +14,8 @@ const NAV = [
   { label: 'about', href: '/about' },
 ]
 
-// Shown only where Shopify can't answer — an unreachable store still owes the
-// visitor a number rather than a blank.
-export const PRICE = '$236'
+// Never present a stale amount while Shopify is loading or unavailable.
+export const PRICE = '—'
 
 /** Every catalog reference opens the complete catalog presentation. */
 export const catalogHref = (title?: string) => {

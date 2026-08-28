@@ -688,6 +688,78 @@ body:has(.shop),
   cursor: var(--interactive-cursor) !important;
 }
 
+.product__3d-tag {
+  position: absolute;
+  z-index: 2;
+  top: clamp(12px, 1.4vw, 22px);
+  right: clamp(10px, 1.2vw, 20px);
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  padding: 7px 10px 6px;
+  border: 1px solid rgba(55, 55, 52, 0.34);
+  background:
+    linear-gradient(105deg, rgba(255, 255, 255, 0.82), rgba(176, 178, 175, 0.9) 48%, rgba(242, 243, 240, 0.94));
+  box-shadow: 0 4px 12px rgba(25, 25, 23, 0.14);
+  color: #171715;
+  font-family: var(--mono);
+  font-size: 11px;
+  line-height: 1;
+  letter-spacing: 0.12em;
+  pointer-events: none;
+}
+
+.product__3d-tag svg {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.35;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.product__media:focus-visible {
+  outline: 1px solid var(--paper-ink);
+  outline-offset: 6px;
+}
+
+.product__lightbox {
+  position: fixed;
+  z-index: 10000;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: clamp(20px, 4vw, 64px);
+  background: rgba(10, 10, 10, 0.94);
+  cursor: zoom-out;
+}
+
+.product__lightbox img {
+  display: block;
+  width: auto;
+  max-width: 94vw;
+  height: auto;
+  max-height: 90svh;
+  object-fit: contain;
+  box-shadow: 0 20px 70px rgba(0, 0, 0, 0.36);
+  cursor: default;
+}
+
+.product__lightbox-close {
+  position: fixed;
+  z-index: 1;
+  top: clamp(16px, 2vw, 30px);
+  right: clamp(16px, 2vw, 30px);
+  border: 0;
+  background: transparent;
+  color: #fff;
+  font-family: var(--sans);
+  font-size: 34px;
+  font-weight: 300;
+  line-height: 1;
+}
+
 /* The buying row: four fields, each opening on its own rule. */
 .product__options {
   display: grid;
@@ -770,6 +842,50 @@ body:has(.shop),
 
 /* one box, two elements: a <button> that adds the live variant to the cart, an
    <a> mailto when Shopify has nothing to sell */
+.product__purchase {
+  position: relative;
+}
+
+.product__quantity {
+  position: absolute;
+  right: 0;
+  bottom: calc(100% + 8px);
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  color: var(--paper-muted);
+  font-family: var(--mono);
+  font-size: 12px;
+  letter-spacing: 0.08em;
+}
+
+.product__quantity-controls {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  color: var(--paper-ink);
+  font-family: inherit;
+  font-size: 16px;
+  letter-spacing: 0;
+}
+
+.product__quantity-controls button {
+  display: grid;
+  width: 30px;
+  height: 30px;
+  place-items: center;
+  border: 1px solid rgba(47, 42, 36, 0.28);
+  background: transparent;
+  color: var(--paper-ink);
+  font: inherit;
+  line-height: 1;
+}
+
+.product__quantity-controls button:hover,
+.product__quantity-controls button:focus-visible {
+  border-color: var(--paper-ink);
+}
+
 button.product__cart {
   width: 100%;
   background: transparent;
@@ -902,6 +1018,11 @@ button.product__cart {
 }
 
 @media (max-width: 900px) {
+  .product__3d-tag {
+    right: auto;
+    left: clamp(10px, 3vw, 18px);
+  }
+
   .product__stage {
     grid-template-columns: 1fr;
     align-items: start;

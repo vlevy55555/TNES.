@@ -1,9 +1,9 @@
-import { useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { gsap } from 'gsap'
-import { artworks, INQUIRY_EMAIL } from '../data/artworks'
+import { artworks, INQUIRY_EMAIL, standardPrintSizes } from '../data/artworks'
 import type { FrameStyle } from '../data/artworks'
 import { defaultSelection, findVariant, money } from '../lib/shopify'
-import { useProduct } from '../lib/useProduct'
+import { useProductState } from '../lib/useProduct'
 import { useCartStore } from '../store/useCartStore'
 import { useContactStore } from '../store/useContactStore'
 import { RevealText, useSectionTextReveal } from './reveal'
@@ -20,12 +20,6 @@ const FRAMES: { value: FrameStyle; label: string }[] = [
   { value: 'black', label: 'black' },
 ]
 
-/** The made-to-order sizes are the artwork's own `dimensions` string. */
-const sizesOf = (dimensions: string) =>
-  dimensions
-    .split('·')
-    .map((size) => `${size.replace(/cm/i, '').trim()} cm`)
-
 const sizeKey = (value: string) => value.toLowerCase().replace(/×/g, 'x').replace(/[^0-9x]/g, '')
 
 export default function Product({ id }: { id: string }) {
@@ -33,7 +27,8 @@ export default function Product({ id }: { id: string }) {
   const stage = useRef<HTMLElement>(null)
   const options = useRef<HTMLElement>(null)
   const related = useRef<HTMLElement>(null)
-  const product = useProduct(work?.shopifyHandle)
+  const mediaPointer = useRef<{ x: number; y: number } | null>(null)
+  const { product, loading: productLoading } = useProductState(work?.shopifyHandle)
   const addToCart = useCartStore((s) => s.add)
   const openContact = useContactStore((s) => s.openContact)
 
@@ -41,32 +36,58 @@ export default function Product({ id }: { id: string }) {
   // honours, so a size shown here has to be a size you can actually order.
   const frameOption = product?.options.find((o) => /frame/i.test(o.name))
   const sizeOption = product?.options.find((o) => o !== frameOption)
-  const sizes = sizeOption?.values ?? (work ? sizesOf(work.dimensions) : [])
+  const liveSizes = useMemo(() => sizeOption?.values.filter(Boolean) ?? [], [sizeOption])
+  const sizes = liveSizes.length > 0
+    ? liveSizes
+    : !productLoading && work
+      ? standardPrintSizes(work)
+      : []
   const [size, setSize] = useState('')
   const [frame, setFrame] = useState<FrameStyle>('unframed')
+  const [quantity, setQuantity] = useState(1)
+  const [lightboxOpen, setLightboxOpen] = useState(false)
   const isPortrait = !!work && work.size[1] > work.size[0]
+
+  useEffect(() => setQuantity(1), [work?.id])
+  useEffect(() => setLightboxOpen(false), [work?.id])
+
+  useEffect(() => {
+    if (!lightboxOpen) return
+    const previousOverflow = document.body.style.overflow
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setLightboxOpen(false)
+    }
+    document.body.style.overflow = 'hidden'
+    window.addEventListener('keydown', closeOnEscape)
+    return () => {
+      document.body.style.overflow = previousOverflow
+      window.removeEventListener('keydown', closeOnEscape)
+    }
+  }, [lightboxOpen])
 
   // open on the middle size — the smallest reads as the cheap option
   useEffect(() => {
-    if (product) {
+    if (product && sizeOption && liveSizes.length > 0) {
       const initial = defaultSelection(product)
-      if (sizeOption) {
-        const portraitSize = isPortrait
-          ? sizeOption.values.find((value) => sizeKey(value).startsWith('30x20'))
-          : undefined
-        setSize(portraitSize ?? initial[sizeOption.name] ?? '')
-      }
+      const portraitSize = isPortrait
+        ? liveSizes.find((value) => sizeKey(value).startsWith('30x20'))
+        : undefined
+      setSize(portraitSize ?? initial[sizeOption.name] ?? liveSizes[0] ?? '')
       const initialFrame = frameOption ? initial[frameOption.name]?.toLowerCase() : 'unframed'
       setFrame(initialFrame === 'white' || initialFrame === 'black'
         ? initialFrame
         : 'unframed')
-    } else {
-      const staticSizes = work ? sizesOf(work.dimensions) : []
+    } else if (!productLoading) {
+      const staticSizes = work ? standardPrintSizes(work) : []
       const preferredSize = isPortrait ? '30x20' : '20x30'
       setSize(staticSizes.find((value) => sizeKey(value).startsWith(preferredSize)) ?? staticSizes[0] ?? '')
       setFrame('unframed')
+    } else {
+      // Do not paint static placeholder sizes while the real Shopify options load.
+      setSize('')
+      setFrame('unframed')
     }
-  }, [product, sizeOption, work, isPortrait])
+  }, [product, sizeOption, work, isPortrait, productLoading, liveSizes])
 
   // The room's three mouldings are a preview, not a merchandised option in this
   // store — but if Shopify ever sells the frame, keep the bought variant in sync.
@@ -167,8 +188,35 @@ export default function Product({ id }: { id: string }) {
           <figure
             className={`product__media product__media--${orientation}`}
             aria-label={`${work.title}, ${work.subtitle}`}
+            role="button"
+            tabIndex={0}
+            aria-haspopup="dialog"
+            onKeyDown={(event) => {
+              if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault()
+                setLightboxOpen(true)
+              }
+            }}
+            onPointerDown={(event) => {
+              mediaPointer.current = { x: event.clientX, y: event.clientY }
+            }}
+            onPointerUp={(event) => {
+              const start = mediaPointer.current
+              mediaPointer.current = null
+              if (!start) return
+              if (Math.hypot(event.clientX - start.x, event.clientY - start.y) <= 6) {
+                setLightboxOpen(true)
+              }
+            }}
           >
             <ProductFrame artwork={work} style={frame} />
+            <span className="product__3d-tag" aria-hidden="true">
+              <svg viewBox="0 0 24 24" focusable="false">
+                <path d="M12 2.8 20 7.3v9.4L12 21.2 4 16.7V7.3L12 2.8Z" />
+                <path d="m4.4 7.5 7.6 4.4 7.6-4.4M12 12v8.7" />
+              </svg>
+              <span>3D</span>
+            </span>
           </figure>
         </section>
 
@@ -237,22 +285,45 @@ export default function Product({ id }: { id: string }) {
               thing the hosted checkout honours. Without a reachable store there
               is no id to key on, so the work stays inquiry-only. */}
           {variant?.available ? (
-            <button
-              type="button"
-              className="product__cart"
-              onClick={() => {
-                addToCart({
-                  variantId: variant.id,
-                  artworkId: work.id,
-                  handle: work.shopifyHandle!,
-                  label: variant.title,
-                })
-                // the cart is a screen now — adding goes there, as a shop does
-                window.location.href = '/cart'
-              }}
-            >
-              add to cart
-            </button>
+            <div className="product__purchase">
+              <div className="product__quantity" role="group" aria-label="Quantity">
+                <div className="product__quantity-controls">
+                  {quantity > 1 && (
+                    <button
+                      type="button"
+                      aria-label="Decrease quantity"
+                      onClick={() => setQuantity((current) => Math.max(1, current - 1))}
+                    >
+                      −
+                    </button>
+                  )}
+                  <output aria-live="polite">{quantity}</output>
+                  <button
+                    type="button"
+                    aria-label="Increase quantity"
+                    onClick={() => setQuantity((current) => Math.min(20, current + 1))}
+                  >
+                    +
+                  </button>
+                </div>
+              </div>
+              <button
+                type="button"
+                className="product__cart"
+                onClick={() => {
+                  addToCart({
+                    variantId: variant.id,
+                    artworkId: work.id,
+                    handle: work.shopifyHandle!,
+                    label: variant.title,
+                  }, quantity)
+                  // the cart is a screen now — adding goes there, as a shop does
+                  window.location.href = '/cart'
+                }}
+              >
+                add to cart
+              </button>
+            </div>
           ) : (
             <a
               className="product__cart"
@@ -283,6 +354,28 @@ export default function Product({ id }: { id: string }) {
           ))}
         </div>
       </section>
+
+      {lightboxOpen && (
+        <div
+          className="product__lightbox"
+          role="dialog"
+          aria-modal="true"
+          aria-label={`${work.title} enlarged photograph`}
+          onPointerDown={(event) => {
+            if (event.target === event.currentTarget) setLightboxOpen(false)
+          }}
+        >
+          <button
+            type="button"
+            className="product__lightbox-close"
+            aria-label="Close enlarged photograph"
+            onClick={() => setLightboxOpen(false)}
+          >
+            ×
+          </button>
+          <img src={work.image} alt={`${work.title}, ${work.subtitle}`} />
+        </div>
+      )}
 
       <ShopFooter />
     </main>

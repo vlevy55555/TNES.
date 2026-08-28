@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { artworks } from '../../data/artworks'
+import { artworks, standardPrintSizes } from '../../data/artworks'
 import { useGalleryStore } from '../../store/useGalleryStore'
 import { useProduct } from '../../lib/useProduct'
 import { defaultSelection, findVariant, money } from '../../lib/shopify'
@@ -126,7 +126,7 @@ export function ArtworkPanel() {
         {!product && (
           <div>
             <dt>Dimensions</dt>
-            <dd>{artwork.dimensions}</dd>
+            <dd>{standardPrintSizes(artwork).join(' · ')}</dd>
           </div>
         )}
         <div>

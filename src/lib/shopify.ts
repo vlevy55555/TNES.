@@ -96,7 +96,8 @@ export const defaultSelection = (product: ShopProduct): Record<string, string> =
   const preferred = Object.fromEntries(
     product.options.map((o) => [o.name, preferredValue(o.name, o.values)]),
   )
-  if (findVariant(product, preferred)) return preferred
+  const preferredVariant = findVariant(product, preferred)
+  if (preferredVariant?.available) return preferred
   const v = product.variants.find((x) => x.available) ?? product.variants[0]
   return v ? { ...v.options } : {}
 }

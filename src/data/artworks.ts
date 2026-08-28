@@ -46,6 +46,12 @@ export type Artwork = {
 
 export type FrameStyle = 'unframed' | 'white' | 'black'
 
+/** The storefront's canonical size labels, shared by live and fallback views. */
+export const standardPrintSizes = (artwork: Pick<Artwork, 'size'>) =>
+  artwork.size[1] > artwork.size[0]
+    ? ['30x20', '36x24', '42x28']
+    : ['20x30', '24x36', '28x42']
+
 export const walls: Wall[] = [
   { index: 0, name: 'Home', roman: 'I', angle: 0 },
   { index: 1, name: 'Prints', roman: 'II', angle: 0 },

@@ -1,11 +1,11 @@
-import { useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { artworks } from '../data/artworks'
 import { defaultSelection, findVariant, money, type ShopProduct } from '../lib/shopify'
 import { useProducts } from '../lib/useProduct'
 import { RevealText, useSectionTextReveal } from './reveal'
-import { catalogHref, PRICE, ShopFooter, ShopHeader } from './ShopChrome'
+import { catalogHref, ShopFooter, ShopHeader } from './ShopChrome'
 import Catalog, { isCatalogSlug } from './Catalog'
 import './home.css'
 import './shop.css'
@@ -82,7 +82,7 @@ const HANDLES = works.map((w) => w.shopifyHandle).filter((h): h is string => !!h
 const sizeKey = (value: string) => value.toLowerCase().replace(/×/g, 'x').replace(/[^0-9x]/g, '')
 
 const fromPrice = (product?: ShopProduct, portrait = false) => {
-  if (!product) return PRICE
+  if (!product) return null
   const productDefault = defaultSelection(product)
   const cardSelection = Object.fromEntries(
     product.options.map((option) => [
@@ -98,7 +98,7 @@ const fromPrice = (product?: ShopProduct, portrait = false) => {
     ]),
   )
   const variant = findVariant(product, cardSelection)
-  return variant ? money(variant.price, variant.currency) : PRICE
+  return variant ? money(variant.price, variant.currency) : null
 }
 
 // two large pieces standing in for the wider bodies of work
@@ -162,6 +162,23 @@ function ShopIndex() {
 
   useSectionTextReveal(head, true)
   useSectionTextReveal(catalogs)
+
+  useEffect(() => {
+    if (window.location.hash !== '#catalogs') return
+
+    const scrollToCatalogs = () => catalogs.current?.scrollIntoView({ block: 'start' })
+    const frame = window.requestAnimationFrame(() => {
+      window.requestAnimationFrame(scrollToCatalogs)
+    })
+    const timer = window.setTimeout(scrollToCatalogs, 350)
+    window.addEventListener('load', scrollToCatalogs, { once: true })
+
+    return () => {
+      window.cancelAnimationFrame(frame)
+      window.clearTimeout(timer)
+      window.removeEventListener('load', scrollToCatalogs)
+    }
+  }, [])
 
   const shown = useMemo(
     () =>
@@ -243,32 +260,34 @@ function ShopIndex() {
       </section>
 
       <div className="shop__grid" id="works" ref={grid}>
-        {shown.map((work) => (
-          <a
-            key={work.id}
-            className="shop__item"
-            href={work.href}
-            style={{ '--ar': String(work.ratio) } as React.CSSProperties}
-          >
-            <figure className="shop__figure">
-              <img src={work.image} alt={`${work.title}, ${work.subtitle}`} loading="lazy" />
-            </figure>
-            <p className="shop__caption">
-              <span>{work.title.toLowerCase()}.</span>
-              <span className="shop__price">
-                from {fromPrice(
-                  work.shopifyHandle ? products[work.shopifyHandle] : undefined,
-                  work.ratio < 1,
-                )}
-              </span>
-            </p>
-            {/* the catalogs' own affordance, on every work: the arrow steps
-                right as the photograph pushes in under the cursor */}
-            <p className="shop__meta">
-              {work.meta} <span className="shop__arrow" aria-hidden="true">→</span>
-            </p>
-          </a>
-        ))}
+        {shown.map((work) => {
+          const price = fromPrice(
+            work.shopifyHandle ? products[work.shopifyHandle] : undefined,
+            work.ratio < 1,
+          )
+
+          return (
+            <a
+              key={work.id}
+              className="shop__item"
+              href={work.href}
+              style={{ '--ar': String(work.ratio) } as React.CSSProperties}
+            >
+              <figure className="shop__figure">
+                <img src={work.image} alt={`${work.title}, ${work.subtitle}`} loading="lazy" />
+              </figure>
+              <p className="shop__caption">
+                <span>{work.title.toLowerCase()}.</span>
+                {price && <span className="shop__price">from {price}</span>}
+              </p>
+              {/* the catalogs' own affordance, on every work: the arrow steps
+                  right as the photograph pushes in under the cursor */}
+              <p className="shop__meta">
+                {work.meta} <span className="shop__arrow" aria-hidden="true">→</span>
+              </p>
+            </a>
+          )
+        })}
       </div>
 
       <section className="shop__catalogs" id="catalogs" ref={catalogs}>

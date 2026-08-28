@@ -16,7 +16,7 @@ gsap.registerPlugin(ScrollTrigger)
 // carries the [O] instead of its title — it is the brand's own entry in the
 // list, and behaves exactly like the others.
 const HOME_IDS = [HERO_ID, 'runner', 'wied-il-ghasri', 'praia-da-baleia']
-const HERO_AUTOPLAY_MS = 10_000
+const HERO_AUTOPLAY_MS = 5_000
 
 const projects = HOME_IDS.map((id) => {
   const a = artworks.find((w) => w.id === id)!
@@ -27,7 +27,6 @@ const projects = HOME_IDS.map((id) => {
     title: a.title,
     year: a.subtitle.match(/\d{4}/)?.[0] ?? '',
     poster: a.image,
-    price: a.price,
   }
 })
 
@@ -190,10 +189,6 @@ function Statement() {
         </figure>
         <div className="statement__artwork-caption">
           <RevealText>{STATEMENT_ARTWORK.title}</RevealText>
-          <RevealText>{STATEMENT_ARTWORK.price}</RevealText>
-          <a href="/shop">
-            <RevealText>shop <span aria-hidden="true">→</span></RevealText>
-          </a>
         </div>
       </div>
     </section>
@@ -497,13 +492,6 @@ export default function Home({ dark = false }: { dark?: boolean }) {
           })}
         </nav>
 
-        <div className="hero__buy">
-          <span className="hero__price"><RevealText>{active.price}</RevealText></span>
-
-          <a className="hero__shop" href="/shop">
-            <RevealText>shop <span className="hero__shop-arrow" aria-hidden="true">-&gt;</span></RevealText>
-          </a>
-        </div>
       </section>
 
       <Statement />
