@@ -15,3 +15,4 @@ reference-moments/indingo-reference.png
 # products.json and the push script are the reproducible part; the pixels aren't.
 30-photos-release/
 shopify-release/images/
+.env*

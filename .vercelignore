@@ -1,0 +1,9 @@
+# Reference photography kept in the working tree but never read by the build —
+# 149MB that would otherwise be uploaded on every deploy.
+moments-1/
+moments-2/
+moments-3/
+30-photos-release/
+shopify-release/images/
+Style Guide VSL_TNES.pdf
+video-signature-reference.mp4
