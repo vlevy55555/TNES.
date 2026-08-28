@@ -34,7 +34,6 @@ const projects = HOME_IDS.map((id) => {
 // the gallery are real today.
 const NAV = [
   { label: 'shop', href: '/shop' },
-  { label: 'studio', href: '/#studio' },
   { label: 'catalogs', href: '/shop#catalogs' },
   { label: 'moments', href: '/moments' },
   { label: 'about', href: '/about' },
@@ -181,7 +180,6 @@ function Statement() {
       </p>
       <div className="statement__actions" aria-label="Ações principais">
         <a href="/shop"><RevealText>shop <span aria-hidden="true">→</span></RevealText></a>
-        <a href="#studio"><RevealText>enter the studio <span aria-hidden="true">→</span></RevealText></a>
       </div>
       <div className="statement__artwork">
         <figure className="statement__media">
@@ -313,7 +311,8 @@ function SelectedWorks() {
   )
 }
 
-function TheStudio() {
+// Kept ready for a future relaunch, but intentionally not rendered on the site.
+export function TheStudio() {
   const [ref, seen] = useInView<HTMLElement>()
   useSectionTextReveal(ref)
 
@@ -496,7 +495,7 @@ export default function Home({ dark = false }: { dark?: boolean }) {
 
       <Statement />
       <SelectedWorks />
-      <TheStudio />
+      <EarlyAccess />
       <ShopFooter />
     </main>
   )

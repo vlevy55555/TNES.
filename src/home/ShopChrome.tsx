@@ -8,7 +8,6 @@ import ContactOverlay from './ContactOverlay'
 // the shop, the cart, the store and moments are real today.
 const NAV = [
   { label: 'shop', href: '/shop' },
-  { label: 'studio', href: '/#studio' },
   { label: 'catalogs', href: '/shop#catalogs' },
   { label: 'moments', href: '/moments' },
   { label: 'about', href: '/about' },
@@ -59,7 +58,6 @@ export function ShopFooter() {
         <div className="shop__footer-links">
           <div>
             <a href="/shop">shop</a>
-            <a href="/#studio">studio</a>
             <a href="/shop#catalogs">catalogs</a>
             <a href="/moments">moments</a>
             <a href="/about">about</a>
