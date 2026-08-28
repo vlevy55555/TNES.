@@ -10,7 +10,8 @@
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
-    "test": "tsc --ignoreConfig src/lib/shopify.ts --outDir .test-build --rootDir src --module esnext --target es2022 && node --test test/*.test.mjs"
+    "test": "tsc --ignoreConfig src/lib/shopify.ts --outDir .test-build --rootDir src --module esnext --target es2022 && node --test test/*.test.mjs",
+    "deploy": "npm run build && git push"
   },
   "dependencies": {
     "@react-three/drei": "^10.7.7",

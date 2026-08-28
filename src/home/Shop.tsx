@@ -23,26 +23,45 @@ const REGION: Record<string, string> = {
   Portugal: 'europe',
   Switzerland: 'europe',
   'New York': 'north america',
+  'United States': 'north america',
 }
 
 // What is in the frame. Shop-only metadata — the 3D room never asks for it.
 const SCENES: Record<string, string[]> = {
-  'the-pool': ['water', 'landscape'],
-  runner: ['beach', 'people'],
-  'wied-il-ghasri': ['water', 'people', 'landscape'],
-  lauterbrunnen: ['alpine', 'landscape'],
+  'appenzell-alpine-lake': ['water', 'alpine', 'landscape'],
   'praia-da-baleia': ['beach', 'people'],
-  'playa-roja': ['landscape', 'water'],
   'calpe-muralla-roja': ['architecture'],
-  'moreira-crowded-beach': ['beach', 'people'],
-  'florence-dogman': ['street', 'people'],
-  'ischia-mezzatorre': ['water', 'landscape'],
-  'ditch-plains-far': ['water', 'landscape'],
-  'appenzell-alpine-lake': ['alpine', 'water', 'landscape'],
+  'ditch-plains-far': ['beach', 'landscape'],
+  'florence-dogman': ['street', 'people', 'animals'],
+  'wied-il-ghasri': ['water', 'people', 'landscape'],
+  runner: ['beach', 'people'],
+  'ischia-mezzatorre': ['water', 'people', 'architecture'],
+  'moreira-crowded-beach': ['beach', 'water', 'people'],
+  lauterbrunnen: ['alpine', 'animals', 'landscape'],
+  'playa-roja': ['desert', 'landscape'],
+  'the-pool': ['water', 'people', 'landscape'],
+  'christ-in-fog-rio-de-janeiro': ['architecture'],
+  'pink-lagoon-paracas': ['water', 'desert', 'landscape'],
+  'moraira-from-above': ['beach', 'water', 'landscape'],
+  'fishing-bay-paracas': ['water', 'landscape'],
+  'ipanema-at-dusk': ['beach', 'water', 'people', 'landscape'],
+  'after-the-fog-murren': ['alpine', 'landscape'],
+  'perigo-praia-da-baleia': ['beach', 'objects'],
+  'appenzell-valley': ['alpine', 'landscape'],
+  'first-bells-mount-rigi': ['alpine', 'animals', 'landscape'],
+  'red-rooms-calpe': ['architecture'],
+  'blue-edge-gozo': ['water', 'architecture', 'landscape'],
+  'narrow-opening-wied-il-ghasri': ['water', 'landscape'],
+  'carousel-florence': ['street', 'people', 'objects'],
+  'low-tide-praia-da-baleia': ['beach', 'water', 'landscape'],
+  'ipanema-promenade': ['street', 'people', 'beach'],
+  'on-dry-land-gozo': ['objects', 'landscape'],
+  'red-car-gozo': ['water', 'people', 'objects', 'landscape'],
+  'playa-roja-paracas': ['beach', 'water', 'desert', 'landscape'],
 }
 
 const PLACES = ['all', 'south america', 'europe', 'north america']
-const SCENE_FILTERS = ['all', 'beach', 'water', 'alpine', 'landscape', 'street', 'architecture', 'people']
+const SCENE_FILTERS = ['all', 'beach', 'water', 'desert', 'alpine', 'landscape', 'street', 'architecture', 'people', 'animals', 'objects']
 
 const works = artworks.map((work) => {
   const [where, year] = work.subtitle.split(' · ')

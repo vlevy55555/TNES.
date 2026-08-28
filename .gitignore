@@ -8,3 +8,10 @@ dist/
 # full-page capture of indigo-laboratory.it kept locally as a motion reference —
 # 42MB, and nothing in the build reads it
 reference-moments/indingo-reference.png
+
+.vercel
+
+# 630MB of camera masters + the Shopify-sized derivatives built from them.
+# products.json and the push script are the reproducible part; the pixels aren't.
+30-photos-release/
+shopify-release/images/
