@@ -210,13 +210,40 @@ export default function Product({ id }: { id: string }) {
             }}
           >
             <ProductFrame artwork={work} style={frame} />
-            <span className="product__3d-tag" aria-hidden="true">
+            <span className="product__zoom-hint" aria-hidden="true">
               <svg viewBox="0 0 24 24" focusable="false">
-                <path d="M12 2.8 20 7.3v9.4L12 21.2 4 16.7V7.3L12 2.8Z" />
-                <path d="m4.4 7.5 7.6 4.4 7.6-4.4M12 12v8.7" />
+                <circle cx="10.5" cy="10.5" r="6.25" />
+                <path d="m15.2 15.2 4.3 4.3" />
+                <path d="M10.5 7.5v6M7.5 10.5h6" />
               </svg>
-              <span>3D</span>
             </span>
+            {variant?.available && (
+              <div
+                className="product__media-quantity product__quantity-controls"
+                role="group"
+                aria-label="Quantity"
+                onPointerDown={(event) => event.stopPropagation()}
+                onPointerUp={(event) => event.stopPropagation()}
+              >
+                {quantity > 1 && (
+                  <button
+                    type="button"
+                    aria-label="Decrease quantity"
+                    onClick={() => setQuantity((current) => Math.max(1, current - 1))}
+                  >
+                    −
+                  </button>
+                )}
+                <output aria-live="polite">{quantity}</output>
+                <button
+                  type="button"
+                  aria-label="Increase quantity"
+                  onClick={() => setQuantity((current) => Math.min(20, current + 1))}
+                >
+                  +
+                </button>
+              </div>
+            )}
           </figure>
         </section>
 

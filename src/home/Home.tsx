@@ -92,7 +92,7 @@ const STATEMENT_COPY_LINES = [
   'quite the same way again — and giving them',
   'a life after they pass.',
 ]
-const STATEMENT_ARTWORK = artworks.find((work) => work.id === 'praia-da-baleia')!
+const STATEMENT_ARTWORK = artworks.find((work) => work.id === 'the-pool')!
 
 function Statement() {
   const ref = useRef<HTMLElement>(null)

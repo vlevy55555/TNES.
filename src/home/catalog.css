@@ -15,6 +15,7 @@
 .catalog-page__overview {
   display: grid;
   grid-template-columns: minmax(0, 0.95fr) minmax(420px, 1.05fr);
+  align-items: start;
   gap: clamp(54px, 8vw, 150px);
   margin-top: clamp(28px, 4vw, 64px);
 }
@@ -45,8 +46,30 @@
   font-size: 12px;
 }
 
+.catalog-page__lead-inquire {
+  margin-top: clamp(32px, 3.4vw, 50px);
+  padding: 13px 20px;
+  border: 1px solid var(--paper-ink);
+  background: transparent;
+  color: var(--paper-ink);
+  font-family: var(--mono);
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background-color 180ms ease, color 180ms ease;
+}
+
+.catalog-page__lead-inquire:hover,
+.catalog-page__lead-inquire:focus-visible {
+  background: var(--paper-ink);
+  color: var(--paper);
+}
+
 .catalog-page__facts {
+  align-self: start;
   padding-left: clamp(28px, 4vw, 72px);
+  padding-top: clamp(2px, 0.35vw, 6px);
   border-left: 1px solid var(--paper-line);
 }
 
@@ -82,6 +105,40 @@
   line-height: 1.4;
 }
 
+.catalog-page__studio-note {
+  max-width: 52ch;
+  color: var(--paper-muted);
+}
+
+.catalog-page__studio-note .catalog-page__studio-label {
+  margin: 0 0 clamp(20px, 2.5vw, 34px);
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--paper-line);
+  font-family: var(--mono);
+  font-size: 12px;
+  letter-spacing: 0.05em;
+}
+
+.catalog-page__studio-note h2 {
+  margin: 0 0 clamp(22px, 2.5vw, 34px);
+  color: var(--paper-ink);
+  font-family: var(--serif);
+  font-size: clamp(24px, 2.2vw, 38px);
+  font-weight: 400;
+  line-height: 1.05;
+}
+
+.catalog-page__studio-note > p:not(.catalog-page__studio-label) {
+  margin: 0 0 18px;
+  font-family: var(--serif);
+  font-size: clamp(13px, 1vw, 16px);
+  line-height: 1.5;
+}
+
+.catalog-page__studio-note > p:last-child {
+  margin-bottom: 0;
+}
+
 .catalog-page__actions {
   display: flex;
   flex-wrap: wrap;
@@ -112,6 +169,83 @@
 .catalog-page__timeline {
   padding: 0 var(--pad-x);
   border-top: 1px solid var(--paper-line);
+}
+
+.catalog-page__hamptons {
+  display: grid;
+  gap: clamp(72px, 10vw, 180px);
+  padding: clamp(36px, 5vw, 78px) var(--pad-x) clamp(80px, 11vw, 190px);
+  border-top: 1px solid var(--paper-line);
+}
+
+.catalog-page__spread {
+  display: grid;
+  width: min(100%, 1180px);
+  margin-inline: auto;
+  gap: clamp(24px, 3.5vw, 58px) clamp(12px, 1.5vw, 24px);
+}
+
+.catalog-page__spread--4,
+.catalog-page__spread--3 {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.catalog-page__spread--2 {
+  grid-template-columns: minmax(0, 0.68fr);
+  justify-content: center;
+}
+
+.catalog-page__hamptons-work {
+  min-width: 0;
+  margin: 0;
+}
+
+.catalog-page__hamptons-trigger {
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.catalog-page__hamptons-work--wide {
+  grid-column: 1 / -1;
+}
+
+.catalog-page__hamptons-work--compact {
+  width: min(72%, 620px);
+  justify-self: center;
+}
+
+.catalog-page__hamptons-work img {
+  display: block;
+  width: 100%;
+  height: auto;
+  background: var(--media-fallback);
+}
+
+.catalog-page__hamptons-caption {
+  display: flex;
+  gap: 10px;
+  margin-top: 8px;
+  color: var(--paper-muted);
+  font-family: var(--mono);
+  font-size: 12px;
+  letter-spacing: 0.025em;
+  text-transform: lowercase;
+}
+
+.catalog-page__hamptons-caption span {
+  color: var(--paper-ink);
+  font-weight: 600;
+}
+
+.catalog-page__hamptons-trigger:focus-visible {
+  outline: 1px solid var(--paper-ink);
+  outline-offset: 6px;
 }
 
 /* The private catalogs close on a dark archive-signup plate. The shared home
@@ -240,6 +374,27 @@
 
   .catalog-page__work figure {
     height: clamp(180px, 48vw, 330px);
+  }
+
+  .catalog-page__hamptons {
+    gap: 72px;
+    padding-top: 28px;
+  }
+
+  .catalog-page__spread,
+  .catalog-page__spread--2,
+  .catalog-page__spread--3,
+  .catalog-page__spread--4 {
+    grid-template-columns: 1fr;
+    gap: 34px;
+  }
+
+  .catalog-page__hamptons-work--wide {
+    grid-column: auto;
+  }
+
+  .catalog-page__hamptons-work--compact {
+    width: min(84%, 520px);
   }
 }
 

@@ -96,7 +96,7 @@ const catalogCopy = {
   'the-hamptons': {
     title: 'the hamptons',
     description: 'the body of work shown for the east coast summer — coastline, light, and the hours around it. available as custom prints framed to the room.',
-    meta: 'summer 2024  ·  east coast, usa  ·  studio catalog',
+    meta: 'summer 2026  ·  east coast, usa  ·  36 works',
     ids: ['runner', 'the-pool', 'ditch-plains-far', 'praia-da-baleia', 'wied-il-ghasri', 'ischia-mezzatorre'],
   },
   'selected-works': {
@@ -107,6 +107,35 @@ const catalogCopy = {
   },
 } as const
 
+const hamptonsLocations = [
+  'main beach', 'georgica beach', 'main beach', 'atlantic ave beach',
+  'indian wells beach', 'ditch plains', 'ditch plains', 'ditch plains',
+  'main beach', 'main beach', 'main beach', 'shadmoor park',
+  'shadmoor park', 'shadmoor park', 'ditch plains', 'main beach',
+  'atlantic ave beach', 'hook pond', 'napeague', 'napeague',
+  'napeague', 'montauk', 'east hampton', 'montauk',
+  'montauk', 'napeague', 'montauk', 'montauk',
+  'napeague', 'napeague', 'east hampton', 'napeague',
+  'napeague', 'napeague', 'napeague', 'main beach',
+] as const
+
+const hamptonsWorks = hamptonsLocations.map((location, index) => {
+  const number = String(index + 1).padStart(2, '0')
+  return {
+    number,
+    location,
+    image: `/images/catalogs/the-hamptons/${number}-${location.replaceAll(' ', '-')}.webp`,
+    preview: `/images/catalogs/the-hamptons/${number}-${location.replaceAll(' ', '-')}-1200.webp`,
+  }
+})
+
+// One website spread per photographic page in the final catalog PDF.
+const hamptonsSpreadSizes = [4, 3, 3, 4, 3, 4, 3, 4, 2, 2, 2, 2] as const
+const hamptonsSpreads = hamptonsSpreadSizes.map((size, spreadIndex) => {
+  const start = hamptonsSpreadSizes.slice(0, spreadIndex).reduce<number>((total, value) => total + value, 0)
+  return hamptonsWorks.slice(start, start + size)
+})
+
 const chapterCopy = [
   ['coastline', 'edges of land and water. undulating shorelines and open horizon.'],
   ['light', 'light in motion. reflective water and moments that fade.'],
@@ -115,12 +144,12 @@ const chapterCopy = [
 ] as const
 
 export function isCatalogSlug(value: string | null): value is CatalogSlug {
-  return value === 'the-hamptons' || value === 'selected-works'
+  return value === 'the-hamptons'
 }
 
 export default function Catalog({ slug }: { slug: CatalogSlug }) {
   const openContact = useContactStore((state) => state.openContact)
-  const [unlocked, setUnlocked] = useState(false)
+  const [unlocked, setUnlocked] = useState(slug === 'the-hamptons')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [inquiryOpen, setInquiryOpen] = useState(false)
@@ -208,44 +237,113 @@ export default function Catalog({ slug }: { slug: CatalogSlug }) {
             <h1><RevealText block>{catalog.title}.</RevealText></h1>
             <p>{catalog.description}</p>
             <p className="catalog-page__meta">{catalog.meta}</p>
+            {slug === 'the-hamptons' && (
+              <button
+                className="catalog-page__lead-inquire"
+                type="button"
+                onClick={() => openContact('the hamptons catalog inquiry')}
+              >
+                inquire <span aria-hidden="true">→</span>
+              </button>
+            )}
           </div>
 
           <div className="catalog-page__facts">
-            <dl>
-              <div><dt>purpose</dt><dd>a curated body of work for custom prints and collector editions.</dd></div>
-              <div><dt>prints</dt><dd>available in multiple sizes with archival materials and framing options.</dd></div>
-              <div><dt>interiors</dt><dd>selected works shown in residential and hospitality spaces.</dd></div>
-              <div><dt>collectors</dt><dd>for collectors, curators, and design professionals.</dd></div>
-              <div><dt>orders</dt><dd>all orders placed upon inquiry.</dd></div>
-            </dl>
-            <div className="catalog-page__actions">
-              <button type="button" onClick={() => openContact(`${catalog.title} print inquiry`)}>
-                inquire about prints <span aria-hidden="true">→</span>
-              </button>
-              <a href="/shop#catalogs">all catalogs <span aria-hidden="true">→</span></a>
-            </div>
+            {slug === 'the-hamptons' ? (
+              <div className="catalog-page__studio-note">
+                <p className="catalog-page__studio-label">the studio</p>
+                <h2>nothing happens twice.</h2>
+                <p>
+                  no one goes back for a moment. stand in<br />
+                  the same place a year later and it hands<br />
+                  you something else.
+                </p>
+                <p>
+                  what is here is one person's record of one<br />
+                  summer in the hamptons. not a group show.<br />
+                  not a marketplace.
+                </p>
+                <p>
+                  owning a piece is keeping the minute<br />
+                  someone stopped, and deciding it was<br />
+                  worth keeping.
+                </p>
+                <p>thirty-six images here. one becomes the print.</p>
+              </div>
+            ) : (
+              <dl>
+                <div><dt>purpose</dt><dd>a curated body of work for custom prints and collector editions.</dd></div>
+                <div><dt>prints</dt><dd>available in multiple sizes with archival materials and framing options.</dd></div>
+                <div><dt>interiors</dt><dd>selected works shown in residential and hospitality spaces.</dd></div>
+                <div><dt>collectors</dt><dd>for collectors, curators, and design professionals.</dd></div>
+                <div><dt>orders</dt><dd>all orders placed upon inquiry.</dd></div>
+              </dl>
+            )}
+            {slug !== 'the-hamptons' && (
+              <div className="catalog-page__actions">
+                <button type="button" onClick={() => openContact(`${catalog.title} print inquiry`)}>
+                  inquire about prints <span aria-hidden="true">→</span>
+                </button>
+                <a href="/shop#catalogs">all catalogs <span aria-hidden="true">→</span></a>
+              </div>
+            )}
           </div>
         </div>
       </section>
 
-      <section className="catalog-page__timeline" aria-label={`${catalog.title} works`}>
-        {chapters.map(({ label: [title, description], works }, index) => (
-          <article className="catalog-page__chapter" key={`${title}-${index}`}>
-            <header>
-              <p><span>{String(index + chapterOffset + 1).padStart(2, '0')}</span>{title}</p>
-              <p>{description}</p>
-            </header>
-            <div className={`catalog-page__mosaic catalog-page__mosaic--${works.length}`}>
+      {slug === 'the-hamptons' ? (
+        <section className="catalog-page__hamptons" aria-label="the hamptons works 01 through 36">
+          {hamptonsSpreads.map((works, spreadIndex) => (
+            <div
+              className={`catalog-page__spread catalog-page__spread--${works.length} ${works.length === 3 && spreadIndex === 1 ? 'catalog-page__spread--wide-last' : ''}`}
+              key={works[0].number}
+            >
               {works.map((work, workIndex) => (
-                <a className={`catalog-page__work catalog-page__work--${workIndex + 1} catalog-page__work--${work.id}`} href={work.shopifyHandle ? `/shop/${work.id}` : '/shop'} key={work.id}>
-                  <figure><img src={work.image} alt={`${work.title}, ${work.subtitle}`} loading="lazy" /></figure>
-                  <p><span>{work.title.toLowerCase()}.</span><span>{work.subtitle.toLowerCase()}</span></p>
-                </a>
+                <figure
+                  className={`catalog-page__hamptons-work ${works.length === 3 && workIndex === (spreadIndex === 1 ? 2 : 0) ? 'catalog-page__hamptons-work--wide' : ''} ${['07', '29', '32', '35'].includes(work.number) ? 'catalog-page__hamptons-work--compact' : ''}`}
+                  key={work.number}
+                >
+                  <button
+                    className="catalog-page__hamptons-trigger"
+                    type="button"
+                    onClick={() => openContact(`the hamptons — photograph ${work.number} — ${work.location}`)}
+                    aria-label={`inquire about photograph ${work.number}, ${work.location}`}
+                  >
+                    <img
+                      src={work.preview}
+                      srcSet={`${work.preview} 1200w, ${work.image} 2400w`}
+                      sizes="(max-width: 800px) calc(100vw - 32px), 50vw"
+                      alt={`${work.number}, ${work.location}, the hamptons, 2026`}
+                      loading={spreadIndex === 0 ? 'eager' : 'lazy'}
+                      decoding="async"
+                    />
+                    <span className="catalog-page__hamptons-caption"><span>{work.number}</span>{work.location}</span>
+                  </button>
+                </figure>
               ))}
             </div>
-          </article>
-        ))}
-      </section>
+          ))}
+        </section>
+      ) : (
+        <section className="catalog-page__timeline" aria-label={`${catalog.title} works`}>
+          {chapters.map(({ label: [title, description], works }, index) => (
+            <article className="catalog-page__chapter" key={`${title}-${index}`}>
+              <header>
+                <p><span>{String(index + chapterOffset + 1).padStart(2, '0')}</span>{title}</p>
+                <p>{description}</p>
+              </header>
+              <div className={`catalog-page__mosaic catalog-page__mosaic--${works.length}`}>
+                {works.map((work, workIndex) => (
+                  <a className={`catalog-page__work catalog-page__work--${workIndex + 1} catalog-page__work--${work.id}`} href={work.shopifyHandle ? `/shop/${work.id}` : '/shop'} key={work.id}>
+                    <figure><img src={work.image} alt={`${work.title}, ${work.subtitle}`} loading="lazy" /></figure>
+                    <p><span>{work.title.toLowerCase()}.</span><span>{work.subtitle.toLowerCase()}</span></p>
+                  </a>
+                ))}
+              </div>
+            </article>
+          ))}
+        </section>
+      )}
 
       <EarlyAccess />
       <ShopFooter />

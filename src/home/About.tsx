@@ -238,7 +238,7 @@ export default function About() {
           <RevealText>{ABOUT.cta} <span className="shop__arrow" aria-hidden="true">→</span></RevealText>
         </a>
         <p className="shop__meta">
-          <RevealText>the studio behind the exhibition</RevealText>
+          <RevealText>the mind behind the studio</RevealText>
         </p>
       </section>
 

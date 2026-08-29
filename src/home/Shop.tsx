@@ -119,6 +119,9 @@ const CATALOGS = [
   },
 ]
 
+// Selected Works stays prepared in the source, but is currently off the public site.
+const VISIBLE_CATALOGS = CATALOGS.filter((catalog) => catalog.title !== 'selected works')
+
 function Filter({
   label,
   options,
@@ -294,17 +297,14 @@ function ShopIndex() {
         <h2 className="shop__section-title"><RevealText block>catalogs.</RevealText></h2>
         <p className="shop__section-sub">
           <RevealText>work from the archive, gathered into sets. a place, a season, a way of looking.</RevealText>
-          <span className="shop__section-sub-access">
-            <RevealText>opened with a password from the studio.</RevealText>
-          </span>
         </p>
 
         <div className="shop__catalog-grid">
-          {CATALOGS.map((catalog) => (
+          {VISIBLE_CATALOGS.map((catalog) => (
             <a className="shop__catalog" key={catalog.title} href={catalogHref(catalog.title)}>
               <figure className="shop__figure">
                 <img src={catalog.image} alt={catalog.title} loading="lazy" />
-                <span className="shop__catalog-private">[O] private</span>
+                {catalog.title !== 'the hamptons' && <span className="shop__catalog-private">[O] private</span>}
               </figure>
               <div className="shop__catalog-info">
                 <p className="shop__catalog-title">{catalog.title}.</p>

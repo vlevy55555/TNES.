@@ -688,40 +688,36 @@ body:has(.shop),
   cursor: var(--interactive-cursor) !important;
 }
 
-.product__3d-tag {
-  position: absolute;
-  z-index: 2;
-  top: clamp(12px, 1.4vw, 22px);
-  right: clamp(10px, 1.2vw, 20px);
-  display: inline-flex;
-  align-items: center;
-  gap: 9px;
-  padding: 7px 10px 6px;
-  border: 1px solid rgba(55, 55, 52, 0.34);
-  background:
-    linear-gradient(105deg, rgba(255, 255, 255, 0.82), rgba(176, 178, 175, 0.9) 48%, rgba(242, 243, 240, 0.94));
-  box-shadow: 0 4px 12px rgba(25, 25, 23, 0.14);
-  color: #171715;
-  font-family: var(--mono);
-  font-size: 11px;
-  line-height: 1;
-  letter-spacing: 0.12em;
-  pointer-events: none;
-}
-
-.product__3d-tag svg {
-  width: 16px;
-  height: 16px;
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 1.35;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-
 .product__media:focus-visible {
   outline: 1px solid var(--paper-ink);
   outline-offset: 6px;
+}
+
+.product__zoom-hint {
+  position: absolute;
+  z-index: 3;
+  top: clamp(8px, 1.2vw, 18px);
+  right: clamp(8px, 1.2vw, 18px);
+  display: grid;
+  width: 38px;
+  height: 38px;
+  place-items: center;
+  border: 1px solid rgba(20, 20, 20, 0.42);
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.88);
+  color: var(--paper-ink);
+  pointer-events: none;
+  backdrop-filter: blur(4px);
+}
+
+.product__zoom-hint svg {
+  width: 19px;
+  height: 19px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.45;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
 .product__lightbox {
@@ -886,6 +882,10 @@ body:has(.shop),
   border-color: var(--paper-ink);
 }
 
+.product__media-quantity {
+  display: none;
+}
+
 button.product__cart {
   width: 100%;
   background: transparent;
@@ -1018,9 +1018,9 @@ button.product__cart {
 }
 
 @media (max-width: 900px) {
-  .product__3d-tag {
+  .product__zoom-hint {
     right: auto;
-    left: clamp(10px, 3vw, 18px);
+    left: clamp(8px, 2vw, 14px);
   }
 
   .product__stage {
@@ -1039,6 +1039,27 @@ button.product__cart {
 
   .product__media--portrait {
     margin: 0 auto;
+  }
+
+  .product__purchase .product__quantity {
+    display: none;
+  }
+
+  .product__media-quantity {
+    position: absolute;
+    z-index: 3;
+    right: clamp(6px, 2vw, 14px);
+    bottom: clamp(6px, 2vw, 14px);
+    display: flex;
+    padding: 5px;
+    background: rgba(255, 255, 255, 0.9);
+  }
+
+  .product__media-quantity button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 0 2px;
   }
 
   .product__options {
