@@ -151,6 +151,9 @@ const variantsFor = (p) =>
       ],
       price: PRICES[i],
       // Prints are made to order, so stock must never gate the buy button.
+      // CONTINUE is also what the 12 pre-existing products use — the API
+      // defaults to DENY, which silently made the first 18 the odd ones out.
+      inventoryPolicy: 'CONTINUE',
       inventoryItem: { tracked: false },
     })),
   )
