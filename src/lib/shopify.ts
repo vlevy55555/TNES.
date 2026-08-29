@@ -77,13 +77,23 @@ export const middleValue = (values: string[]) => values[Math.floor((values.lengt
 
 const optionKey = (value: string) => value.toLowerCase().replace(/×/g, 'x').replace(/[^a-z0-9]/g, '')
 
+/**
+ * A size label is a width×height pair, so the same physical print is '20x30' on
+ * a portrait and '30x20' on a landscape. Sorting the pair makes the two read as
+ * one tier; anything that isn't a pair passes through untouched.
+ */
+const sizeTier = (value: string) => {
+  const pair = /^(\d+)x(\d+)/.exec(optionKey(value))
+  return pair ? [Number(pair[1]), Number(pair[2])].sort((a, b) => a - b).join('x') : optionKey(value)
+}
+
 /** The merchandising baseline used everywhere a print first appears. */
 const preferredValue = (name: string, values: string[]) => {
-  const wanted = /frame/i.test(name) ? 'unframed' : /size/i.test(name) ? '20x30' : ''
-  return values.find((value) => {
-    const key = optionKey(value)
-    return /size/i.test(name) ? key.startsWith(wanted) : key === wanted
-  }) ?? middleValue(values)
+  if (/frame/i.test(name)) return values.find((v) => optionKey(v) === 'unframed') ?? middleValue(values)
+  // Matching on the tier rather than the literal keeps landscapes and portraits
+  // opening on the same print, instead of half the catalogue defaulting a step up.
+  if (/size/i.test(name)) return values.find((v) => sizeTier(v) === '20x30') ?? middleValue(values)
+  return middleValue(values)
 }
 
 /**

@@ -21,11 +21,12 @@ const ENV = {
   SHOPIFY_CLI_AGENT_INFO: 'n:claude-code|v:2.0.0|p:anthropic|m:claude-opus-5',
 }
 
-// Landscape and portrait works are merchandised with mirrored size labels — this
-// is the convention already live on the 12 existing products, not a guess.
+// The label is the print's width x height, so it mirrors with the orientation.
+// The 12 pre-existing products had these two sets swapped — every work was sold
+// in the shape of its opposite — and swap-size-labels.mjs corrected all 30.
 const SIZES = {
-  Landscape: ['20x30', '24x36', '28x42'],
-  Portrait: ['30x20', '36x24', '42x28'],
+  Landscape: ['30x20', '36x24', '42x28'],
+  Portrait: ['20x30', '24x36', '28x42'],
 }
 const PRICES = { 0: '1600.00', 1: '2100.00', 2: '2600.00' }
 const FRAMES = ['Unframed', 'White', 'Black']

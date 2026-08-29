@@ -113,6 +113,27 @@ test('defaultSelection opens on the middle size, not the smallest', () => {
   assert.deepEqual(defaultSelection(threeSizes), { Size: '20x30' })
 })
 
+test('defaultSelection opens on the same tier whichever way the label reads', () => {
+  // A landscape print is merchandised as '30x20' and a portrait as '20x30' —
+  // the same physical print, so both must open on it rather than one of them
+  // falling through to the middle size.
+  const landscape = normalizeProduct({
+    handle: 'rio-runner',
+    title: 'Rio Runner',
+    options: [{ name: 'Size', values: ['30x20', '36x24', '42x28'] }],
+    variants: {
+      nodes: ['30x20', '36x24', '42x28'].map((size, i) => ({
+        id: `gid://shopify/ProductVariant/${i}`,
+        title: size,
+        availableForSale: true,
+        price: { amount: '100.0', currencyCode: 'USD' },
+        selectedOptions: [{ name: 'Size', value: size }],
+      })),
+    },
+  })
+  assert.deepEqual(defaultSelection(landscape), { Size: '30x20' })
+})
+
 test('defaultSelection falls back past a sold-out middle', () => {
   const soldMiddle = normalizeProduct({
     handle: 'x',
