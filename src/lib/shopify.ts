@@ -138,6 +138,22 @@ type RawVariant = {
   selectedOptions: { name: string; value: string }[]
 }
 
+/**
+ * Shopify's Storefront index for `options.values` lags a rename — after the
+ * size-label correction it still lists the smallest print last, while the
+ * variants come back in the right order. A size label is a width×height pair,
+ * so order them here instead of trusting the index. Every other option keeps
+ * the merchandised order, which carries a meaning that sorting would destroy.
+ */
+const orderedValues = (name: string, values: string[]) => {
+  if (!/size/i.test(name)) return values
+  const area = (value: string) => {
+    const pair = /^(\d+)x(\d+)/.exec(optionKey(value))
+    return pair ? Number(pair[1]) * Number(pair[2]) : Number.MAX_SAFE_INTEGER
+  }
+  return [...values].sort((a, b) => area(a) - area(b))
+}
+
 /** Shapes the GraphQL payload into ShopProduct. Exported for the test. */
 export const normalizeProduct = (raw: {
   handle: string
@@ -147,7 +163,7 @@ export const normalizeProduct = (raw: {
 }): ShopProduct => ({
   handle: raw.handle,
   title: raw.title,
-  options: raw.options,
+  options: raw.options.map((o) => ({ ...o, values: orderedValues(o.name, o.values) })),
   variants: raw.variants.nodes.map((v) => ({
     id: variantNumericId(v.id),
     title: v.title,

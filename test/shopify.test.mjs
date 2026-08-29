@@ -113,6 +113,22 @@ test('defaultSelection opens on the middle size, not the smallest', () => {
   assert.deepEqual(defaultSelection(threeSizes), { Size: '20x30' })
 })
 
+test('normalizeProduct orders sizes smallest first, whatever order Shopify sends', () => {
+  // The Storefront index lists the renamed value last for hours after a rename.
+  const p = normalizeProduct({
+    handle: 'christ-in-fog-rio-de-janeiro',
+    title: 'Christ in Fog',
+    options: [
+      { name: 'Size', values: ['24x36', '28x42', '20x30'] },
+      { name: 'Frame', values: ['Unframed', 'White', 'Black'] },
+    ],
+    variants: { nodes: [] },
+  })
+  assert.deepEqual(p.options[0].values, ['20x30', '24x36', '28x42'])
+  // Frame is merchandised, not sorted — Unframed must stay first.
+  assert.deepEqual(p.options[1].values, ['Unframed', 'White', 'Black'])
+})
+
 test('defaultSelection opens on the same tier whichever way the label reads', () => {
   // A landscape print is merchandised as '30x20' and a portrait as '20x30' —
   // the same physical print, so both must open on it rather than one of them
