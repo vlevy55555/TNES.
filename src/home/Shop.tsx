@@ -105,7 +105,8 @@ const fromPrice = (product?: ShopProduct, portrait = false) => {
 const CATALOGS = [
   {
     title: 'the hamptons',
-    image: works.find((w) => w.id === 'playa-roja')!.image,
+    image: '/images/catalogs/the-hamptons/24-montauk.webp',
+    imageCaption: '24 — montauk',
     description: 'the body of work shown for the east coast summer — coastline, light, and the hours around it. available as custom prints framed to the room.',
     details: '36 works  ·  seasonal selection',
     note: '',
@@ -113,6 +114,7 @@ const CATALOGS = [
   {
     title: 'selected works',
     image: '/catalogs/product4-cows-tall.webp',
+    imageCaption: '',
     description: 'a wider selection from the archive. brazil, malta, peru, italy, switzerland. shown for custom orders, interiors, and collectors working at scale.',
     details: '60+ works.',
     note: 'this is a selection, not the archive. if the place you are looking for is not here, write to the studio.',
@@ -302,10 +304,13 @@ function ShopIndex() {
         <div className="shop__catalog-grid">
           {VISIBLE_CATALOGS.map((catalog) => (
             <a className="shop__catalog" key={catalog.title} href={catalogHref(catalog.title)}>
-              <figure className="shop__figure">
-                <img src={catalog.image} alt={catalog.title} loading="lazy" />
-                {catalog.title !== 'the hamptons' && <span className="shop__catalog-private">[O] private</span>}
-              </figure>
+              <div className="shop__catalog-media">
+                <figure className="shop__figure">
+                  <img src={catalog.image} alt={catalog.title} loading="lazy" />
+                  {catalog.title !== 'the hamptons' && <span className="shop__catalog-private">[O] private</span>}
+                </figure>
+                {catalog.imageCaption && <p className="shop__catalog-caption">{catalog.imageCaption}</p>}
+              </div>
               <div className="shop__catalog-info">
                 <p className="shop__catalog-title">{catalog.title}.</p>
                 {catalog.description && (

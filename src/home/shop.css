@@ -337,12 +337,22 @@ body:has(.shop),
   grid-template-columns: minmax(220px, 1fr) minmax(0, 1.55fr);
 }
 
-.shop__catalog:nth-child(even) .shop__figure {
+.shop__catalog:nth-child(even) .shop__catalog-media {
   order: 2;
 }
 
 .shop__catalog:nth-child(even) .shop__catalog-info {
   order: 1;
+}
+
+.shop__catalog-media {
+  position: relative;
+  align-self: center;
+  width: 100%;
+}
+
+.shop__catalog-media:has(.shop__catalog-caption) {
+  margin-bottom: 34px;
 }
 
 .shop__catalog:last-child {
@@ -353,6 +363,18 @@ body:has(.shop),
 .shop__catalog .shop__figure {
   position: relative;
   aspect-ratio: 3.15 / 1;
+}
+
+.shop__catalog-caption {
+  position: absolute;
+  top: calc(100% + 16px);
+  left: 0;
+  margin: 0;
+  color: var(--paper-muted);
+  font-family: var(--mono);
+  font-size: 12px;
+  letter-spacing: 0.025em;
+  text-transform: lowercase;
 }
 
 .shop__catalog-private {
@@ -452,7 +474,7 @@ body:has(.shop),
     padding-block: clamp(18px, 5vw, 28px);
   }
 
-  .shop__catalog:nth-child(even) .shop__figure,
+  .shop__catalog:nth-child(even) .shop__catalog-media,
   .shop__catalog:nth-child(even) .shop__catalog-info {
     order: initial;
   }
@@ -476,6 +498,10 @@ body:has(.shop),
 
   .shop__catalog-link {
     margin-top: 16px;
+  }
+
+  .shop__catalog-caption {
+    top: calc(100% + 12px);
   }
 }
 
