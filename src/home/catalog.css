@@ -47,6 +47,7 @@
 }
 
 .catalog-page__lead-inquire {
+  display: block;
   margin-top: clamp(52px, 5.5vw, 88px);
   padding: 13px 20px;
   border: 1px solid var(--paper-ink);
