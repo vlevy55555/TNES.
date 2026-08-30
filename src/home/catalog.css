@@ -47,7 +47,7 @@
 }
 
 .catalog-page__lead-inquire {
-  margin-top: clamp(32px, 3.4vw, 50px);
+  margin-top: clamp(52px, 5.5vw, 88px);
   padding: 13px 20px;
   border: 1px solid var(--paper-ink);
   background: transparent;

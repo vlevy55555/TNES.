@@ -96,7 +96,7 @@ const catalogCopy = {
   'the-hamptons': {
     title: 'the hamptons',
     description: 'the body of work shown for the east coast summer — coastline, light, and the hours around it. available as custom prints framed to the room.',
-    meta: 'summer 2026  ·  east coast, usa  ·  36 works',
+    meta: 'summer 2026  ·  east hampton, napeague, montauk  ·  36 works',
     ids: ['runner', 'the-pool', 'ditch-plains-far', 'praia-da-baleia', 'wied-il-ghasri', 'ischia-mezzatorre'],
   },
   'selected-works': {
