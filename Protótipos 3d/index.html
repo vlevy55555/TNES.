@@ -387,7 +387,7 @@ helv.load().then(f => {
 
 // ---------------- animação de abrir/fechar no clique ----------------
 const OPEN_ANGLE = -1.95;          // ~112°, como um Zippo aberto
-let open = false;
+let open = location.hash.includes('open');
 let angle = open ? OPEN_ANGLE : 0;
 let animFrom = angle, animTo = angle, animStart = -1;
 const raycaster = new THREE.Raycaster();
@@ -406,9 +406,11 @@ addEventListener('pointerup', e => {
 });
 
 // ---------------- câmera / luz ----------------
-const dist = 9;
-controls.target.set(-0.3, 0, 0);
-camera.position.set(-0.3 + dist * 0.22, dist * 0.12, dist);
+const zoomIn = location.hash.includes('zoom');
+const dist = zoomIn ? 2.6 : 9;
+controls.target.set(zoomIn ? 1.55 : -0.3, zoomIn ? 0.55 : 0, 0);
+camera.position.set(controls.target.x + dist * 0.22, controls.target.y + dist * 0.12,
+  location.hash.includes('back') ? -dist : dist);
 controls.update();
 
 const key = new THREE.DirectionalLight(0xffffff, 1.4);
