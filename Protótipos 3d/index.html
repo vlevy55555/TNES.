@@ -385,6 +385,26 @@ helv.load().then(f => {
   lidGroup.add(bLid);
 });
 
+// ---------------- animação de abrir/fechar no clique ----------------
+const OPEN_ANGLE = -1.95;          // ~112°, como um Zippo aberto
+let open = false;
+let angle = open ? OPEN_ANGLE : 0;
+let animFrom = angle, animTo = angle, animStart = -1;
+const raycaster = new THREE.Raycaster();
+let downAt = null;
+addEventListener('pointerdown', e => { downAt = [e.clientX, e.clientY]; });
+addEventListener('pointerup', e => {
+  if (!downAt || Math.hypot(e.clientX - downAt[0], e.clientY - downAt[1]) > 5) return;
+  raycaster.setFromCamera(new THREE.Vector2(
+    (e.clientX / innerWidth) * 2 - 1, -(e.clientY / innerHeight) * 2 + 1), camera);
+  if (raycaster.intersectObject(lighterGroup, true).length) {
+    open = !open;
+    animFrom = angle;
+    animTo = open ? OPEN_ANGLE : 0;
+    animStart = performance.now();
+  }
+});
+
 // ---------------- câmera / luz ----------------
 const dist = 9;
 controls.target.set(-0.3, 0, 0);
@@ -406,6 +426,13 @@ addEventListener('resize', () => {
 });
 
 renderer.setAnimationLoop(() => {
+  if (animStart >= 0) {
+    const t = Math.min((performance.now() - animStart) / 650, 1);
+    const e = t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2; // ease in/out cúbico
+    angle = animFrom + (animTo - animFrom) * e;
+    if (t === 1) animStart = -1;
+  }
+  lidGroup.rotation.z = angle;
   controls.update();
   renderer.render(scene, camera);
 });
