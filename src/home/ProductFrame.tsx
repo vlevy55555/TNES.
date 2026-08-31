@@ -50,6 +50,7 @@ export default function ProductFrame({
   // that this is an object, not the photo
   const floor = -frameH / 2 - 0.34
   const still = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  const coarsePointer = window.matchMedia('(pointer: coarse)').matches
 
   return (
     <Canvas
@@ -73,7 +74,10 @@ export default function ProductFrame({
               no snap-back. Tilt is kept short: a print is turned, not tumbled.
               `damping` is a smoothing time, so small reads as light. */}
           <PresentationControls
-            global={false}
+            /* On touch screens the gesture belongs to the canvas, not only to
+               the raycasted frame. This prevents a cancelled/diagonal swipe
+               from leaving the controls unresponsive until the page reloads. */
+            global={coarsePointer}
             cursor={false}
             speed={2.2}
             damping={0.1}

@@ -208,6 +208,9 @@ export default function Product({ id }: { id: string }) {
                 setLightboxOpen(true)
               }
             }}
+            onPointerCancel={() => {
+              mediaPointer.current = null
+            }}
           >
             <ProductFrame artwork={work} style={frame} />
             <span className="product__zoom-hint" aria-hidden="true">
