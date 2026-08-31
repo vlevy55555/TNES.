@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Bloco de Vidro &amp; Isqueiro — TNES</title>
+<style>
+  html, body { margin: 0; height: 100%; overflow: hidden; background: #ffffff; }
+  canvas { display: block; }
+  #hint {
+    position: fixed; bottom: 16px; left: 0; right: 0; text-align: center;
+    font: 12px/1.4 system-ui, sans-serif; color: rgba(0,0,0,.45);
+    pointer-events: none; letter-spacing: .04em;
+  }
+</style>
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.185.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.185.0/examples/jsm/"
+  }
+}
+</script>
+</head>
+<body>
+<div id="hint">clique no isqueiro para abrir/fechar &nbsp;·&nbsp; arraste para girar &nbsp;·&nbsp; scroll para zoom</div>
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.setSize(innerWidth, innerHeight);
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.0;
+document.body.appendChild(renderer.domElement);
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0xffffff);
+
+const pmrem = new THREE.PMREMGenerator(renderer);
+scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+
+const camera = new THREE.PerspectiveCamera(38, innerWidth / innerHeight, 0.1, 100);
+
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+controls.dampingFactor = 0.06;
+controls.minDistance = 1.2;
+controls.maxDistance = 20;
+
+// ========================= BLOCO DE VIDRO =========================
+const blockGroup = new THREE.Group();
+blockGroup.position.x = -2.05;
+scene.add(blockGroup);
+
+new THREE.TextureLoader().load('rio-runner.jpg', tex => {
+  tex.colorSpace = THREE.SRGBColorSpace;
+  const aspect = tex.image.width / tex.image.height;
+  const H = 2.2, W = H * aspect, D = 0.34;
+
+  const glass = new THREE.Mesh(
+    new THREE.BoxGeometry(W, H, D),
+    new THREE.MeshPhysicalMaterial({
+      transmission: 1, roughness: 0.02, ior: 1.49, thickness: 0.12,
+      color: 0xffffff, attenuationColor: 0xf2f7f8, attenuationDistance: 4,
+      specularIntensity: 1, envMapIntensity: 2.2,
+    })
+  );
+  blockGroup.add(glass);
+
+  const edges = new THREE.LineSegments(
+    new THREE.EdgesGeometry(glass.geometry),
+    new THREE.LineBasicMaterial({ color: 0x8b949c, transparent: true, opacity: 0.55 })
+  );
+  blockGroup.add(edges);
+
+  // impressão nas duas direções, sem espelhar em nenhuma delas
+  const geo = new THREE.PlaneGeometry(W, H);
+  const front = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ map: tex }));
+  front.position.z = D / 2 + 0.001;
+  blockGroup.add(front);
+
+  const texFlip = tex.clone();
+  texFlip.wrapS = THREE.RepeatWrapping;
+  texFlip.repeat.x = -1;
+  const inner = new THREE.Mesh(geo,
+    new THREE.MeshBasicMaterial({ map: texFlip, side: THREE.BackSide }));
+  inner.position.z = front.position.z - 0.0005;
+  blockGroup.add(inner);
+});
+
+// ---------------- câmera / luz ----------------
+const dist = 9;
+controls.target.set(-0.3, 0, 0);
+camera.position.set(-0.3 + dist * 0.22, dist * 0.12, dist);
+controls.update();
+
+const key = new THREE.DirectionalLight(0xffffff, 1.4);
+key.position.set(3, 4, 5);
+scene.add(key);
+const rim = new THREE.DirectionalLight(0xdfe8ff, 0.7);
+rim.position.set(-4, 2, -3);
+scene.add(rim);
+scene.add(new THREE.AmbientLight(0xffffff, 0.25));
+
+addEventListener('resize', () => {
+  camera.aspect = innerWidth / innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth, innerHeight);
+});
+
+renderer.setAnimationLoop(() => {
+  controls.update();
+  renderer.render(scene, camera);
+});
+</script>
+</body>
+</html>
