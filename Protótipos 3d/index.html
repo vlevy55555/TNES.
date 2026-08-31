@@ -92,6 +92,144 @@ new THREE.TextureLoader().load('rio-runner.jpg', tex => {
   blockGroup.add(inner);
 });
 
+// ============================ ISQUEIRO ============================
+// proporções de um Zippo: 57 x 38 x 13 mm
+const W = 1.47, H = 2.2, D = 0.5, R = 0.12;
+const lidH = 0.62;
+const seamY = H / 2 - lidH;
+const bev = 0.04;
+const gap = 0.006;              // meia-fresta entre tampa e corpo
+
+const lighterGroup = new THREE.Group();
+lighterGroup.position.x = 1.55;
+scene.add(lighterGroup);
+
+const paint = new THREE.MeshPhysicalMaterial({
+  color: 0x0b0b0d, roughness: 0.22, metalness: 0.4,
+  clearcoat: 1, clearcoatRoughness: 0.12, envMapIntensity: 1.2,
+});
+const metal = new THREE.MeshStandardMaterial({
+  color: 0xb9bcc0, roughness: 0.35, metalness: 1,
+});
+
+// retângulo arredondado com raios independentes embaixo/em cima,
+// em coordenadas absolutas (y0..y1)
+function roundRect(x0, y0, x1, y1, rb, rt) {
+  const s = new THREE.Shape();
+  s.moveTo(x0 + rb, y0);
+  s.lineTo(x1 - rb, y0); s.quadraticCurveTo(x1, y0, x1, y0 + rb);
+  s.lineTo(x1, y1 - rt); s.quadraticCurveTo(x1, y1, x1 - rt, y1);
+  s.lineTo(x0 + rt, y1); s.quadraticCurveTo(x0, y1, x0, y1 - rt);
+  s.lineTo(x0, y0 + rb); s.quadraticCurveTo(x0, y0, x0 + rb, y0);
+  return s;
+}
+
+// extrusão com chanfro; contorno final desejado = shape + bevel
+function shell(x0, y0, x1, y1, rb, rt) {
+  const g = new THREE.ExtrudeGeometry(
+    roundRect(x0 + bev, y0 + bev, x1 - bev, y1 - bev, Math.max(rb - bev, 0.01), Math.max(rt - bev, 0.01)),
+    { depth: D - 2 * bev, bevelEnabled: true, bevelThickness: bev, bevelSize: bev, bevelSegments: 4, curveSegments: 16 }
+  );
+  g.translate(0, 0, -(D - 2 * bev) / 2);
+  return g;
+}
+
+// mapeia UVs (coords do shape) para 0..1 da face inteira do isqueiro
+function faceUVs(g, fw, fh) {
+  const uv = g.attributes.uv;
+  for (let i = 0; i < uv.count; i++)
+    uv.setXY(i, uv.getX(i) / fw + 0.5, uv.getY(i) / fh + 0.5);
+}
+
+// corpo (parte de baixo)
+const body = new THREE.Mesh(shell(-W / 2, -H / 2, W / 2, seamY - gap, R, 0.02), paint);
+lighterGroup.add(body);
+
+// tampa, articulada num grupo com pivô na dobradiça (lateral direita)
+const pivot = new THREE.Vector3(W / 2 - 0.02, seamY, 0);
+const lidGroup = new THREE.Group();
+lidGroup.position.copy(pivot);
+lighterGroup.add(lidGroup);
+
+const lid = new THREE.Mesh(shell(-W / 2, seamY + gap, W / 2, H / 2, 0.02, R), paint);
+lid.position.set(-pivot.x, -pivot.y, 0);
+lidGroup.add(lid);
+
+// interior da tampa: cavidade metálica
+const lidInner = new THREE.Mesh(
+  new RoundedBoxGeometry(W - 0.22, lidH - 0.14, D - 0.22, 2, 0.03), metal);
+lidInner.position.set(-pivot.x, -pivot.y + seamY + lidH / 2 - 0.04, 0);
+lidGroup.add(lidInner);
+
+// dobradiça
+const hinge = new THREE.Mesh(new RoundedBoxGeometry(0.07, 0.26, 0.16, 2, 0.03), paint);
+hinge.position.set(W / 2 - 0.01, seamY, 0);
+lighterGroup.add(hinge);
+
+// topo do insert: preenche a fresta e é o que se vê ao abrir
+const plate = new THREE.Mesh(
+  new RoundedBoxGeometry(W - 2 * bev - 0.01, 0.12, D - 2 * bev - 0.01, 2, 0.025), metal);
+plate.position.y = seamY - 0.055;
+lighterGroup.add(plate);
+
+// ---------------- faces impressas (frente e verso) ----------------
+const fW = W - 2 * bev - 0.01;
+const fH = H - 2 * bev - 0.01;
+const rr = R * 0.8;
+const bodyFaceGeo = new THREE.ShapeGeometry(
+  roundRect(-fW / 2, -fH / 2, fW / 2, seamY - gap, rr, 0.01), 16);
+const lidFaceGeo = new THREE.ShapeGeometry(
+  roundRect(-fW / 2, seamY + gap, fW / 2, fH / 2, 0.01, rr), 16);
+faceUVs(bodyFaceGeo, fW, fH);
+faceUVs(lidFaceGeo, fW, fH);
+
+new THREE.TextureLoader().load('appenzell.webp', t => {
+  t.colorSpace = THREE.SRGBColorSpace;
+  const img = t.image.width / t.image.height;
+  const face = fW / fH;
+  if (img > face) { t.repeat.x = face / img; t.offset.x = (1 - t.repeat.x) / 2; }
+  else { t.repeat.y = img / face; t.offset.y = (1 - t.repeat.y) / 2; }
+  const mat = new THREE.MeshBasicMaterial({ map: t });
+
+  const pBody = new THREE.Mesh(bodyFaceGeo, mat);
+  pBody.position.z = D / 2 + 0.001;
+  lighterGroup.add(pBody);
+
+  const pLid = new THREE.Mesh(lidFaceGeo, mat);
+  pLid.position.set(-pivot.x, -pivot.y, D / 2 + 0.001);
+  lidGroup.add(pLid);
+});
+
+// verso: logo [O] (Helvetica, como no site) e mensagem
+const helv = new FontFace('HelvTNES', 'url(Helvetica-Regular.otf)');
+helv.load().then(f => {
+  document.fonts.add(f);
+  const cv = document.createElement('canvas');
+  cv.width = 512; cv.height = 768;
+  const cx = cv.getContext('2d');
+  cx.fillStyle = '#0b0b0d'; cx.fillRect(0, 0, 512, 768);
+  cx.fillStyle = '#e8e6e1'; cx.textAlign = 'center';
+  cx.font = '110px HelvTNES';
+  cx.fillText('[O]', 256, 330);
+  cx.font = '32px "Courier New", monospace';
+  cx.fillText('appenzell, switzerland', 256, 618);
+  cx.font = 'bold 30px "Courier New", monospace';
+  cx.fillText('@tnes.studio', 256, 664);
+  const backTex = new THREE.CanvasTexture(cv);
+  backTex.colorSpace = THREE.SRGBColorSpace;
+  const mat = new THREE.MeshStandardMaterial({ map: backTex, roughness: 0.35, metalness: 0.2 });
+
+  const bBody = new THREE.Mesh(bodyFaceGeo, mat);
+  bBody.rotation.y = Math.PI;
+  bBody.position.z = -D / 2 - 0.001;
+  lighterGroup.add(bBody);
+
+  const bLid = new THREE.Mesh(lidFaceGeo, mat);
+  bLid.rotation.y = Math.PI;
+  bLid.position.set(-pivot.x, -pivot.y, -D / 2 - 0.001);
+  lidGroup.add(bLid);
+});
+
 // ---------------- câmera / luz ----------------
 const dist = 9;
 controls.target.set(-0.3, 0, 0);
