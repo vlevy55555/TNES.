@@ -166,11 +166,166 @@ const hinge = new THREE.Mesh(new RoundedBoxGeometry(0.07, 0.26, 0.16, 2, 0.03), 
 hinge.position.set(W / 2 - 0.01, seamY, 0);
 lighterGroup.add(hinge);
 
+// metal escovado (usado no insert inteiro)
+const brushCv = document.createElement('canvas');
+brushCv.width = brushCv.height = 256;
+{
+  const b = brushCv.getContext('2d');
+  b.fillStyle = '#b9bcc0'; b.fillRect(0, 0, 256, 256);
+  for (let i = 0; i < 600; i++) {
+    b.strokeStyle = Math.random() < 0.5 ? 'rgba(255,255,255,0.05)' : 'rgba(40,42,45,0.05)';
+    const y = Math.random() * 256;
+    b.beginPath(); b.moveTo(0, y); b.lineTo(256, y + (Math.random() - 0.5) * 3); b.stroke();
+  }
+}
+const brushTex = new THREE.CanvasTexture(brushCv);
+brushTex.colorSpace = THREE.SRGBColorSpace;
+brushTex.wrapS = brushTex.wrapT = THREE.RepeatWrapping;
+metal.map = brushTex;
+
 // topo do insert: preenche a fresta e é o que se vê ao abrir
 const plate = new THREE.Mesh(
   new RoundedBoxGeometry(W - 2 * bev - 0.01, 0.12, D - 2 * bev - 0.01, 2, 0.025), metal);
 plate.position.y = seamY - 0.055;
 lighterGroup.add(plate);
+
+// ---- chaminé (windscreen): paredes finas com furos realmente vazados ----
+const chimW = 0.66, chimD = D - 0.26, chimH = 0.46;
+const chimney = new THREE.Group();
+chimney.position.set(-0.18, seamY + chimH / 2, 0);
+lighterGroup.add(chimney);
+
+function holeWallTexture(cols) {
+  const cv = document.createElement('canvas');
+  cv.width = cols * 34 + 14; cv.height = 128;
+  const c = cv.getContext('2d');
+  c.fillStyle = '#c3c6ca'; c.fillRect(0, 0, cv.width, 128);
+  // sombra sutil na borda de cada furo, para leitura de espessura
+  for (let r = 0; r < 2; r++)
+    for (let i = 0; i < cols; i++) {
+      const x = 24 + i * 34, y = 42 + r * 44;
+      c.strokeStyle = 'rgba(30,32,35,0.55)'; c.lineWidth = 2.5;
+      c.beginPath(); c.arc(x, y, 10, 0, Math.PI * 2); c.stroke();
+    }
+  const tex = new THREE.CanvasTexture(cv);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  // alpha: furos pretos = vazados
+  const av = document.createElement('canvas');
+  av.width = cv.width; av.height = 128;
+  const a = av.getContext('2d');
+  a.fillStyle = '#fff'; a.fillRect(0, 0, av.width, 128);
+  a.fillStyle = '#000';
+  for (let r = 0; r < 2; r++)
+    for (let i = 0; i < cols; i++) {
+      a.beginPath(); a.arc(24 + i * 34, 42 + r * 44, 9, 0, Math.PI * 2); a.fill();
+    }
+  return { map: tex, alphaMap: new THREE.CanvasTexture(av) };
+}
+
+function holeWall(width, cols) {
+  const { map, alphaMap } = holeWallTexture(cols);
+  return new THREE.Mesh(
+    new THREE.PlaneGeometry(width, chimH),
+    new THREE.MeshStandardMaterial({
+      map, alphaMap, alphaTest: 0.5, side: THREE.DoubleSide,
+      roughness: 0.35, metalness: 1,
+    })
+  );
+}
+const wallF = holeWall(chimW, 6); wallF.position.z = chimD / 2;
+const wallB = holeWall(chimW, 6); wallB.position.z = -chimD / 2; wallB.rotation.y = Math.PI;
+const wallR = holeWall(chimD, 2); wallR.position.x = chimW / 2; wallR.rotation.y = Math.PI / 2;
+const wallL = holeWall(chimD, 2); wallL.position.x = -chimW / 2; wallL.rotation.y = -Math.PI / 2;
+chimney.add(wallF, wallB, wallR, wallL);
+
+// colarinho no topo da chaminé (aro com furo, borda enrolada)
+const collarShape = roundRect(-chimW / 2 - 0.015, -chimD / 2 - 0.015, chimW / 2 + 0.015, chimD / 2 + 0.015, 0.05, 0.05);
+const collarHole = roundRect(-chimW / 2 + 0.02, -chimD / 2 + 0.02, chimW / 2 - 0.02, chimD / 2 - 0.02, 0.04, 0.04);
+collarShape.holes.push(collarHole);
+const collar = new THREE.Mesh(
+  new THREE.ExtrudeGeometry(collarShape, { depth: 0.03, bevelEnabled: true, bevelThickness: 0.008, bevelSize: 0.008, bevelSegments: 2, curveSegments: 12 }),
+  metal
+);
+collar.rotation.x = -Math.PI / 2;
+collar.position.y = chimH / 2 - 0.015;
+chimney.add(collar);
+
+// pavio dentro da chaminé, visível pelos furos e por cima
+const wick = new THREE.Mesh(
+  new THREE.CylinderGeometry(0.042, 0.038, 0.34, 16),
+  new THREE.MeshStandardMaterial({ color: 0xd8d4c8, roughness: 0.95 })
+);
+wick.position.y = 0.03;
+chimney.add(wick);
+
+// ---- conjunto da rodinha da pedra (flint wheel) ----
+const wheelGroup = new THREE.Group();
+wheelGroup.position.set(0.34, seamY + 0.15, 0);
+lighterGroup.add(wheelGroup);
+
+// serrilhado cruzado na superfície da rodinha
+const knurlCv = document.createElement('canvas');
+knurlCv.width = 128; knurlCv.height = 64;
+{
+  const k = knurlCv.getContext('2d');
+  k.fillStyle = '#7a7d81'; k.fillRect(0, 0, 128, 64);
+  k.lineWidth = 2;
+  for (let x = -64; x < 192; x += 9) {
+    k.strokeStyle = 'rgba(25,27,30,0.7)';
+    k.beginPath(); k.moveTo(x, 0); k.lineTo(x + 64, 64); k.stroke();
+    k.beginPath(); k.moveTo(x + 64, 0); k.lineTo(x, 64); k.stroke();
+  }
+}
+const knurlTex = new THREE.CanvasTexture(knurlCv);
+knurlTex.colorSpace = THREE.SRGBColorSpace;
+knurlTex.wrapS = THREE.RepeatWrapping;
+knurlTex.repeat.x = 5;
+const wheelSideMat = new THREE.MeshStandardMaterial({ map: knurlTex, roughness: 0.5, metalness: 1 });
+// tampa da rodinha com raios gravados, como a peça estampada real
+const capCv = document.createElement('canvas');
+capCv.width = capCv.height = 128;
+{
+  const c = capCv.getContext('2d');
+  c.fillStyle = '#63666a'; c.fillRect(0, 0, 128, 128);
+  c.strokeStyle = 'rgba(30,32,35,0.6)'; c.lineWidth = 2;
+  for (let i = 0; i < 12; i++) {
+    const a = (i / 12) * Math.PI * 2;
+    c.beginPath(); c.moveTo(64 + Math.cos(a) * 14, 64 + Math.sin(a) * 14);
+    c.lineTo(64 + Math.cos(a) * 58, 64 + Math.sin(a) * 58); c.stroke();
+  }
+  c.strokeStyle = 'rgba(220,222,225,0.5)';
+  c.beginPath(); c.arc(64, 64, 58, 0, Math.PI * 2); c.stroke();
+}
+const capTex = new THREE.CanvasTexture(capCv);
+capTex.colorSpace = THREE.SRGBColorSpace;
+const wheelCapMat = new THREE.MeshStandardMaterial({ map: capTex, roughness: 0.45, metalness: 1 });
+
+const wheel = new THREE.Mesh(
+  new THREE.CylinderGeometry(0.145, 0.145, 0.095, 48),
+  [wheelSideMat, wheelCapMat, wheelCapMat]
+);
+wheel.rotation.x = Math.PI / 2;
+wheelGroup.add(wheel);
+
+// eixo e suportes laterais da rodinha
+const axleMat = new THREE.MeshStandardMaterial({ color: 0x53565a, roughness: 0.4, metalness: 1 });
+for (const s of [1, -1]) {
+  const cap = new THREE.Mesh(new THREE.CylinderGeometry(0.028, 0.028, 0.02, 16), axleMat);
+  cap.rotation.x = Math.PI / 2;
+  cap.position.z = s * 0.058;
+  wheelGroup.add(cap);
+  const arm = new THREE.Mesh(new RoundedBoxGeometry(0.06, 0.16, 0.014, 2, 0.006), metal);
+  arm.position.set(0, -0.1, s * 0.06);
+  wheelGroup.add(arm);
+}
+
+// cam da dobradiça (a peça que dá o "click"), entre a rodinha e a dobradiça
+const cam = new THREE.Mesh(
+  new RoundedBoxGeometry(0.09, 0.16, 0.12, 2, 0.03),
+  new THREE.MeshStandardMaterial({ color: 0x3d3f42, roughness: 0.5, metalness: 0.8 })
+);
+cam.position.set(0.58, seamY + 0.05, 0);
+lighterGroup.add(cam);
 
 // ---------------- faces impressas (frente e verso) ----------------
 const fW = W - 2 * bev - 0.01;
