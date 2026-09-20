@@ -2,8 +2,6 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { artworks } from '../data/artworks'
-import { defaultSelection, findVariant, money, type ShopProduct } from '../lib/shopify'
-import { useProducts } from '../lib/useProduct'
 import { RevealText, useSectionTextReveal } from './reveal'
 import { catalogHref, ShopFooter, ShopHeader } from './ShopChrome'
 import Catalog, { isCatalogSlug } from './Catalog'
@@ -63,7 +61,12 @@ const SCENES: Record<string, string[]> = {
 const PLACES = ['all', 'south america', 'europe', 'north america']
 const SCENE_FILTERS = ['all', 'beach', 'water', 'desert', 'alpine', 'landscape', 'street', 'architecture', 'people', 'animals', 'objects']
 
-const works = artworks.map((work) => {
+const shopArtworks = [
+  ...artworks.filter((work) => work.id !== 'christ-in-fog-rio-de-janeiro'),
+  ...artworks.filter((work) => work.id === 'christ-in-fog-rio-de-janeiro'),
+]
+
+const works = shopArtworks.map((work) => {
   const [where, year] = work.subtitle.split(' · ')
   const country = where.split(', ').pop()!
   return {
@@ -75,31 +78,6 @@ const works = artworks.map((work) => {
     href: `/shop/${work.id}`,
   }
 })
-
-const HANDLES = works.map((w) => w.shopifyHandle).filter((h): h is string => !!h)
-
-/** Shop cards show the entry configuration: smallest size, unframed. */
-const sizeKey = (value: string) => value.toLowerCase().replace(/×/g, 'x').replace(/[^0-9x]/g, '')
-
-const fromPrice = (product?: ShopProduct, portrait = false) => {
-  if (!product) return null
-  const productDefault = defaultSelection(product)
-  const cardSelection = Object.fromEntries(
-    product.options.map((option) => [
-      option.name,
-      /frame/i.test(option.name)
-        ? option.values.find((value) => value.toLowerCase().replace(/[^a-z]/g, '') === 'unframed')
-          ?? productDefault[option.name]
-        : portrait
-          ? option.values.find((value) => sizeKey(value).startsWith('30x20'))
-            ?? option.values[0]
-            ?? productDefault[option.name]
-          : option.values[0] ?? productDefault[option.name],
-    ]),
-  )
-  const variant = findVariant(product, cardSelection)
-  return variant ? money(variant.price, variant.currency) : null
-}
 
 // two large pieces standing in for the wider bodies of work
 const CATALOGS = [
@@ -161,10 +139,6 @@ function ShopIndex() {
   const catalogs = useRef<HTMLElement>(null)
   const [place, setPlace] = useState('all')
   const [scene, setScene] = useState('all')
-  // every card's price at once: one round-trip per handle, deduped and cached in
-  // shopify.ts, so opening a work later is already paid for
-  const products = useProducts(HANDLES)
-
   useSectionTextReveal(head, true)
   useSectionTextReveal(catalogs)
 
@@ -266,11 +240,6 @@ function ShopIndex() {
 
       <div className="shop__grid" id="works" ref={grid}>
         {shown.map((work) => {
-          const price = fromPrice(
-            work.shopifyHandle ? products[work.shopifyHandle] : undefined,
-            work.ratio < 1,
-          )
-
           return (
             <a
               key={work.id}
@@ -283,7 +252,6 @@ function ShopIndex() {
               </figure>
               <p className="shop__caption">
                 <span>{work.title.toLowerCase()}.</span>
-                {price && <span className="shop__price">from {price}</span>}
               </p>
               {/* the catalogs' own affordance, on every work: the arrow steps
                   right as the photograph pushes in under the cursor */}

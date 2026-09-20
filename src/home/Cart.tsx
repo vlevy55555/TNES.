@@ -1,9 +1,8 @@
 import { useLayoutEffect, useRef } from 'react'
 import { gsap } from 'gsap'
 import { artworks } from '../data/artworks'
-import { checkoutUrl, money } from '../lib/shopify'
-import { useProducts } from '../lib/useProduct'
 import { useCartStore } from '../store/useCartStore'
+import { useContactStore } from '../store/useContactStore'
 import { RevealText, useSectionTextReveal } from './reveal'
 import { ShopFooter, ShopHeader } from './ShopChrome'
 import './home.css'
@@ -26,7 +25,7 @@ export default function Cart() {
   const list = useRef<HTMLDivElement>(null)
 
   const lines = Object.values(items)
-  const products = useProducts(lines.map((l) => l.handle))
+  const openContact = useContactStore((s) => s.openContact)
 
   useSectionTextReveal(head, true)
   useSectionTextReveal(foot, true)
@@ -55,24 +54,16 @@ export default function Cart() {
     return () => context.revert()
   }, [])
 
-  const priced = lines.map((line) => ({
+  const selected = lines.map((line) => ({
     line,
-    variant: products[line.handle]?.variants.find((v) => v.id === line.variantId),
     artwork: artworks.find((a) => a.id === line.artworkId),
   }))
 
-  // a line whose variant no longer exists (deleted or renamed in Shopify) can't
-  // be priced or checked out — say so instead of silently dropping it
-  const sellable = priced.filter((p) => p.variant?.available)
-  const currency = sellable[0]?.variant?.currency ?? 'USD'
-  const subtotal = sellable.reduce((sum, p) => sum + p.variant!.price * p.line.qty, 0)
-  const loading = lines.length > 0 && !Object.keys(products).length
-
-  const checkout = () => {
-    if (!sellable.length) return
-    window.location.href = checkoutUrl(
-      sellable.map((p) => ({ variantId: p.line.variantId, qty: p.line.qty })),
-    )
+  const inquire = () => {
+    const subject = selected
+      .map(({ line, artwork }) => `${artwork?.title ?? line.artworkId} (${line.label}, qty ${line.qty})`)
+      .join(' | ')
+    openContact(`print inquiry · ${subject}`)
   }
 
   return (
@@ -96,7 +87,7 @@ export default function Cart() {
       ) : (
         <>
           <div className="cart__lines" ref={list}>
-            {priced.map(({ line, variant, artwork }) => (
+            {selected.map(({ line, artwork }) => (
               <article className="cart__line" key={line.variantId}>
                 <a className="cart__figure" href={`/shop/${line.artworkId}`}>
                   {artwork && <img src={artwork.image} alt={artwork.title} />}
@@ -108,11 +99,7 @@ export default function Cart() {
                       {(artwork?.title ?? line.artworkId).toLowerCase()}.
                     </a>
                   </h2>
-                  <p className="shop__meta">{variant?.title ?? line.label}</p>
-                  {!variant && !loading && (
-                    <p className="cart__warn">no longer available</p>
-                  )}
-                  {variant && !variant.available && <p className="cart__warn">sold out</p>}
+                  <p className="shop__meta">{line.label}</p>
                   <button className="cart__remove" onClick={() => remove(line.variantId)}>
                     remove
                   </button>
@@ -129,32 +116,21 @@ export default function Cart() {
                   </button>
                 </div>
 
-                <p className="cart__line-price">
-                  {variant ? money(variant.price * line.qty, variant.currency) : '—'}
-                </p>
               </article>
             ))}
           </div>
 
           <section className="cart__foot" ref={foot}>
-            <div className="cart__total">
-              <span className="cart__total-label"><RevealText>subtotal</RevealText></span>
-              <span className="cart__total-value">
-                {loading ? '—' : money(subtotal, currency)}
-              </span>
-            </div>
-
             <p className="shop__meta cart__note">
-              shipping and taxes are calculated at checkout, on shopify.
+              checkout is temporarily paused. inquire for availability and ordering.
             </p>
 
             <button
               type="button"
               className="product__cart"
-              onClick={checkout}
-              disabled={!sellable.length || loading}
+              onClick={inquire}
             >
-              checkout <span className="shop__arrow" aria-hidden="true">→</span>
+              inquire <span className="shop__arrow" aria-hidden="true">→</span>
             </button>
           </section>
         </>

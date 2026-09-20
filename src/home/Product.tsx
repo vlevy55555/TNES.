@@ -1,13 +1,12 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { gsap } from 'gsap'
-import { artworks, INQUIRY_EMAIL, standardPrintSizes } from '../data/artworks'
+import { artworks, standardPrintSizes } from '../data/artworks'
 import type { FrameStyle } from '../data/artworks'
-import { defaultSelection, findVariant, money } from '../lib/shopify'
+import { defaultSelection, findVariant } from '../lib/shopify'
 import { useProductState } from '../lib/useProduct'
-import { useCartStore } from '../store/useCartStore'
 import { useContactStore } from '../store/useContactStore'
 import { RevealText, useSectionTextReveal } from './reveal'
-import { PRICE, ShopFooter, ShopHeader } from './ShopChrome'
+import { ShopFooter, ShopHeader } from './ShopChrome'
 import ProductFrame from './ProductFrame'
 import './home.css'
 import './shop.css'
@@ -29,7 +28,6 @@ export default function Product({ id }: { id: string }) {
   const related = useRef<HTMLElement>(null)
   const mediaPointer = useRef<{ x: number; y: number } | null>(null)
   const { product, loading: productLoading } = useProductState(work?.shopifyHandle)
-  const addToCart = useCartStore((s) => s.add)
   const openContact = useContactStore((s) => s.openContact)
 
   // Live options win over the static cm list: Shopify is what the checkout
@@ -44,11 +42,9 @@ export default function Product({ id }: { id: string }) {
       : []
   const [size, setSize] = useState('')
   const [frame, setFrame] = useState<FrameStyle>('unframed')
-  const [quantity, setQuantity] = useState(1)
   const [lightboxOpen, setLightboxOpen] = useState(false)
   const isPortrait = !!work && work.size[1] > work.size[0]
 
-  useEffect(() => setQuantity(1), [work?.id])
   useEffect(() => setLightboxOpen(false), [work?.id])
 
   useEffect(() => {
@@ -179,9 +175,6 @@ export default function Product({ id }: { id: string }) {
         <section className="product__stage" ref={stage}>
           <div className="product__lede">
             <h1 className="product__title"><RevealText block>{work.title.toLowerCase()}.</RevealText></h1>
-            <p className="product__price">
-              <RevealText>{variant ? money(variant.price, variant.currency) : PRICE}</RevealText>
-            </p>
             <p className="shop__meta">{`${where.toLowerCase()} · ${year}`}</p>
           </div>
 
@@ -220,33 +213,6 @@ export default function Product({ id }: { id: string }) {
                 <path d="M10.5 7.5v6M7.5 10.5h6" />
               </svg>
             </span>
-            {variant?.available && (
-              <div
-                className="product__media-quantity product__quantity-controls"
-                role="group"
-                aria-label="Quantity"
-                onPointerDown={(event) => event.stopPropagation()}
-                onPointerUp={(event) => event.stopPropagation()}
-              >
-                {quantity > 1 && (
-                  <button
-                    type="button"
-                    aria-label="Decrease quantity"
-                    onClick={() => setQuantity((current) => Math.max(1, current - 1))}
-                  >
-                    −
-                  </button>
-                )}
-                <output aria-live="polite">{quantity}</output>
-                <button
-                  type="button"
-                  aria-label="Increase quantity"
-                  onClick={() => setQuantity((current) => Math.min(20, current + 1))}
-                >
-                  +
-                </button>
-              </div>
-            )}
           </figure>
         </section>
 
@@ -311,57 +277,13 @@ export default function Product({ id }: { id: string }) {
             </div>
           </div>
 
-          {/* The cart line is keyed on the live Shopify variant id — the only
-              thing the hosted checkout honours. Without a reachable store there
-              is no id to key on, so the work stays inquiry-only. */}
-          {variant?.available ? (
-            <div className="product__purchase">
-              <div className="product__quantity" role="group" aria-label="Quantity">
-                <div className="product__quantity-controls">
-                  {quantity > 1 && (
-                    <button
-                      type="button"
-                      aria-label="Decrease quantity"
-                      onClick={() => setQuantity((current) => Math.max(1, current - 1))}
-                    >
-                      −
-                    </button>
-                  )}
-                  <output aria-live="polite">{quantity}</output>
-                  <button
-                    type="button"
-                    aria-label="Increase quantity"
-                    onClick={() => setQuantity((current) => Math.min(20, current + 1))}
-                  >
-                    +
-                  </button>
-                </div>
-              </div>
-              <button
-                type="button"
-                className="product__cart"
-                onClick={() => {
-                  addToCart({
-                    variantId: variant.id,
-                    artworkId: work.id,
-                    handle: work.shopifyHandle!,
-                    label: variant.title,
-                  }, quantity)
-                  // the cart is a screen now — adding goes there, as a shop does
-                  window.location.href = '/cart'
-                }}
-              >
-                add to cart
-              </button>
-            </div>
-          ) : (
-            <a
-              className="product__cart"
-              href={`mailto:${INQUIRY_EMAIL}?subject=${encodeURIComponent(`${work.title} · ${frame} · ${size}`)}`}
-            >
-              {product && variant ? 'sold out · inquire' : 'inquire'}
-            </a>
-          )}
+          <button
+            type="button"
+            className="product__cart"
+            onClick={() => openContact(`${work.title} · ${frame} · ${size || 'size upon request'}`)}
+          >
+            inquire
+          </button>
         </section>
       </div>
 
