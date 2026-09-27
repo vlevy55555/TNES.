@@ -81,6 +81,7 @@ export function SiteNav({
           <a
             key={item.label}
             href={item.href}
+            className={item.href === '/special-prices' ? 'site-nav__special' : undefined}
             aria-current={item.label === current ? 'page' : undefined}
             onClick={close}
           >

@@ -532,10 +532,10 @@ html:has(.moments) {
    happened yet, and it is the last thing before the footer. Reversing the
    paper is what separates it from the four rooms above. */
 .moments__release {
-  --paper: #0b0b0b;
-  --paper-ink: #f4f1eb;
-  --paper-muted: #8e8a82;
-  --paper-line: rgba(244, 241, 235, 0.2);
+  --paper: #f8f7f4;
+  --paper-ink: #121212;
+  --paper-muted: #706d68;
+  --paper-line: rgba(11, 11, 11, 0.2);
 
   position: relative;
   z-index: 2;

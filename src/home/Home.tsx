@@ -33,8 +33,8 @@ const projects = HOME_IDS.map((id) => {
 // ponytail: hrefs are placeholders until each destination exists — only cart and
 // the gallery are real today.
 const NAV = [
-  { label: 'shop', href: '/shop' },
-  { label: 'catalogs', href: '/shop#catalogs' },
+  { label: 'works', href: '/works' },
+  { label: 'catalogs', href: '/works#catalogs' },
   { label: 'moments', href: '/moments' },
   { label: 'about', href: '/about' },
   { label: 'cart', href: '/cart' },
@@ -179,7 +179,7 @@ function Statement() {
         ))}
       </p>
       <div className="statement__actions" aria-label="Ações principais">
-        <a href="/shop"><RevealText>shop <span aria-hidden="true">→</span></RevealText></a>
+        <a href="/works"><RevealText>works <span aria-hidden="true">→</span></RevealText></a>
       </div>
       <div className="statement__artwork">
         <figure className="statement__media">
@@ -198,7 +198,7 @@ const CAROUSEL_SPEED = 0.55
 
 const ratio = (work: (typeof artworks)[number]) => work.size[0] / work.size[1]
 const isWide = (work: (typeof artworks)[number]) => ratio(work) >= 1
-const workHref = (work: (typeof artworks)[number]) => work.shopifyHandle ? `/shop/${work.id}` : '/shop'
+const workHref = (work: (typeof artworks)[number]) => work.shopifyHandle ? `/works/${work.id}` : '/works'
 
 /**
  * The works are grouped by orientation in `artworks` (they hang that way on the
@@ -255,8 +255,7 @@ function SelectedWorks() {
     <section className={`works reveal ${seen ? 'reveal--in' : ''}`} ref={ref}>
       <header className="works__head">
         <h2>
-          <RevealText block>selected</RevealText>
-          <RevealText block>works.</RevealText>
+          <RevealText block>selected works</RevealText>
         </h2>
 
       </header>
@@ -353,6 +352,7 @@ export function TheStudio() {
 export default function Home({ dark = false }: { dark?: boolean }) {
   const [activeIndex, setActiveIndex] = useState(0)
   const swipeStartX = useRef<number | null>(null)
+  const didSwipe = useRef(false)
   const heroRef = useRef<HTMLElement>(null)
   const canHover = useMediaQuery('(hover: hover) and (pointer: fine)')
   const cartCount = useCartCount()
@@ -370,6 +370,7 @@ export default function Home({ dark = false }: { dark?: boolean }) {
 
   function handlePointerDown(e: React.PointerEvent) {
     if (e.pointerType === 'mouse') return
+    didSwipe.current = false
     swipeStartX.current = e.clientX
   }
 
@@ -377,6 +378,7 @@ export default function Home({ dark = false }: { dark?: boolean }) {
     if (swipeStartX.current === null) return
     const distance = e.clientX - swipeStartX.current
     swipeStartX.current = null
+    if (Math.abs(distance) > 50) didSwipe.current = true
     if (distance < -50) go(1)
     if (distance > 50) go(-1)
   }
@@ -452,6 +454,17 @@ export default function Home({ dark = false }: { dark?: boolean }) {
 
         <div className="hero__overlay" aria-hidden="true" />
 
+        <a
+          className="hero__artwork-link"
+          href={`/works/${active.id}`}
+          aria-label={`View ${active.title} in the shop`}
+          onClick={(event) => {
+            if (!didSwipe.current) return
+            event.preventDefault()
+            didSwipe.current = false
+          }}
+        />
+
         <header className="hero__header">
           <a className="hero__logo" href="/">
             <RevealText>TNES.</RevealText>
@@ -480,7 +493,9 @@ export default function Home({ dark = false }: { dark?: boolean }) {
                 className={`hero__item ${isMark ? 'hero__item--mark' : ''}`}
                 aria-pressed={index === activeIndex}
                 aria-label={isMark ? project.title : undefined}
-                onClick={() => setActiveIndex(index)}
+                onClick={() => {
+                  window.location.href = `/works/${project.id}`
+                }}
                 onPointerEnter={() => canHover && setActiveIndex(index)}
                 onFocus={() => setActiveIndex(index)}
               >

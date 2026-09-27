@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom'
 import { gsap } from 'gsap'
 import { INQUIRY_EMAIL, INQUIRY_TYPES } from '../data/artworks'
 import { useContactStore } from '../store/useContactStore'
+import { trackAnalyticsEvent } from '../analytics/clarity'
 
 /**
  * Where a message goes. This site is a STATIC deploy — no server of ours to
@@ -130,6 +131,7 @@ export default function ContactOverlay() {
     setMessage('')
     try {
       await send(draft)
+      trackAnalyticsEvent('inquiry_sent')
       setSent(true)
     } catch (error) {
       if ((error as Error).message === 'no-endpoint') {
@@ -195,7 +197,7 @@ export default function ContactOverlay() {
               acquisitions, commissions, interiors, press — it reaches victor directly.
             </p>
 
-            <form className="contact__form" onSubmit={submit} noValidate>
+            <form className="contact__form" onSubmit={submit} noValidate data-clarity-mask="True">
               <label className="contact__field">
                 <span>name</span>
                 <input value={draft.name} onChange={set('name')} autoComplete="name" />

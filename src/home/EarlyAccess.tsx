@@ -1,5 +1,6 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { subscribeToKlaviyo } from '../lib/klaviyo'
+import { trackAnalyticsEvent } from '../analytics/clarity'
 
 const ARCHIVE_OPENING = new Date('2026-09-21T00:00:00-03:00')
 
@@ -59,6 +60,7 @@ export default function EarlyAccess({
     setMessage('')
     try {
       await subscribe(email)
+      trackAnalyticsEvent('early_access_signup')
       setEmail('')
       setMessage('you’re on the list.')
     } catch {
@@ -77,7 +79,7 @@ export default function EarlyAccess({
           <p className="studio__signup-eyebrow">{eyebrow}</p>
           <h3 className="studio__signup-title">{title}</h3>
           <p className="studio__signup-copy">{copy}</p>
-          <form className="studio__signup-form" onSubmit={submit} noValidate>
+          <form className="studio__signup-form" onSubmit={submit} noValidate data-clarity-mask="True">
             <input
               className="studio__signup-input"
               type="email"

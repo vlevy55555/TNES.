@@ -53,25 +53,41 @@
 
 :root {
   /* colours stay warm (reverted per request) */
-  --bg: #ece5d8;
+  --bg: #f8f7f4;
   --ink: #2f2a24;
   --muted: #6b6151;
   --line: rgba(47, 42, 36, 0.18);
   /* 02. type system */
   --sans: 'Manrope', 'Helvetica Neue', Arial, sans-serif;
-  --serif: 'Gelasio', Georgia, 'Times New Roman', serif;
-  --brand: 'Playfair Display', Georgia, serif;
+  --serif: 'Manrope', 'Helvetica Neue', Arial, sans-serif;
+  --brand: 'Manrope', 'Helvetica Neue', Arial, sans-serif;
   /* The [O] is reserved for elements that can be activated or selected — always Helvetica. */
-  --mark: 'Helvetica', 'Helvetica Neue', Arial, sans-serif;
+  --mark: 'Manrope', 'Helvetica Neue', Arial, sans-serif;
   /* the specimen voice — system mono, no new font file. Lives here rather than
      on `.shop` so the chrome that every page shares can reach it. */
-  --mono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  --mono: 'Manrope', 'Helvetica Neue', Arial, sans-serif;
+  --wordmark-font: 'Helvetica', 'Helvetica Neue', Arial, sans-serif;
   /* The wordmark's size, in one place. /about measures its sticky header off
      this to know how far to pull its opening up — a second copy of the number
      silently misaligns that page every time the mark is resized. */
   --wordmark: clamp(28px, 2.4vw, 38px);
   --default-cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="34" height="22" viewBox="0 0 34 22"><text x="17" y="17" font-family="Helvetica,Arial,sans-serif" font-size="18" fill="%232f2a24" text-anchor="middle">[O]</text></svg>') 17 11, default;
   --interactive-cursor: crosshair;
+}
+
+.site-loading {
+  display: grid;
+  min-height: 100svh;
+  place-items: center;
+  background: #f8f7f4;
+  color: #121212;
+  font: 400 28px/1 'Helvetica', Arial, sans-serif;
+  letter-spacing: 0.14em;
+}
+
+.site-loading--dark {
+  background: #080808;
+  color: #fff;
 }
 
 * {
@@ -89,6 +105,31 @@ body,
   color: var(--ink);
   font-family: var(--sans);
   cursor: var(--default-cursor);
+}
+
+/* Shared heading specimen: every page title follows the same responsive type
+   scale. The TNES. wordmark is an anchor, not a heading, and deliberately keeps
+   its dedicated face and dimensions. */
+.home :is(h1, h2, h3),
+.shop :is(h1, h2, h3) {
+  min-width: 0;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  margin: 12px 0 0 !important;
+  color: #121212 !important;
+  font-family: var(--sans) !important;
+  font-size: 26px !important;
+  font-style: normal !important;
+  font-weight: 400 !important;
+  line-height: 1.25 !important;
+  letter-spacing: 0 !important;
+}
+
+@media (min-width: 640px) {
+  .home :is(h1, h2, h3),
+  .shop :is(h1, h2, h3) {
+    font-size: 36px !important;
+  }
 }
 
 .gallery-canvas {
@@ -116,7 +157,7 @@ body,
 }
 
 .gallery-loader__brand {
-  font-family: var(--mark);
+  font-family: var(--wordmark-font);
   font-size: clamp(24px, 2.4vw, 38px);
   letter-spacing: 0.14em;
 }
@@ -343,7 +384,7 @@ input:disabled,
 }
 
 .logo {
-  font-family: var(--mark);
+  font-family: var(--wordmark-font);
   font-size: 18px;
   letter-spacing: 0.06em;
   line-height: 1;
@@ -716,7 +757,7 @@ input:disabled,
     height: 42px;
     padding: 0;
     transform: none;
-    font-family: Arial, sans-serif;
+    font-family: var(--sans);
     font-size: 0;
     line-height: 1;
   }
@@ -1435,7 +1476,7 @@ input:disabled,
 }
 
 .letter-mark {
-  font-family: var(--mark);
+  font-family: var(--wordmark-font);
   font-size: 20px;
   letter-spacing: 0.06em;
   color: var(--ink);

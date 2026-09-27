@@ -1,0 +1,60 @@
+{
+  "origin": "https://tnes.studio",
+  "pages": {
+    "/": {
+      "title": "TNES. — Fine Art Photography by Victor Safdie Levy",
+      "description": "Photographs of the moments that never happen twice. Explore the works, catalogs and studio of Victor Safdie Levy.",
+      "index": true
+    },
+    "/works": {
+      "title": "Works — TNES.",
+      "description": "Explore fine art photographs by Victor Safdie Levy. Archival pigment prints available by inquiry.",
+      "index": true
+    },
+    "/works/catalogs/the-hamptons": {
+      "title": "The Hamptons Catalog — TNES.",
+      "description": "Thirty-six photographs from an East Coast summer in East Hampton, Napeague and Montauk. Explore the complete TNES. catalog.",
+      "index": true
+    },
+    "/moments": {
+      "title": "Moments — TNES.",
+      "description": "Places, exhibitions and moments from the photographic practice of Victor Safdie Levy.",
+      "index": true
+    },
+    "/about": {
+      "title": "About Victor Safdie Levy — TNES.",
+      "description": "Meet Victor Safdie Levy, the photographer and founder of TNES., a studio built around one idea: nothing happens twice.",
+      "index": true
+    },
+    "/privacy": {
+      "title": "Privacy — TNES.",
+      "description": "How TNES. handles inquiries, local preferences and optional interaction analytics.",
+      "index": false
+    },
+    "/cart": {
+      "title": "Cart — TNES.",
+      "description": "Your selected works at TNES.",
+      "index": false
+    },
+    "/favorites": {
+      "title": "Favorites — TNES.",
+      "description": "Your saved TNES. works.",
+      "index": false
+    },
+    "/special-prices": {
+      "title": "Special Prices — TNES.",
+      "description": "Selected TNES. works at special prices.",
+      "index": false
+    },
+    "/gallery": {
+      "title": "Gallery — TNES.",
+      "description": "Explore the TNES. virtual gallery.",
+      "index": false
+    },
+    "/home-black": {
+      "title": "TNES.",
+      "description": "Fine art photography by Victor Safdie Levy.",
+      "index": false
+    }
+  }
+}

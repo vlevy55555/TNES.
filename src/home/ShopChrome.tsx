@@ -3,12 +3,13 @@ import { useCartCount } from '../store/useCartStore'
 import { useContactStore } from '../store/useContactStore'
 import { SiteNav } from './SiteNav'
 import ContactOverlay from './ContactOverlay'
+import { analyticsAvailable } from '../analytics/clarity'
 
 // ponytail: placeholder hrefs for what does not exist yet — only the landing,
 // the shop, the cart, the store and moments are real today.
 const NAV = [
-  { label: 'shop', href: '/shop' },
-  { label: 'catalogs', href: '/shop#catalogs' },
+  { label: 'works', href: '/works' },
+  { label: 'catalogs', href: '/works#catalogs' },
   { label: 'moments', href: '/moments' },
   { label: 'about', href: '/about' },
 ]
@@ -18,8 +19,8 @@ export const PRICE = '—'
 
 /** Every catalog reference opens the complete catalog presentation. */
 export const catalogHref = (title?: string) => {
-  if (!title || title === 'private') return '/shop#catalogs'
-  return `/shop?catalog=${encodeURIComponent(title.replaceAll(' ', '-'))}`
+  if (!title || title === 'private') return '/works#catalogs'
+  return `/works/catalogs/${encodeURIComponent(title.replaceAll(' ', '-'))}`
 }
 
 /**
@@ -27,16 +28,20 @@ export const catalogHref = (title?: string) => {
  * `cart` carries its count in the nav's own mono caps — no badge, nothing
  * floating: it is a link to a screen like any other on this site.
  */
-export function ShopHeader({ current = 'shop' }: { current?: string }) {
+export function ShopHeader({ current = 'shop', showSpecialPrices = false }: { current?: string; showSpecialPrices?: boolean }) {
   const count = useCartCount()
-  const items = [...NAV, { label: count > 0 ? `cart (${count})` : 'cart', href: '/cart' }]
+  const items = [
+    ...NAV,
+    { label: count > 0 ? `cart (${count})` : 'cart', href: '/cart' },
+    ...(showSpecialPrices ? [{ label: 'special prices', href: '/special-prices' }] : []),
+  ]
 
   return (
     <header className="shop__header">
       <a className="shop__logo" href="/">TNES.</a>
       <SiteNav
         items={items}
-        current={current === 'cart' ? items[items.length - 1].label : current}
+        current={current === 'cart' ? items.find((item) => item.href === '/cart')?.label : current === 'shop' ? 'works' : current}
         className="shop__nav"
       />
     </header>
@@ -57,8 +62,8 @@ export function ShopFooter() {
         </p>
         <div className="shop__footer-links">
           <div>
-            <a href="/shop">shop</a>
-            <a href="/shop#catalogs">catalogs</a>
+            <a href="/works">works</a>
+            <a href="/works#catalogs">catalogs</a>
             <a href="/moments">moments</a>
             <a href="/about">about</a>
           </div>
@@ -69,6 +74,10 @@ export function ShopFooter() {
                 form instead of guessing at the visitor's mail app. */}
             <button type="button" onClick={() => openContact()}>contact</button>
             <a href={catalogHref('private')}>private catalogs</a>
+            <a href="/privacy">privacy</a>
+            {analyticsAvailable && (
+              <button type="button" onClick={() => window.dispatchEvent(new Event('tnes:privacy-choices'))}>analytics choices</button>
+            )}
           </div>
         </div>
       </div>

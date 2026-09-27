@@ -276,6 +276,28 @@ body:has(.about),
   }
 }
 
+@media (max-width: 600px) and (max-height: 650px) {
+  .about__lede {
+    padding-top: calc(var(--about-header) + 4px);
+    padding-bottom: 12px;
+  }
+
+  .about__name {
+    margin-top: 8px;
+    font-size: clamp(38px, 10vw, 48px);
+  }
+
+  .about__role {
+    margin-top: 12px;
+  }
+
+  .about__statement {
+    margin-top: 12px;
+    font-size: 16px;
+    line-height: 1.25;
+  }
+}
+
 /* No sequence to run: the stage becomes a plain stack, so every piece of it is
    still on the page and still readable. */
 @media (prefers-reduced-motion: reduce) {

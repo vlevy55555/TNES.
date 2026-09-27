@@ -64,7 +64,7 @@ function CatalogInquiry({ onClose }: { onClose: () => void }) {
           <button type="button" onClick={onClose} aria-label="close inquiry">×</button>
         </header>
 
-        <form className="catalog-inquiry__form" onSubmit={sendInquiry} noValidate>
+        <form className="catalog-inquiry__form" onSubmit={sendInquiry} noValidate data-clarity-mask="True">
           <label><span>name.</span><input value={name} onChange={(event) => setName(event.target.value)} placeholder="your name." /></label>
           <label><span>email.</span><input type="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="you@domain.com" /></label>
           <label><span>phone. <em>(optional)</em></span><input value={phone} onChange={(event) => setPhone(event.target.value)} placeholder="+1 555 555 5555" /></label>
@@ -229,7 +229,7 @@ export default function Catalog({ slug }: { slug: CatalogSlug }) {
 
       <section className="catalog-page__intro">
         <p className="catalog-page__crumb">
-          <a href="/shop#catalogs">catalogs</a><span>/</span>{catalog.title}
+          <a href="/works#catalogs">catalogs</a><span>/</span>{catalog.title}
         </p>
 
         <div className="catalog-page__overview">
@@ -284,7 +284,7 @@ export default function Catalog({ slug }: { slug: CatalogSlug }) {
                 <button type="button" onClick={() => openContact(`${catalog.title} print inquiry`)}>
                   inquire about prints <span aria-hidden="true">→</span>
                 </button>
-                <a href="/shop#catalogs">all catalogs <span aria-hidden="true">→</span></a>
+                <a href="/works#catalogs">all catalogs <span aria-hidden="true">→</span></a>
               </div>
             )}
           </div>
@@ -334,7 +334,7 @@ export default function Catalog({ slug }: { slug: CatalogSlug }) {
               </header>
               <div className={`catalog-page__mosaic catalog-page__mosaic--${works.length}`}>
                 {works.map((work, workIndex) => (
-                  <a className={`catalog-page__work catalog-page__work--${workIndex + 1} catalog-page__work--${work.id}`} href={work.shopifyHandle ? `/shop/${work.id}` : '/shop'} key={work.id}>
+                  <a className={`catalog-page__work catalog-page__work--${workIndex + 1} catalog-page__work--${work.id}`} href={work.shopifyHandle ? `/works/${work.id}` : '/works'} key={work.id}>
                     <figure><img src={work.image} alt={`${work.title}, ${work.subtitle}`} loading="lazy" /></figure>
                     <p><span>{work.title.toLowerCase()}.</span><span>{work.subtitle.toLowerCase()}</span></p>
                   </a>

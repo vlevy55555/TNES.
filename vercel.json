@@ -3,7 +3,23 @@
   "framework": "vite",
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
+  "redirects": [
+    { "source": "/home", "destination": "/", "permanent": true },
+    { "source": "/shop", "destination": "/works", "permanent": true },
+    { "source": "/shop/:path*", "destination": "/works/:path*", "permanent": true }
+  ],
   "rewrites": [
+    { "source": "/works", "destination": "/works/index.html" },
+    { "source": "/works/catalogs/the-hamptons", "destination": "/works/catalogs/the-hamptons/index.html" },
+    { "source": "/works/:id", "destination": "/works/:id/index.html" },
+    { "source": "/moments", "destination": "/moments/index.html" },
+    { "source": "/about", "destination": "/about/index.html" },
+    { "source": "/privacy", "destination": "/privacy/index.html" },
+    { "source": "/cart", "destination": "/cart/index.html" },
+    { "source": "/favorites", "destination": "/favorites/index.html" },
+    { "source": "/special-prices", "destination": "/special-prices/index.html" },
+    { "source": "/gallery", "destination": "/gallery/index.html" },
+    { "source": "/home-black", "destination": "/home-black/index.html" },
     {
       "source": "/(.*)",
       "destination": "/index.html"

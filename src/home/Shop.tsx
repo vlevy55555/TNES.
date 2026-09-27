@@ -7,6 +7,7 @@ import { catalogHref, ShopFooter, ShopHeader } from './ShopChrome'
 import Catalog, { isCatalogSlug } from './Catalog'
 import './home.css'
 import './shop.css'
+import './works.css'
 
 gsap.registerPlugin(ScrollTrigger)
 
@@ -75,7 +76,7 @@ const works = shopArtworks.map((work) => {
     scenes: SCENES[work.id] ?? [],
     meta: `${where.toLowerCase()} · ${year}`,
     ratio: work.size[0] / work.size[1],
-    href: `/shop/${work.id}`,
+    href: `/works/${work.id}`,
   }
 })
 
@@ -180,7 +181,7 @@ function ShopIndex() {
       if (!items.length) return
 
       gsap.set('.shop__figure', { clipPath: 'inset(0 0 100% 0)' })
-      gsap.set('.shop__figure img', { scale: 1.12, yPercent: 7 })
+      gsap.set('.shop__figure img', { scale: 1.08 })
       gsap.set('.shop__caption, .shop__meta', { opacity: 0, y: 12 })
 
       ScrollTrigger.batch(items, {
@@ -196,7 +197,6 @@ function ShopIndex() {
           })
           gsap.to(at('.shop__figure img'), {
             scale: 1,
-            yPercent: 0,
             duration: 1.35,
             ease: 'expo.out',
             stagger: 0.08,
@@ -219,19 +219,24 @@ function ShopIndex() {
   }, [place, scene])
 
   return (
-    <main className="shop">
-      <ShopHeader />
+    <main className="shop works-page">
+      <ShopHeader showSpecialPrices />
 
       <section className="shop__intro" ref={head}>
-        <h1 className="shop__title"><RevealText block>shop.</RevealText></h1>
+        <p className="works-page__eyebrow">tnes. opening selection</p>
+        <h1 className="shop__title"><RevealText block>Works</RevealText></h1>
+        <p className="works-page__description">Photographs from across the archive. Each is shown in its complete composition and offered for inquiry as a physical work.</p>
 
         <nav className="shop__tabs" aria-label="Seções da loja">
           <a className="shop__tab shop__tab--on" href="#works"><RevealText>available works</RevealText></a>
           <a className="shop__tab" href="#catalogs"><RevealText>catalogs</RevealText></a>
         </nav>
 
-        <Filter label="place" options={PLACES} value={place} onChange={setPlace} />
-        <Filter label="scene" options={SCENE_FILTERS} value={scene} onChange={setScene} />
+        <details className="works-page__filters">
+          <summary>filter works <span aria-hidden="true">+</span></summary>
+          <Filter label="place" options={PLACES} value={place} onChange={setPlace} />
+          <Filter label="scene" options={SCENE_FILTERS} value={scene} onChange={setScene} />
+        </details>
 
         <p className="shop__count" aria-live="polite">
           {shown.length} {shown.length === 1 ? 'work' : 'works'}
@@ -247,17 +252,33 @@ function ShopIndex() {
               href={work.href}
               style={{ '--ar': String(work.ratio) } as React.CSSProperties}
             >
-              <figure className="shop__figure">
-                <img src={work.image} alt={`${work.title}, ${work.subtitle}`} loading="lazy" />
-              </figure>
+              <div
+                className="works-page__frame-hover"
+                onMouseEnter={(event) => {
+                  event.currentTarget.dataset.frame = Math.random() < 0.5 ? 'black' : 'white'
+                }}
+              >
+                <figure className="shop__figure">
+                  <img
+                    src={work.image}
+                    alt={`${work.title}, ${work.subtitle}`}
+                    width={Math.round(work.size[0] * 1000)}
+                    height={Math.round(work.size[1] * 1000)}
+                    loading="lazy"
+                    decoding="async"
+                  />
+                </figure>
+              </div>
               <p className="shop__caption">
-                <span>{work.title.toLowerCase()}.</span>
+                <span>{work.title}</span>
+                <span className="works-page__view">view work</span>
               </p>
               {/* the catalogs' own affordance, on every work: the arrow steps
                   right as the photograph pushes in under the cursor */}
               <p className="shop__meta">
-                {work.meta} <span className="shop__arrow" aria-hidden="true">→</span>
+                {work.meta}
               </p>
+              <p className="works-page__medium">archival pigment print</p>
             </a>
           )
         })}
@@ -305,6 +326,8 @@ function ShopIndex() {
 }
 
 export default function Shop() {
-  const catalog = new URLSearchParams(window.location.search).get('catalog')
+  const catalog = window.location.pathname.startsWith('/works/catalogs/')
+    ? window.location.pathname.split('/')[3]
+    : new URLSearchParams(window.location.search).get('catalog')
   return isCatalogSlug(catalog) ? <Catalog slug={catalog} /> : <ShopIndex />
 }

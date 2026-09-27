@@ -1,13 +1,14 @@
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { lazy, Suspense, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { gsap } from 'gsap'
 import { artworks, standardPrintSizes } from '../data/artworks'
 import type { FrameStyle } from '../data/artworks'
 import { defaultSelection, findVariant } from '../lib/shopify'
 import { useProductState } from '../lib/useProduct'
 import { useContactStore } from '../store/useContactStore'
+import { useFavoritesStore } from '../store/useFavoritesStore'
+import { trackAnalyticsEvent } from '../analytics/clarity'
 import { RevealText, useSectionTextReveal } from './reveal'
 import { ShopFooter, ShopHeader } from './ShopChrome'
-import ProductFrame from './ProductFrame'
 import './home.css'
 import './shop.css'
 
@@ -19,6 +20,8 @@ const FRAMES: { value: FrameStyle; label: string }[] = [
   { value: 'black', label: 'black' },
 ]
 
+const ProductFrame = lazy(() => import('./ProductFrame'))
+
 const sizeKey = (value: string) => value.toLowerCase().replace(/×/g, 'x').replace(/[^0-9x]/g, '')
 
 export default function Product({ id }: { id: string }) {
@@ -29,6 +32,8 @@ export default function Product({ id }: { id: string }) {
   const mediaPointer = useRef<{ x: number; y: number } | null>(null)
   const { product, loading: productLoading } = useProductState(work?.shopifyHandle)
   const openContact = useContactStore((s) => s.openContact)
+  const isFavorite = useFavoritesStore((s) => s.ids.includes(id))
+  const toggleFavorite = useFavoritesStore((s) => s.toggle)
 
   // Live options win over the static cm list: Shopify is what the checkout
   // honours, so a size shown here has to be a size you can actually order.
@@ -43,9 +48,11 @@ export default function Product({ id }: { id: string }) {
   const [size, setSize] = useState('')
   const [frame, setFrame] = useState<FrameStyle>('unframed')
   const [lightboxOpen, setLightboxOpen] = useState(false)
+  const [show3D, setShow3D] = useState(false)
   const isPortrait = !!work && work.size[1] > work.size[0]
 
   useEffect(() => setLightboxOpen(false), [work?.id])
+  useEffect(() => setShow3D(false), [work?.id])
 
   useEffect(() => {
     if (!lightboxOpen) return
@@ -151,7 +158,7 @@ export default function Product({ id }: { id: string }) {
         <section className="product__missing">
           <h1 className="product__title">not here.</h1>
           <p className="shop__meta">
-            <a href="/shop">back to the shop <span aria-hidden="true">→</span></a>
+            <a href="/works">back to works <span aria-hidden="true">→</span></a>
           </p>
         </section>
         <ShopFooter />
@@ -168,26 +175,46 @@ export default function Product({ id }: { id: string }) {
   )
 
   return (
-    <main className={`shop product product--${work.id}`}>
+    <main className={`shop product product--${work.id} ${show3D ? 'product--3d' : 'product--photo'}`}>
       <div className="product__first">
         <ShopHeader />
 
         <section className="product__stage" ref={stage}>
           <div className="product__lede">
-            <h1 className="product__title"><RevealText block>{work.title.toLowerCase()}.</RevealText></h1>
+            <div className="product__title-row">
+              <h1 className="product__title"><RevealText block>{work.title.toLowerCase()}.</RevealText></h1>
+              <div className="product__favorite-actions">
+                <button
+                  className={`product__favorite ${isFavorite ? 'product__favorite--saved' : ''}`}
+                  type="button"
+                  aria-label={isFavorite ? `Remove ${work.title} from favorites` : `Add ${work.title} to favorites`}
+                  aria-pressed={isFavorite}
+                  onClick={() => {
+                    if (!isFavorite) trackAnalyticsEvent('favorite_added')
+                    toggleFavorite(work.id)
+                  }}
+                >
+                  <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                    <path d="M20.2 5.8a4.7 4.7 0 0 0-6.6 0L12 7.4l-1.6-1.6a4.7 4.7 0 0 0-6.6 6.6L12 20.6l8.2-8.2a4.7 4.7 0 0 0 0-6.6Z" />
+                  </svg>
+                </button>
+                <a className="product__favorites-link" href="/favorites">view favorites</a>
+              </div>
+            </div>
             <p className="shop__meta">{`${where.toLowerCase()} · ${year}`}</p>
           </div>
 
           <figure
             className={`product__media product__media--${orientation}`}
             aria-label={`${work.title}, ${work.subtitle}`}
-            role="button"
-            tabIndex={0}
-            aria-haspopup="dialog"
+            role={show3D ? undefined : 'button'}
+            tabIndex={show3D ? undefined : 0}
+            aria-haspopup={show3D ? undefined : 'dialog'}
             onKeyDown={(event) => {
+              if (event.target !== event.currentTarget) return
               if (event.key === 'Enter' || event.key === ' ') {
                 event.preventDefault()
-                setLightboxOpen(true)
+                if (!show3D) setLightboxOpen(true)
               }
             }}
             onPointerDown={(event) => {
@@ -197,7 +224,7 @@ export default function Product({ id }: { id: string }) {
               const start = mediaPointer.current
               mediaPointer.current = null
               if (!start) return
-              if (Math.hypot(event.clientX - start.x, event.clientY - start.y) <= 6) {
+              if (!show3D && Math.hypot(event.clientX - start.x, event.clientY - start.y) <= 6) {
                 setLightboxOpen(true)
               }
             }}
@@ -205,14 +232,36 @@ export default function Product({ id }: { id: string }) {
               mediaPointer.current = null
             }}
           >
-            <ProductFrame artwork={work} style={frame} />
-            <span className="product__zoom-hint" aria-hidden="true">
-              <svg viewBox="0 0 24 24" focusable="false">
-                <circle cx="10.5" cy="10.5" r="6.25" />
-                <path d="m15.2 15.2 4.3 4.3" />
-                <path d="M10.5 7.5v6M7.5 10.5h6" />
-              </svg>
-            </span>
+            {show3D ? <Suspense fallback={<span className="product__loading-3d">loading 3D…</span>}><ProductFrame artwork={work} style={frame} /></Suspense> : (
+              <img className="product__photo" src={work.image} alt={`${work.title}, ${work.subtitle}`} />
+            )}
+              <button
+                className="product__view-toggle"
+                type="button"
+                aria-label={show3D ? 'View photograph' : 'View framed print in 3D'}
+                onPointerDown={(event) => event.stopPropagation()}
+                onPointerUp={(event) => event.stopPropagation()}
+                onClick={(event) => {
+                  event.stopPropagation()
+                  mediaPointer.current = null
+                  if (!show3D) trackAnalyticsEvent('work_3d_opened')
+                  setShow3D((current) => !current)
+                }}
+              >
+                {!show3D && (
+                  <svg viewBox="0 0 32 32" aria-hidden="true" focusable="false">
+                    <path d="M16 3v25M7 11l9-5 9 5v12l-9 5-9-5V11Z" />
+                    <path d="m7 11 9 6 9-6M7 23l9-6 9 6" />
+                  </svg>
+                )}{show3D ? 'PHOTO' : '3D'}
+              </button>
+              {!show3D && <span className="product__zoom-hint" aria-hidden="true">
+                <svg viewBox="0 0 24 24" focusable="false">
+                  <circle cx="10.5" cy="10.5" r="6.25" />
+                  <path d="m15.2 15.2 4.3 4.3" />
+                  <path d="M10.5 7.5v6M7.5 10.5h6" />
+                </svg>
+              </span>}
           </figure>
         </section>
 
@@ -263,7 +312,8 @@ export default function Product({ id }: { id: string }) {
                     aria-pressed={size === option}
                     onClick={() => setSize(option)}
                   >
-                    {option}
+                    <span className="product__size-label-mobile">{option}</span>
+                    <span className="product__size-label-desktop">{option.replace(/\s*[x×]\s*/gi, '×').replace(/\s+in\.?$/i, '')}</span>
                   </button>
                 )
               })}
@@ -295,7 +345,7 @@ export default function Product({ id }: { id: string }) {
         <div className="product__related-grid">
           {relatedWorks.map((related) => (
             <a
-              href={related.shopifyHandle ? `/shop/${related.id}` : '/shop'}
+              href={related.shopifyHandle ? `/works/${related.id}` : '/works'}
               className="product__related-work"
               key={related.id}
               aria-label={`${related.title}, ${related.subtitle}`}

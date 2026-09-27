@@ -11,7 +11,7 @@ body:has(.home),
 }
 
 .home {
-  --paper: #fff;
+  --paper: #f8f7f4;
   --black: #050505;
   --paper-ink: #0b0b0b;
   --paper-muted: #5d5d5d;
@@ -25,7 +25,7 @@ body:has(.home),
   color: #fff;
   background: var(--paper);
   /* the reference face — the project already ships Helvetica for the [O] mark */
-  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-family: var(--sans);
   font-synthesis: none;
   text-rendering: optimizeLegibility;
 }
@@ -33,11 +33,11 @@ body:has(.home),
 /* /home-black keeps the same gallery composition, only reversing the paper
    system so typography, controls and the embedded Studio remain coherent. */
 .home--black {
-  --paper: #090909;
+  --paper: #f8f7f4;
   --black: #050505;
-  --paper-ink: #f4f1eb;
-  --paper-muted: #aaa59c;
-  --paper-line: rgba(244, 241, 235, 0.25);
+  --paper-ink: #121212;
+  --paper-muted: #706d68;
+  --paper-line: rgba(11, 11, 11, 0.2);
   --media-fallback: #242424;
 }
 
@@ -113,7 +113,7 @@ body:has(.home--black),
 
 .home .hero__logo,
 .shop .shop__logo {
-  font-family: var(--mark);
+  font-family: var(--wordmark-font);
   font-size: var(--wordmark);
   font-weight: 500;
   line-height: 1;
@@ -131,7 +131,7 @@ body:has(.home--black),
 .home .hero__nav a,
 .shop .shop__nav a,
 .shop .shop__nav button {
-  font-family: var(--mark);
+  font-family: var(--sans);
   font-size: clamp(12px, 0.92vw, 15px);
   font-weight: 400;
   line-height: 1;
@@ -353,6 +353,12 @@ body:has(.home--black),
   box-shadow: inset 0 0 18vw rgba(0, 0, 0, 0.42);
 }
 
+.hero__artwork-link {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+
 /* Header — wordmark left, sections right */
 
 /* position and ink only — the type is settled in the shared navbar block */
@@ -437,6 +443,13 @@ body:has(.home--black),
   line-height: 1;
   letter-spacing: -0.045em;
   white-space: nowrap;
+}
+
+@media (max-width: 1100px) {
+  .hero__item:not(.hero__item--mark) .hero__title {
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
 }
 
 .hero__item:not(.hero__item--mark) .hero__title {
@@ -542,12 +555,18 @@ body:has(.home--black),
 /* Oversized, left-set and tightly stacked. The width deliberately lets the
    three words break into a compact block instead of reading as a small caption. */
 .statement__line {
-  max-width: min(100%, 8.8ch);
+  max-width: 100%;
   margin: 0;
   font-size: clamp(52px, 10.5vw, 142px);
   font-weight: 500;
   line-height: 0.9;
   letter-spacing: -0.055em;
+}
+
+@media (min-width: 640px) {
+  .home h1.statement__line {
+    font-size: 42px !important;
+  }
 }
 
 .statement__line-mask,
@@ -669,12 +688,28 @@ body:has(.home--black),
   }
 
   .statement {
-    min-height: clamp(680px, 84svh, 920px);
+    display: grid;
+    grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+    grid-template-rows: auto auto 1fr;
+    align-items: start;
+    min-height: 0;
     padding-top: clamp(88px, 8vw, 132px);
   }
 
   .statement__line {
-    max-width: min(8.8ch, 36vw);
+    max-width: 100%;
+  }
+
+  .statement > :not(.statement__artwork) {
+    grid-column: 1;
+  }
+
+  .statement .statement__artwork {
+    position: static;
+    grid-column: 2;
+    grid-row: 1 / 4;
+    width: 100%;
+    min-width: 0;
   }
 
   .home .works {
@@ -706,11 +741,19 @@ body:has(.home--black),
 }
 
 .works__head h2 {
-  margin: 0;
-  font-size: clamp(56px, 8.1vw, 138px);
-  font-weight: 500;
-  line-height: 0.82;
-  letter-spacing: -0.065em;
+  margin: 12px 0 0;
+  color: #121212;
+  font-family: var(--sans);
+  font-size: 26px;
+  font-weight: 400;
+  line-height: 1.25;
+  letter-spacing: 0;
+}
+
+@media (min-width: 640px) {
+  .works__head h2 {
+    font-size: 36px;
+  }
 }
 
 .works__head h2 span,

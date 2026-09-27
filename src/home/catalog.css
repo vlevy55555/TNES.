@@ -14,7 +14,7 @@
 
 .catalog-page__overview {
   display: grid;
-  grid-template-columns: minmax(0, 0.95fr) minmax(420px, 1.05fr);
+  grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
   align-items: start;
   gap: clamp(54px, 8vw, 150px);
   margin-top: clamp(28px, 4vw, 64px);
@@ -26,6 +26,7 @@
   font-weight: 400;
   line-height: 0.9;
   letter-spacing: -0.06em;
+  overflow-wrap: anywhere;
 }
 
 .catalog-page__lead > p:not(.catalog-page__meta) {
@@ -253,10 +254,10 @@
    component remains white; only the two complete catalog pages inherit this
    local paper inversion. */
 .catalog-page > .studio__signup {
-  --paper: #050505;
-  --paper-ink: #ffffff;
-  --paper-muted: #ffffff;
-  --paper-line: rgba(255, 255, 255, 0.42);
+  --paper: #f8f7f4;
+  --paper-ink: #121212;
+  --paper-muted: #706d68;
+  --paper-line: rgba(11, 11, 11, 0.2);
 
   background: var(--paper);
   color: var(--paper-ink);

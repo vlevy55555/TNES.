@@ -76,7 +76,7 @@ const MOMENT_ENTRIES: Moment[] = [
     date: '03/27/26',
     abstract:
       'the first private showing of TNES. one night in new york, shared with friends, family, and a small group of invited guests before the work had ever been shown publicly.',
-    links: [{ label: 'shop the archive', href: '/shop' }],
+    links: [{ label: 'view the archive', href: '/works' }],
     seed: 0,
     photos: [
       '/moments/nyc-soft-launch/cover.webp',
@@ -92,7 +92,7 @@ const MOMENT_ENTRIES: Moment[] = [
     date: '04/28/26',
     abstract:
       'the first event in brazil, where TNES. began — and where the name came from. my cousins call me “vitones.” take out the o, and you get TNES.',
-    links: [{ label: 'shop the archive', href: '/shop' }],
+    links: [{ label: 'view the archive', href: '/works' }],
     seed: 3,
     photos: [
       '/moments/encontros/cover.webp',
@@ -112,7 +112,7 @@ const MOMENT_ENTRIES: Moment[] = [
     links: [
       // no href: this one raises the contact panel with its subject written
       { label: 'inquire about works on view', contact: 'works on view — east hampton art affair' },
-      { label: 'shop the archive', href: '/shop' },
+      { label: 'view the archive', href: '/works' },
     ],
     seed: 6,
     photos: [
@@ -132,7 +132,7 @@ const MOMENT_ENTRIES: Moment[] = [
       'six works from the archive and one exclusive object, released together and never reissued.',
     links: [
       { label: 'count down to the release', href: '#release' },
-      { label: 'shop the archive', href: '/shop' },
+      { label: 'view the archive', href: '/works' },
     ],
     seed: 9,
   },

@@ -1,4 +1,5 @@
 import { create } from 'zustand'
+import { trackAnalyticsEvent } from '../analytics/clarity'
 
 /**
  * The contact panel is opened from places that do not know about each other —
@@ -17,6 +18,9 @@ type ContactStore = {
 export const useContactStore = create<ContactStore>((set) => ({
   open: false,
   subject: '',
-  openContact: (subject = '') => set({ open: true, subject }),
+  openContact: (subject = '') => {
+    trackAnalyticsEvent('inquiry_opened')
+    set({ open: true, subject })
+  },
   closeContact: () => set({ open: false }),
 }))

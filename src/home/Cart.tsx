@@ -81,7 +81,7 @@ export default function Cart() {
         <section className="cart__empty">
           <p className="cart__empty-line">nothing selected yet.</p>
           <p className="shop__meta">
-            <a href="/shop">browse the shop <span aria-hidden="true">→</span></a>
+            <a href="/works">browse works <span aria-hidden="true">→</span></a>
           </p>
         </section>
       ) : (
@@ -89,13 +89,13 @@ export default function Cart() {
           <div className="cart__lines" ref={list}>
             {selected.map(({ line, artwork }) => (
               <article className="cart__line" key={line.variantId}>
-                <a className="cart__figure" href={`/shop/${line.artworkId}`}>
+                <a className="cart__figure" href={`/works/${line.artworkId}`}>
                   {artwork && <img src={artwork.image} alt={artwork.title} />}
                 </a>
 
                 <div className="cart__line-body">
                   <h2 className="cart__line-title">
-                    <a href={`/shop/${line.artworkId}`}>
+                    <a href={`/works/${line.artworkId}`}>
                       {(artwork?.title ?? line.artworkId).toLowerCase()}.
                     </a>
                   </h2>

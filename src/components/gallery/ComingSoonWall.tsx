@@ -432,7 +432,7 @@ function BuyPass({ position }: { position: [number, number, number] }) {
   return (
     <Html center transform position={position} scale={0.2} zIndexRange={[10, 0]} occlude={false}>
       <div className="wall-buy-pass-wrap">
-        <a className="wall-buy-pass" href="/shop">
+        <a className="wall-buy-pass" href="/works">
           BUY YOU PASS <span aria-hidden="true">→</span>
         </a>
         <span className="wall-buy-pass-note">limited</span>
