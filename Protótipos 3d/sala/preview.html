@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<title>preview</title>
+<style>html,body{margin:0;height:100%;overflow:hidden;background:#bfbfbf}canvas{display:block}</style>
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.185.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.185.0/examples/jsm/"
+} }
+</script>
+</head>
+<body>
+<script type="module">
+// Usage: preview.html?obj=armchair&cam=x,y,z&look=x,y,z&fov=35&rot=0.4
+// Loads objects/<obj>.js, calls its default export create(), renders on a grey ground.
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+
+const q = new URLSearchParams(location.search);
+const name = q.get('obj') || 'armchair';
+const v = (k, d) => (q.get(k) ? q.get(k).split(',').map(Number) : d);
+
+const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+renderer.setPixelRatio(1);
+renderer.setSize(innerWidth, innerHeight);
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.0;
+document.body.appendChild(renderer.domElement);
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0xbfbfbf);
+scene.environment = new THREE.PMREMGenerator(renderer).fromScene(new RoomEnvironment(), 0.04).texture;
+scene.environmentIntensity = 0.6;
+
+const camera = new THREE.PerspectiveCamera(Number(q.get('fov') || 35), innerWidth / innerHeight, 0.05, 100);
+camera.position.set(...v('cam', [2.2, 1.4, 3.2]));
+const look = new THREE.Vector3(...v('look', [0, 0.45, 0]));
+camera.lookAt(look);
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.target.copy(look);
+
+scene.add(new THREE.HemisphereLight(0xffffff, 0x666666, 1.2));
+const key = new THREE.DirectionalLight(0xffffff, 2.0); key.position.set(-3, 5, 4); scene.add(key);
+const fill = new THREE.DirectionalLight(0xffffff, 0.6); fill.position.set(4, 3, -2); scene.add(fill);
+
+const ground = new THREE.Mesh(new THREE.CircleGeometry(6, 64), new THREE.MeshStandardMaterial({ color: 0x8a8886, roughness: 0.6 }));
+ground.rotation.x = -Math.PI / 2; scene.add(ground);
+scene.add(new THREE.GridHelper(6, 12, 0x777777, 0x999999));
+
+const mod = await import(`./objects/${name}.js`);
+const obj = await mod.create();
+obj.rotation.y = Number(q.get('rot') || 0);
+scene.add(obj);
+const box = new THREE.Box3().setFromObject(obj); const s = new THREE.Vector3(); box.getSize(s);
+console.log('bbox', box.min.toArray().map(n=>n.toFixed(3)), box.max.toArray().map(n=>n.toFixed(3)), 'size', s.toArray().map(n=>n.toFixed(3)));
+window.__ready = false;
+let frames = 0;
+renderer.setAnimationLoop(() => { controls.update(); renderer.render(scene, camera); if (++frames > 30) window.__ready = true; });
+</script>
+</body>
+</html>

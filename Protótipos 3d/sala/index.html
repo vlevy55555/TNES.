@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Sala — Concreto &amp; Mármore — TNES</title>
+<style>
+  html, body { margin: 0; height: 100%; overflow: hidden; background: #8c8b89; }
+  canvas { display: block; }
+  #ref { position: fixed; inset: 0; z-index: 2; width: 100%; height: 100%; object-fit: cover;
+         pointer-events: none; opacity: 0; mix-blend-mode: normal; }
+  #hint { position: fixed; bottom: 14px; left: 0; right: 0; text-align: center;
+          font: 12px/1.4 system-ui, sans-serif; color: rgba(255,255,255,.55);
+          pointer-events: none; letter-spacing: .04em; }
+</style>
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.185.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.185.0/examples/jsm/"
+  }
+}
+</script>
+</head>
+<body>
+<img id="ref" src="reference.png" alt="" />
+<div id="hint">arraste para orbitar · scroll para zoom · R = referência sobreposta · 0 = câmera original</div>
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+
+// ---------------------------------------------------------------------------
+// Câmera calibrada na referência (1672x941, câmera nivelada):
+//   horizonte no centro vertical → altura da câmera h
+//   linha piso/parede em y=690 e base da mesa em y=905 → parede a 5.66 m,
+//   h = 1.10 m, distância focal 1129 px → fov vertical 45.2°.
+// A parede fica em z=0 virada para +z; a câmera em z=+5.66.
+// ---------------------------------------------------------------------------
+const REF_ASPECT = 1672 / 941;
+const CAM = { x: 0, y: 1.10, z: 5.66, fovV: 45.2 };
+
+const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.setSize(innerWidth, innerHeight);
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.05;
+renderer.shadowMap.enabled = false; // sem sombras nesta versão, por pedido
+document.body.appendChild(renderer.domElement);
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x8c8b89);
+const pmrem = new THREE.PMREMGenerator(renderer);
+scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+scene.environmentIntensity = 0.55;
+
+const camera = new THREE.PerspectiveCamera(CAM.fovV, innerWidth / innerHeight, 0.05, 60);
+function resetCamera() {
+  // mantém o enquadramento horizontal da referência em qualquer aspect ratio
+  const aspect = innerWidth / innerHeight;
+  const hFov = 2 * Math.atan(Math.tan(THREE.MathUtils.degToRad(CAM.fovV) / 2) * REF_ASPECT);
+  camera.fov = aspect >= REF_ASPECT
+    ? CAM.fovV
+    : THREE.MathUtils.radToDeg(2 * Math.atan(Math.tan(hFov / 2) / aspect));
+  camera.aspect = aspect;
+  camera.updateProjectionMatrix();
+  camera.position.set(CAM.x, CAM.y, CAM.z);
+  controls.target.set(CAM.x, CAM.y, 0);
+  if (q.get('cam')) camera.position.set(...q.get('cam').split(',').map(Number));
+  if (q.get('look')) controls.target.set(...q.get('look').split(',').map(Number));
+  controls.update();
+}
+const q = new URLSearchParams(location.search);
+
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+controls.dampingFactor = 0.06;
+controls.minDistance = 0.5;
+controls.maxDistance = 14;
+controls.maxPolarAngle = Math.PI / 2 + 0.05;
+
+// ---------------------------------------------------------------------------
+// Luz: difusa, sem sombras. Key suave da frente-esquerda-alto (a parede clareia
+// para a esquerda e a pilastra da borda é a superfície mais clara), fill fraco
+// da direita, hemisfério para o teto/piso.
+// ---------------------------------------------------------------------------
+scene.add(new THREE.HemisphereLight(0xdedede, 0x5a5856, 0.85));
+const key = new THREE.DirectionalLight(0xffffff, 0.6);
+key.position.set(-6, 6, 7);
+scene.add(key);
+// luz pontual alta à esquerda: dá o gradiente claro-esquerda → escuro-direita da parede
+const wash = new THREE.PointLight(0xffffff, 40, 0, 2);
+wash.position.set(-3.2, 3.8, 3.6);
+scene.add(wash);
+// luz frontal fraca: levanta as faces verticais (frente da mesa, aparador, poltronas)
+const front = new THREE.DirectionalLight(0xffffff, 0.45);
+front.position.set(0.5, 1.4, 8);
+scene.add(front);
+
+const fill = new THREE.DirectionalLight(0xe8e8ea, 0.15);
+fill.position.set(6, 3, 5);
+scene.add(fill);
+
+// ---------------------------------------------------------------------------
+// Composição (metros, z medido a partir da parede em direção à câmera).
+// Coordenadas derivadas dos pixels da referência com a câmera acima.
+// ---------------------------------------------------------------------------
+const place = (obj, { x = 0, y = 0, z = 0, ry = 0, s = 1 } = {}) => {
+  obj.position.set(x, y, z);
+  obj.rotation.y = ry;
+  if (Array.isArray(s)) obj.scale.set(...s); else obj.scale.setScalar(s);
+  scene.add(obj);
+  return obj;
+};
+
+const load = (n) => import(`./objects/${n}.js`);
+const [wall, floor, armchair, table, sideboard, rug, bowl, books, olive] = await Promise.all(
+  ['wall', 'floor', 'armchair', 'coffee_table', 'sideboard', 'rug', 'bowl', 'books', 'olive_tree'].map(load),
+);
+
+const wallObj = place(await wall.create(), { z: 0 });
+// a pilastra da borda esquerda é a superfície mais clara da referência (#d1d1d2):
+// na foto ela recebe luz de uma janela fora do quadro; aqui um lift emissivo faz o papel
+// ponytail: emissivo em vez de mais uma luz — uma luz local estourava o canto da parede
+wallObj.traverse((o) => { if (o.name === 'pilaster') { o.material = o.material.clone(); o.material.emissive.set('#ffffff'); o.material.emissiveIntensity = 0.55; } });
+place(await floor.create(), { z: 0 });
+
+// tapete: borda de trás a ~0.7 m da parede, frente além do enquadramento
+place(await rug.create(), { z: 2.55, s: [1.3, 1, 1] });
+
+// mesa de centro: 1.7 × 0.7 × 0.30 na referência (frente em z≈2.8)
+const tableObj = place(await table.create(), { z: 2.45, s: [1.7 / 1.75, 0.30 / 0.35, 0.70 / 1.20] });
+
+// poltronas: centro a ±1.65 m, giradas ~30° para o centro
+const chairL = place(await armchair.create(), { x: -1.72, z: 2.40, ry: 0.40, s: 1.05 });
+const chairR = place(await armchair.create(), { x: 1.66, z: 2.35, ry: -0.40, s: 1.05 });
+// tecido um pouco mais fechado que o render cru (referência #2d2d2e no encosto)
+for (const c of [chairL, chairR]) c.traverse((o) => { if (o.isMesh && o.material.metalness < 0.5) o.material.color.multiplyScalar(0.9); });
+
+// aparador: 2.4 m × 0.68 m de altura encostado à parede, à esquerda
+const sb = place(await sideboard.create(), { x: -2.28, z: 0.32, s: [2.4 / 1.62, 0.68 / 0.62, 1.15] });
+
+// bowls: grande na mesa (esquerda do centro), pequeno no aparador
+const tableTop = new THREE.Box3().setFromObject(tableObj).max.y;
+const sbTop = new THREE.Box3().setFromObject(sb).max.y;
+place(await bowl.create({ diameter: 0.42, height: 0.10 }), { x: -0.17, y: tableTop, z: 2.32 });
+place(await bowl.create({ diameter: 0.20, height: 0.07 }), { x: -2.06, y: sbTop, z: 0.32 });
+
+// livros: pilha na mesa (à direita do bowl), um livro deitado no aparador
+place(await books.create(), { x: 0.36, y: tableTop, z: 2.38, ry: -0.08 });
+place(await books.createSingle(), { x: -2.95, y: sbTop, z: 0.32, ry: 0.06 });
+
+// oliveira no canto direito
+const tree = place(await olive.create(), { x: 3.62, z: 0.55, s: 1.0 });
+// folhas mais escuras, como a massa #4a483e da referência
+tree.traverse((o) => { if (o.isInstancedMesh) o.material.color.setScalar(0.62); });
+
+resetCamera();
+
+// ---------------------------------------------------------------------------
+const ref = document.getElementById('ref');
+addEventListener('keydown', (e) => {
+  if (e.key === 'r' || e.key === 'R') ref.style.opacity = ref.style.opacity === '0.5' ? '0' : '0.5';
+  if (e.key === '0') resetCamera();
+});
+if (q.get('ref')) ref.style.opacity = q.get('ref');
+if (q.get('exp')) renderer.toneMappingExposure = Number(q.get('exp'));
+
+addEventListener('resize', () => {
+  renderer.setSize(innerWidth, innerHeight);
+  resetCamera();
+});
+
+renderer.setAnimationLoop(() => {
+  controls.update();
+  renderer.render(scene, camera);
+});
+</script>
+</body>
+</html>

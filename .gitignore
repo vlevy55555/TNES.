@@ -15,3 +15,7 @@ reference-moments/indingo-reference.png
 # products.json and the push script are the reproducible part; the pixels aren't.
 30-photos-release/
 shopify-release/images/
+
+# Protótipo 3d "sala": screenshots e crops de calibração são descartáveis
+Protótipos 3d/sala/shots/
+Protótipos 3d/sala/ref/
