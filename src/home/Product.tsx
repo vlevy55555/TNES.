@@ -19,6 +19,8 @@ import { useFavoritesStore } from '../store/useFavoritesStore'
 import { trackAnalyticsEvent } from '../analytics/clarity'
 import { RevealText, useSectionTextReveal } from './reveal'
 import { ShopFooter, ShopHeader } from './ShopChrome'
+import WallBuilder from './WallBuilder'
+import { EYE, sizeIndexOf, type Piece } from '../lib/wall'
 import './home.css'
 import './shop.css'
 
@@ -54,6 +56,7 @@ export default function Product({ id }: { id: string }) {
   const material = frameMaterialOf(frame)
   const [lightboxOpen, setLightboxOpen] = useState(false)
   const [show3D, setShow3D] = useState(false)
+  const [wallOpen, setWallOpen] = useState(false)
   const isPortrait = !!work && work.size[1] > work.size[0]
 
   useEffect(() => setLightboxOpen(false), [work?.id])
@@ -105,6 +108,16 @@ export default function Product({ id }: { id: string }) {
         })
       : null
   const variant = variantFor(size)
+
+  // what is changed on the wall comes back to this page's selector
+  const syncFromWall = (pieces: Piece[]) => {
+    const hung = pieces.find((p) => p.key === 'this')
+    if (!hung) return
+    setFinish(hung.finish)
+    setFrame(frameStyleFor(hung.material, hung.finish))
+    const match = sizes.find((value) => sizeIndexOf(value) === hung.size)
+    if (match) setSize(match)
+  }
 
   useSectionTextReveal(stage, true)
   useSectionTextReveal(options, true)
@@ -345,13 +358,18 @@ export default function Product({ id }: { id: string }) {
             </div>
           </div>
 
-          <button
-            type="button"
-            className="product__cart"
-            onClick={() => openContact(`${work.title} · ${frameLabelFor(material, finish)} · ${size || 'size upon request'}`)}
-          >
-            inquire
-          </button>
+          <div className="product__actions">
+            <button
+              type="button"
+              className="product__cart"
+              onClick={() => openContact(`${work.title} · ${frameLabelFor(material, finish)} · ${size || 'size upon request'}`)}
+            >
+              inquire
+            </button>
+            <button type="button" className="product__cart product__cart--wall" onClick={() => setWallOpen(true)}>
+              see on wall
+            </button>
+          </div>
         </section>
       </div>
 
@@ -374,6 +392,24 @@ export default function Product({ id }: { id: string }) {
           ))}
         </div>
       </section>
+
+      {wallOpen && (
+        <WallBuilder
+          selectFirst
+          initial={[{
+            key: 'this',
+            id: work.id,
+            x: 0,
+            y: EYE,
+            size: sizeIndexOf(size),
+            material,
+            finish,
+            portrait: isPortrait,
+          }]}
+          onChange={syncFromWall}
+          onClose={() => setWallOpen(false)}
+        />
+      )}
 
       {lightboxOpen && (
         <div

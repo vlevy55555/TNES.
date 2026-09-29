@@ -64,6 +64,7 @@ export function ShopFooter() {
           <div>
             <a href="/works">works</a>
             <a href="/works#catalogs">catalogs</a>
+            <a href="/wall">your wall</a>
             <a href="/moments">moments</a>
             <a href="/about">about</a>
           </div>

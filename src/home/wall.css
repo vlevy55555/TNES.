@@ -1,0 +1,246 @@
+/* The gallery wall builder: /wall, and the "see on wall" overlay of a work. */
+.wall {
+  --wall-ink: #141414;
+  --wall-paper: #f6f4f0;
+  --wall-muted: #7b7872;
+  --wall-line: #d9d5ce;
+  --wall-ease: cubic-bezier(.2, .8, .2, 1);
+  position: fixed;
+  inset: 0;
+  z-index: 50; /* under the contact panel (60), which inquire opens on top */
+  overflow: hidden;
+  background: #9d9b97;
+  color: var(--wall-ink);
+  font-family: var(--sans);
+  animation: wall-in 420ms var(--wall-ease) both;
+}
+:where(.wall) button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; padding: 0; }
+@keyframes wall-in { from { opacity: 0; } }
+
+/* the room photo covers the screen, centred; its scale is exact (src/lib/wall.ts) */
+.wall__stage {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  translate: -50% -50%;
+  width: max(100vw, 100vh * 1672 / 941);
+  aspect-ratio: 1672 / 941;
+  background: url('/wall/concrete-room.webp') center / 100% 100% no-repeat;
+  container-type: inline-size;
+  --cm: calc(100cqw * 1.995 / 1672);
+  --floor: calc(690 / 941 * 100%);
+  user-select: none;
+  touch-action: none;
+}
+
+.wall__piece {
+  position: absolute;
+  left: calc(50% + var(--x) * var(--cm));
+  top: calc(var(--floor) - var(--y) * var(--cm));
+  width: calc(var(--w) * var(--cm));
+  height: calc(var(--h) * var(--cm));
+  transform: translate(-50%, -50%);
+  cursor: grab;
+  /* soft room light from the upper left: a tight contact shadow and a wide falloff */
+  --depth: 1;
+  box-shadow:
+    calc(.25 * var(--depth) * var(--cm)) calc(.5 * var(--depth) * var(--cm)) calc(.9 * var(--depth) * var(--cm)) rgba(0, 0, 0, .22),
+    calc(1.4 * var(--depth) * var(--cm)) calc(3 * var(--depth) * var(--cm)) calc(6 * var(--depth) * var(--cm)) rgba(0, 0, 0, .16);
+  /* a dozen absolutely placed boxes: animating left/top is cheap enough here */
+  transition:
+    left 520ms var(--wall-ease), top 520ms var(--wall-ease),
+    width 380ms var(--wall-ease), height 380ms var(--wall-ease),
+    box-shadow 300ms var(--wall-ease), scale 300ms var(--wall-ease);
+  animation: wall-piece-in 520ms var(--wall-ease) both;
+}
+.wall__piece.-unframed { --depth: .5; }
+.wall__piece.-aluminium, .wall__piece.-glass { --depth: 1.7; }
+.wall__piece.-dragging {
+  cursor: grabbing;
+  z-index: 3;
+  scale: 1.02;
+  --depth: 3;
+  transition: box-shadow 250ms var(--wall-ease), scale 250ms var(--wall-ease), width 380ms var(--wall-ease), height 380ms var(--wall-ease);
+}
+.wall__piece.-leaving { animation: wall-piece-out 320ms var(--wall-ease) forwards; pointer-events: none; }
+@keyframes wall-piece-in { from { opacity: 0; scale: .92; } }
+@keyframes wall-piece-out { to { opacity: 0; scale: .92; } }
+
+.wall__piece img { display: block; width: 100%; height: 100%; object-fit: cover; pointer-events: none; -webkit-user-drag: none; }
+.wall__print { position: absolute; inset: calc(var(--b) * var(--cm)); overflow: hidden; transition: inset 380ms var(--wall-ease); }
+
+/* regular: a 3 cm moulding lit on its upper-left bevel, the print set into it */
+.wall__piece.-regular { background: linear-gradient(135deg, var(--hi), var(--frame) 40%, var(--lo)); }
+.wall__piece.-regular.-black { --frame: #181716; --hi: #3a3835; --lo: #0c0b0a; }
+.wall__piece.-regular.-white { --frame: #efebe4; --hi: #fdfcfa; --lo: #d3cdc3; }
+.wall__piece.-regular.-custom { --frame: #a4805a; --hi: #c7a47c; --lo: #7b5d3f; }
+.wall__piece.-regular .wall__print::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  box-shadow: inset calc(.4 * var(--cm)) calc(.6 * var(--cm)) calc(1 * var(--cm)) rgba(0, 0, 0, .28);
+}
+.wall__piece.-aluminium .wall__print, .wall__piece.-glass .wall__print { box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .18); }
+/* plexiglass: the same mount with a reflective sheet on top (as in FrameLayers) */
+.wall__piece.-glass .wall__print::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,.22) 0%, rgba(255,255,255,.06) 30%, rgba(255,255,255,.4) 42%, rgba(255,255,255,.08) 50%, rgba(255,255,255,0) 100%);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .55);
+}
+.wall__piece::after {
+  content: '';
+  position: absolute;
+  inset: calc(-1.5 * var(--cm));
+  border: 1px solid rgba(255, 255, 255, .9);
+  opacity: 0;
+  transition: opacity 200ms;
+  pointer-events: none;
+}
+.wall__piece.-selected::after { opacity: 1; }
+
+/* measurements */
+.wall__dim { position: absolute; font: 11px/1 var(--mono); color: #fff; letter-spacing: .04em; white-space: nowrap; pointer-events: none; text-shadow: 0 1px 2px rgba(0, 0, 0, .45); }
+.wall__dim.-w { left: 50%; bottom: 100%; transform: translate(-50%, calc(-2.5 * var(--cm) - 6px)); }
+.wall__dim.-h { left: 100%; top: 50%; transform: translate(calc(2.5 * var(--cm) + 6px), -50%) rotate(90deg); transform-origin: left center; }
+.wall__dim.-drop { left: 50%; top: 100%; width: 0; border-left: 1px dashed rgba(255, 255, 255, .8); }
+.wall__dim.-drop span { position: absolute; left: 6px; top: 50%; transform: translateY(-50%); }
+.wall__dim.-gap { height: 0; border-top: 1px dashed rgba(255, 255, 255, .8); animation: wall-in 250ms both; }
+.wall__dim.-gap span { position: absolute; left: 50%; bottom: 4px; transform: translateX(-50%); }
+
+.wall__guide { position: absolute; background: rgba(255, 255, 255, .8); pointer-events: none; opacity: 0; transition: opacity 150ms; }
+.wall__guide.-v { left: 50%; top: 0; height: var(--floor); width: 1px; }
+.wall__guide.-h { left: 0; right: 0; height: 1px; top: calc(var(--floor) - 145 * var(--cm)); }
+.wall__guide.-on { opacity: 1; }
+
+/* chrome */
+.wall__bar { position: absolute; top: 0; left: 0; right: 0; z-index: 5; display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; padding: 18px 24px; pointer-events: none; }
+.wall__bar > * { pointer-events: auto; }
+.wall .wall__brand { color: #fff; font-size: 22px; letter-spacing: .08em; text-decoration: none; text-shadow: 0 1px 8px rgba(0, 0, 0, .2); }
+.wall__brand small { display: block; margin-top: 4px; font: 11px var(--mono); letter-spacing: .1em; opacity: .85; }
+.wall__actions { display: flex; align-items: stretch; gap: 8px; }
+.wall svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.4; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+
+/* one frosted bar for the secondary actions, hairlines between them */
+.wall__tools {
+  display: flex;
+  background: rgba(250, 249, 246, .86);
+  backdrop-filter: blur(14px) saturate(1.2);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, .6) inset, 0 6px 24px rgba(0, 0, 0, .1);
+}
+.wall__tool {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  height: 40px;
+  padding: 0 15px;
+  font-size: 13px;
+  color: #3b3a37;
+  transition: background-color 180ms, color 180ms;
+}
+.wall__tool + .wall__tool::before { content: ''; position: absolute; left: 0; top: 11px; bottom: 11px; width: 1px; background: rgba(20, 20, 20, .12); }
+.wall__tool:hover:not(:disabled) { background: rgba(20, 20, 20, .06); color: var(--wall-ink); }
+.wall__tool[aria-pressed='true'] { color: var(--wall-ink); }
+/* a toggle reads as on by a small ink mark under its label, not a fill */
+.wall__tool[aria-pressed='true']::after { content: ''; position: absolute; left: 15px; right: 15px; bottom: 7px; height: 1.5px; background: var(--wall-ink); }
+.wall__tool:disabled { opacity: .4; cursor: default; }
+
+.wall__primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  height: 40px;
+  padding: 0 18px;
+  background: var(--wall-ink);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 500;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, .18);
+  transition: background-color 180ms, gap 220ms var(--wall-ease);
+}
+.wall__primary span { transition: translate 220ms var(--wall-ease); }
+.wall__primary:hover:not(:disabled) { background: #000; }
+.wall__primary:hover:not(:disabled) span { translate: 3px 0; }
+.wall__primary:disabled { opacity: .45; cursor: default; }
+
+.wall__close {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  background: rgba(250, 249, 246, .86);
+  backdrop-filter: blur(14px);
+  box-shadow: 0 6px 24px rgba(0, 0, 0, .1);
+  transition: background-color 180ms, rotate 220ms var(--wall-ease);
+}
+.wall__close:hover { background: #fff; rotate: 90deg; }
+.wall__close.-flat { width: 32px; height: 32px; background: none; box-shadow: none; backdrop-filter: none; }
+
+.wall__empty { position: absolute; left: 50%; top: 38%; translate: -50% -50%; z-index: 4; text-align: center; color: #fff; text-shadow: 0 1px 10px rgba(0, 0, 0, .25); transition: opacity 300ms; }
+.wall__empty p { margin: 0 0 14px; font: 12px var(--mono); letter-spacing: .1em; }
+.wall__empty.-hidden { opacity: 0; pointer-events: none; }
+
+.wall__drawer { position: absolute; top: 0; right: 0; bottom: 0; z-index: 10; width: min(380px, 100vw); display: flex; flex-direction: column; overflow-y: auto; overscroll-behavior: contain; background: var(--wall-paper); translate: 100% 0; transition: translate 420ms var(--wall-ease), box-shadow 420ms; }
+.wall__drawer.-open { translate: 0 0; box-shadow: -20px 0 60px rgba(0, 0, 0, .18); }
+.wall__drawer header { position: sticky; top: 0; z-index: 1; background: var(--wall-paper); display: flex; justify-content: space-between; align-items: center; padding: 20px 22px; border-bottom: 1px solid var(--wall-line); }
+.wall__drawer h2 { margin: 0; font: 400 12px var(--mono); letter-spacing: .1em; color: var(--wall-muted); }
+/* masonry by CSS columns, as in the shop grid: every work at its own proportions */
+/* the drawer scrolls, not the grid: columns inside a fixed-height box spill sideways */
+.wall__grid { flex: none; padding: 18px 22px 40px; columns: 2; column-gap: 14px; }
+.wall__work { display: block; width: 100%; margin-bottom: 18px; text-align: left; break-inside: avoid; }
+.wall__work img { display: block; width: 100%; height: auto; background: #e8e4dd; transition: opacity 200ms, scale 300ms var(--wall-ease); }
+.wall__work:hover img { opacity: .85; scale: .98; }
+.wall__work span { display: block; margin-top: 7px; font-size: 13px; }
+
+.wall__card {
+  position: absolute; left: 50%; bottom: 22px; z-index: 6;
+  display: grid; grid-template-columns: 96px 1fr auto; gap: 18px; align-items: start;
+  width: min(640px, calc(100vw - 32px)); padding: 14px; background: #fff; box-shadow: 0 10px 40px rgba(0, 0, 0, .14);
+  translate: -50% 24px; opacity: 0; pointer-events: none;
+  transition: translate 380ms var(--wall-ease), opacity 280ms var(--wall-ease);
+}
+.wall__card.-on { translate: -50% 0; opacity: 1; pointer-events: auto; }
+.wall__card > img { width: 96px; height: 96px; object-fit: cover; }
+.wall__card h3 { margin: 2px 0 10px; font-size: 14px; font-weight: 500; letter-spacing: .06em; text-transform: uppercase; }
+.wall__row { display: flex; flex-wrap: wrap; align-items: center; margin-top: 8px; }
+.wall__row b { width: 64px; font: 400 10px var(--mono); letter-spacing: .1em; color: var(--wall-muted); }
+/* a segmented control: the buttons share their borders */
+.wall__opt {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 30px;
+  padding: 0 11px;
+  margin-left: -1px;
+  border: 1px solid var(--wall-line);
+  font-size: 12px;
+  color: #3b3a37;
+  transition: background-color 180ms, color 180ms, border-color 180ms;
+}
+.wall__row b + .wall__opt { margin-left: 0; }
+.wall__opt:hover { position: relative; z-index: 1; border-color: #9a968f; color: var(--wall-ink); }
+.wall__opt.-on { position: relative; z-index: 2; background: var(--wall-ink); border-color: var(--wall-ink); color: #fff; }
+.wall__opt.-swatch i { width: 11px; height: 11px; border-radius: 50%; box-shadow: inset 0 0 0 1px rgba(0, 0, 0, .18); }
+.wall__opt.-swatch .-black { background: #181716; }
+.wall__opt.-swatch .-white { background: #f1eee8; }
+.wall__opt.-swatch .-custom { background: linear-gradient(135deg, #c7a47c, #7b5d3f); }
+.wall__opt.-on.-swatch i { box-shadow: 0 0 0 1px rgba(255, 255, 255, .5); }
+.wall__remove { display: inline-flex; align-items: center; gap: 5px; height: 28px; font-size: 12px; color: var(--wall-muted); transition: color 180ms; }
+.wall__remove:hover { color: #a3321f; }
+
+@media (max-width: 640px) {
+  .wall__card { grid-template-columns: 64px 1fr; bottom: 0; width: 100vw; }
+  .wall__card > img { width: 64px; height: 64px; }
+  .wall__card .wall__remove { grid-column: 1 / -1; justify-self: end; }
+  .wall__brand small { display: none; }
+  .wall__bar { padding: 14px 16px; }
+  .wall__tool { padding: 0 11px; font-size: 12px; }
+  .wall__tool svg { display: none; }
+  .wall__actions { flex-wrap: wrap; justify-content: flex-end; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .wall, .wall *, .wall *::before, .wall *::after { transition-duration: 1ms !important; animation-duration: 1ms !important; }
+}

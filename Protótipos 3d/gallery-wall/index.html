@@ -1,0 +1,513 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>TNES. gallery wall builder</title>
+<style>
+  :root {
+    --ink: #141414;
+    --paper: #f6f4f0;
+    --muted: #7b7872;
+    --line: #d9d5ce;
+    --mono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+    --sans: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    --ease: cubic-bezier(.2, .8, .2, 1);
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; background: #9d9b97; color: var(--ink); font-family: var(--sans); overflow: hidden; }
+  button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; }
+
+  /* ---- the wall: the reference photo, covering the viewport and centred on it ---- */
+  .stage {
+    position: fixed;
+    left: 50%;
+    top: 50%;
+    translate: -50% -50%;
+    width: max(100vw, 100vh * 1672 / 941);
+    aspect-ratio: 1672 / 941;
+    background: url('../sala/reference.png') center / 100% 100% no-repeat;
+    container-type: inline-size;
+    /* 1 cm on the wall plane: 1.995 px in the 1672 px reference */
+    --cm: calc(100cqw * 1.995 / 1672);
+    --floor: calc(690 / 941 * 100%);
+    user-select: none;
+    touch-action: none;
+  }
+
+  .piece {
+    position: absolute;
+    left: calc(50% + var(--x) * var(--cm));
+    top: calc(var(--floor) - var(--y) * var(--cm));
+    width: calc(var(--w) * var(--cm));
+    height: calc(var(--h) * var(--cm));
+    transform: translate(-50%, -50%);
+    cursor: grab;
+    /* soft room light from the upper left: a tight contact shadow and a wide falloff */
+    --depth: 1;
+    box-shadow:
+      calc(.25 * var(--depth) * var(--cm)) calc(.5 * var(--depth) * var(--cm)) calc(.9 * var(--depth) * var(--cm)) rgba(0,0,0,.22),
+      calc(1.4 * var(--depth) * var(--cm)) calc(3 * var(--depth) * var(--cm)) calc(6 * var(--depth) * var(--cm)) rgba(0,0,0,.16);
+    transition:
+      left 520ms var(--ease), top 520ms var(--ease),
+      width 380ms var(--ease), height 380ms var(--ease),
+      box-shadow 300ms var(--ease), scale 300ms var(--ease), opacity 300ms var(--ease);
+    animation: enter 520ms var(--ease) both;
+  }
+  .piece.unframed { --depth: .5; }
+  .piece.aluminium, .piece.glass { --depth: 1.7; }
+  .piece.dragging {
+    cursor: grabbing;
+    z-index: 3;
+    scale: 1.02;
+    --depth: 3;
+    transition: box-shadow 250ms var(--ease), scale 250ms var(--ease), width 380ms var(--ease), height 380ms var(--ease);
+  }
+  .piece.leaving { animation: leave 320ms var(--ease) forwards; pointer-events: none; }
+  @keyframes enter { from { opacity: 0; scale: .92; } }
+  @keyframes leave { to { opacity: 0; scale: .92; } }
+
+  .piece img { display: block; width: 100%; height: 100%; object-fit: cover; pointer-events: none; -webkit-user-drag: none; }
+  .piece .print { position: absolute; inset: var(--border); overflow: hidden; transition: inset 380ms var(--ease); }
+
+  /* regular: a 3 cm moulding, lit on its upper-left bevel, the print set into it */
+  .piece.regular { background: linear-gradient(135deg, var(--hi), var(--frame) 40%, var(--lo)); }
+  .piece.regular.black { --frame: #181716; --hi: #3a3835; --lo: #0c0b0a; }
+  .piece.regular.white { --frame: #efebe4; --hi: #fdfcfa; --lo: #d3cdc3; }
+  .piece.regular.custom { --frame: #a4805a; --hi: #c7a47c; --lo: #7b5d3f; }
+  .piece.regular .print::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    box-shadow: inset calc(.4 * var(--cm)) calc(.6 * var(--cm)) calc(1 * var(--cm)) rgba(0, 0, 0, .28);
+  }
+  /* aluminium / plexiglass: a panel with a thin lit edge */
+  .piece.aluminium .print, .piece.glass .print { box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .18); }
+  /* plexiglass: the same mount with a reflective sheet on top */
+  .piece.glass .print::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,.22) 0%, rgba(255,255,255,.06) 30%, rgba(255,255,255,.4) 42%, rgba(255,255,255,.08) 50%, rgba(255,255,255,0) 100%);
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .55);
+  }
+
+  .piece::after {
+    content: '';
+    position: absolute;
+    inset: calc(-1.5 * var(--cm));
+    border: 1px solid rgba(255, 255, 255, .9);
+    opacity: 0;
+    transition: opacity 200ms;
+    pointer-events: none;
+  }
+  .piece.selected::after { opacity: 1; }
+
+  /* ---- measurements ---- */
+  .dim { position: absolute; font: 11px/1 var(--mono); color: #fff; letter-spacing: .04em; white-space: nowrap; pointer-events: none; text-shadow: 0 1px 2px rgba(0,0,0,.45); transition: opacity 250ms; }
+  .dim.w { left: 50%; bottom: 100%; transform: translate(-50%, calc(-2.5 * var(--cm) - 6px)); }
+  .dim.h { left: 100%; top: 50%; transform: translate(calc(2.5 * var(--cm) + 6px), -50%) rotate(90deg); transform-origin: left center; }
+  .drop { position: absolute; left: 50%; top: 100%; width: 0; border-left: 1px dashed rgba(255,255,255,.8); }
+  .drop span { position: absolute; left: 6px; top: 50%; transform: translateY(-50%); }
+  .gap { position: absolute; height: 0; border-top: 1px dashed rgba(255,255,255,.8); animation: fade 250ms both; }
+  .gap span { position: absolute; left: 50%; bottom: 4px; transform: translateX(-50%); }
+  .stage.dragging .gap { display: none; }
+  @keyframes fade { from { opacity: 0; } }
+
+  .guide { position: absolute; background: rgba(255, 255, 255, .8); pointer-events: none; opacity: 0; transition: opacity 150ms; }
+  .guide.v { left: 50%; top: 0; height: var(--floor); width: 1px; }
+  .guide.hz { left: 0; right: 0; height: 1px; top: calc(var(--floor) - 145 * var(--cm)); }
+  .guide.on { opacity: 1; }
+
+  /* ---- chrome ---- */
+  .bar { position: fixed; top: 0; left: 0; right: 0; display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 18px 24px; z-index: 5; pointer-events: none; }
+  .bar > * { pointer-events: auto; }
+  .brand { font-size: 22px; letter-spacing: .08em; color: #fff; text-shadow: 0 1px 8px rgba(0,0,0,.2); }
+  .brand small { display: block; margin-top: 4px; font: 11px var(--mono); letter-spacing: .1em; opacity: .85; }
+  .actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; }
+  .chip { padding: 9px 14px; background: rgba(246, 244, 240, .92); font-size: 12px; letter-spacing: .06em; text-transform: uppercase; backdrop-filter: blur(6px); transition: background-color 180ms, color 180ms; }
+  .chip:hover, .chip[aria-pressed='true'] { background: var(--ink); color: var(--paper); }
+
+  .drawer { position: fixed; top: 0; right: 0; bottom: 0; width: min(380px, 100vw); background: var(--paper); z-index: 10; translate: 100% 0; transition: translate 420ms var(--ease), box-shadow 420ms; display: flex; flex-direction: column; }
+  .drawer.open { translate: 0 0; box-shadow: -20px 0 60px rgba(0,0,0,.18); }
+  .drawer header { display: flex; justify-content: space-between; align-items: center; padding: 20px 22px; border-bottom: 1px solid var(--line); }
+  .drawer h2 { margin: 0; font: 12px var(--mono); letter-spacing: .1em; color: var(--muted); font-weight: 400; }
+  .grid { overflow-y: auto; padding: 18px 22px 40px; display: grid; grid-template-columns: 1fr 1fr; gap: 18px 14px; }
+  .work { text-align: left; }
+  .work img { width: 100%; aspect-ratio: 1; object-fit: cover; display: block; background: #e8e4dd; transition: opacity 200ms, scale 300ms var(--ease); }
+  .work:hover img { opacity: .85; scale: .98; }
+  .work span { display: block; margin-top: 7px; font-size: 13px; }
+
+  .card {
+    position: fixed; left: 50%; bottom: 22px; z-index: 6;
+    display: grid; grid-template-columns: 96px 1fr auto; gap: 18px; align-items: start;
+    width: min(640px, calc(100vw - 32px)); padding: 14px; background: #fff; box-shadow: 0 10px 40px rgba(0,0,0,.14);
+    translate: -50% 24px; opacity: 0; pointer-events: none;
+    transition: translate 380ms var(--ease), opacity 280ms var(--ease);
+  }
+  .card.on { translate: -50% 0; opacity: 1; pointer-events: auto; }
+  .card img { width: 96px; height: 96px; object-fit: cover; }
+  .card h3 { margin: 2px 0 10px; font-size: 14px; letter-spacing: .06em; text-transform: uppercase; font-weight: 500; }
+  .row { display: flex; flex-wrap: wrap; align-items: center; gap: 5px; margin-top: 6px; }
+  .row b { width: 64px; font: 10px var(--mono); letter-spacing: .1em; color: var(--muted); font-weight: 400; }
+  .opt { padding: 5px 9px; border: 1px solid var(--line); font-size: 12px; transition: background-color 180ms, color 180ms, border-color 180ms; }
+  .opt:hover { border-color: var(--ink); }
+  .opt.on { background: var(--ink); color: #fff; border-color: var(--ink); }
+  .remove { font: 11px var(--mono); color: var(--muted); letter-spacing: .08em; }
+  .remove:hover { color: var(--ink); }
+
+  .empty { position: fixed; left: 50%; top: 38%; translate: -50% -50%; z-index: 4; text-align: center; color: #fff; text-shadow: 0 1px 10px rgba(0,0,0,.25); transition: opacity 300ms; }
+  .empty p { margin: 0 0 14px; font: 12px var(--mono); letter-spacing: .1em; }
+  .empty.hidden { opacity: 0; pointer-events: none; }
+
+  @media (max-width: 640px) {
+    .card { grid-template-columns: 64px 1fr; bottom: 0; width: 100vw; }
+    .card img { width: 64px; height: 64px; }
+    .card .remove { grid-column: 1 / -1; justify-self: end; }
+    .brand small { display: none; }
+    .bar { padding: 14px 16px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { transition-duration: 1ms !important; animation-duration: 1ms !important; }
+  }
+</style>
+</head>
+<body>
+  <div class="stage" id="stage">
+    <div class="guide v" id="guideV"></div>
+    <div class="guide hz" id="guideH"></div>
+  </div>
+
+  <div class="bar">
+    <div class="brand">TNES.<small>gallery wall builder</small></div>
+    <div class="actions">
+      <button class="chip" id="measure" aria-pressed="true">measurements</button>
+      <button class="chip" id="clear">clear</button>
+      <button class="chip" id="add">+ add work</button>
+    </div>
+  </div>
+
+  <div class="empty" id="empty">
+    <p>your wall is empty</p>
+    <button class="chip" id="addEmpty">+ add a work</button>
+  </div>
+
+  <aside class="drawer" id="drawer" aria-label="Collection">
+    <header><h2>collection</h2><button class="remove" id="closeDrawer">close ×</button></header>
+    <div class="grid" id="grid"></div>
+  </aside>
+
+  <section class="card" id="card" aria-live="polite"></section>
+
+<script type="module">
+// Copied from src/data/artworks.ts (`artworks`). ponytail: hand-synced list, import it when this moves into the app.
+const WORKS = [{"id":"the-pool","title":"Everyone In","image":"/artworks/v1/stpeterspool_hero_2025_v1.webp"},{"id":"runner","title":"Rio Runner","image":"/artworks/v1/ipanema_riorunner_2025_v1.webp"},{"id":"wied-il-ghasri","title":"Under the Limestone","image":"/artworks/v1/gozo_cavegirl_2025_v1.webp"},{"id":"lauterbrunnen","title":"Foggy Cows","image":"/artworks/v1/murren_foggycows_2025_v1.webp"},{"id":"praia-da-baleia","title":"The Biker","image":"/artworks/v1/baleia_biker_2025_v1.webp"},{"id":"playa-roja","title":"Dune Lines","image":"/artworks/v1/paracas_flatdunes_2025_v1.webp"},{"id":"calpe-muralla-roja","title":"Between Walls","image":"/artworks/v1/calpe_murallaroja_2025_v1.webp"},{"id":"moreira-crowded-beach","title":"Grey Day","image":"/artworks/v1/moreira_crowdedbeach_2025_v1.webp"},{"id":"florence-dogman","title":"Man and Dog","image":"/artworks/v1/florence_dogman_2025_v1.webp"},{"id":"ischia-mezzatorre","title":"The Swimmer","image":"/artworks/v1/ischia_mezzatorre_2025_v1.webp"},{"id":"ditch-plains-far","title":"Before Summer","image":"/artworks/v1/ditchplains_far_2026_v1.webp"},{"id":"appenzell-alpine-lake","title":"The Lake Below","image":"/artworks/v1/appenzell_alpinelake_2025_v1.webp"},{"id":"christ-in-fog-rio-de-janeiro","title":"Christ in Fog","image":"/artworks/v1/rio_christfog_2025_v1.webp"},{"id":"pink-lagoon-paracas","title":"Pink Lagoon","image":"/artworks/v1/paracas_pinklagoon_2025_v1.webp"},{"id":"moraira-from-above","title":"Moraira from Above","image":"/artworks/v1/moraira_aerialbeach_2025_v1.webp"},{"id":"fishing-bay-paracas","title":"Fishing Bay","image":"/artworks/v1/paracas_fishingboats_2025_v1.webp"},{"id":"ipanema-at-dusk","title":"Ipanema at Dusk","image":"/artworks/v1/ipanema_dusk_2025_v1.webp"},{"id":"after-the-fog-murren","title":"After the Fog","image":"/artworks/v1/murren_alpineroad_2025_v1.webp"},{"id":"perigo-praia-da-baleia","title":"Perigo","image":"/artworks/v1/baleia_perigosign_2025_v1.webp"},{"id":"appenzell-valley","title":"Appenzell Valley","image":"/artworks/v1/appenzell_valley_2025_v1.webp"},{"id":"first-bells-mount-rigi","title":"First Bells","image":"/artworks/v1/rigi_cow_2025_v1.webp"},{"id":"red-rooms-calpe","title":"Red Rooms","image":"/artworks/v1/calpe_redrooms_2025_v1.webp"},{"id":"blue-edge-gozo","title":"Blue Edge","image":"/artworks/v1/gozo_blueedge_2025_v1.webp"},{"id":"narrow-opening-wied-il-ghasri","title":"Narrow Opening","image":"/artworks/v1/wiedilghasri_inlet_2025_v1.webp"},{"id":"carousel-florence","title":"Carousel","image":"/artworks/v1/lorence_carousel_2025_v1.webp"},{"id":"low-tide-praia-da-baleia","title":"Low Tide","image":"/artworks/v1/baleia_lowtide_2025_v1.webp"},{"id":"ipanema-promenade","title":"Ipanema Promenade","image":"/artworks/v1/ipanema_promenade_2025_v1.webp"},{"id":"on-dry-land-gozo","title":"On Dry Land","image":"/artworks/v1/gozo_lifering_2025_v1.webp"},{"id":"red-car-gozo","title":"Red Car","image":"/artworks/v1/gozo_redcar_2025_v1.webp"},{"id":"playa-roja-paracas","title":"Playa Roja","image":"/artworks/v1/paracas_playaroja_2025_v1.webp"}]
+
+const IN = 2.54
+// The shop's print sizes, short x long side in inches (standardPrintSizes).
+const SIZES = [[20, 30], [24, 36], [28, 42]]
+const MATERIALS = { unframed: 'unframed', regular: 'regular', aluminium: 'brushed aluminum', glass: 'plexiglass' }
+const FINISHES = ['black', 'white', 'custom']
+const MOULDING = 3 // cm, the regular frame's face width
+// Wall limits in cm, measured on the reference: floor at y 690 px, image edges at ±836 px, 1.995 px/cm.
+const WALL = { x: 836 / 1.995, top: 690 / 1.995 }
+const EYE = 145 // gallery hanging height for the centre of a work
+const SNAP = 3
+const GAP = 8 // cm kept between neighbours when one pushes another
+const GRID = 5 // cm: a released work's centre lands on this grid
+
+const $ = (id) => document.getElementById(id)
+const stage = $('stage'), card = $('card'), drawer = $('drawer')
+const work = (id) => WORKS.find((w) => w.id === id)
+const ratio = {} // natural h/w per image, filled as they load
+const nodes = new Map() // piece key -> element, so moves animate instead of re-mounting
+
+let pieces = load()
+let selected = null
+let measure = true
+
+function load() {
+  try { return JSON.parse(localStorage.getItem('tnes-wall') || '[]').filter((p) => work(p.id)) } catch { return [] }
+}
+function save() {
+  try { localStorage.setItem('tnes-wall', JSON.stringify(pieces)) } catch {}
+}
+
+/** Outer size in cm: the print (oriented like the photo) plus the moulding. */
+function dims(p) {
+  const [s, l] = SIZES[p.size].map((v) => v * IN)
+  const portrait = (ratio[p.id] ?? 0.67) > 1
+  const [pw, ph] = portrait ? [s, l] : [l, s]
+  const b = p.material === 'regular' ? MOULDING : 0
+  return { w: pw + b * 2, h: ph + b * 2, b }
+}
+
+const cm = (v) => `${Math.round(v)} cm`
+const inch = (v) => `${Math.round(v / IN)}″`
+
+function clamp(p) {
+  const d = dims(p)
+  p.x = Math.max(-WALL.x + d.w / 2, Math.min(WALL.x - d.w / 2, p.x))
+  p.y = Math.max(d.h / 2 + 5, Math.min(WALL.top - d.h / 2, p.y))
+}
+
+/**
+ * Pushes overlapping works apart, sideways unless stacking is much shorter, keeping
+ * `GAP` cm between them. `fixed` (the one being dragged or resized) never moves.
+ * ponytail: O(n²) relaxation, fine for a wall of a dozen works.
+ */
+function settle(fixed) {
+  for (let pass = 0; pass < 40; pass++) {
+    let moved = false
+    for (let i = 0; i < pieces.length; i++) {
+      for (let j = i + 1; j < pieces.length; j++) {
+        const a = pieces[i], b = pieces[j]
+        const da = dims(a), db = dims(b)
+        const dx = b.x - a.x, dy = b.y - a.y
+        const ox = (da.w + db.w) / 2 + GAP - Math.abs(dx)
+        const oy = (da.h + db.h) / 2 + GAP - Math.abs(dy)
+        if (ox <= 0.01 || oy <= 0.01) continue
+        const share = a === fixed ? [0, 1] : b === fixed ? [1, 0] : [0.5, 0.5]
+        // favour sideways: a gallery wall grows along the wall, not up it
+        if (ox < oy * 1.8) {
+          const s = dx >= 0 ? 1 : -1
+          a.x -= s * ox * share[0]
+          b.x += s * ox * share[1]
+        } else {
+          const s = dy >= 0 ? 1 : -1
+          a.y -= s * oy * share[0]
+          b.y += s * oy * share[1]
+        }
+        clamp(a)
+        clamp(b)
+        moved = true
+      }
+    }
+    if (!moved) break
+  }
+}
+
+function probe(id) {
+  if (ratio[id]) return
+  const img = new Image()
+  img.onload = () => { ratio[id] = img.naturalHeight / img.naturalWidth; settle(); render() }
+  img.src = work(id).image
+}
+
+function add(id) {
+  probe(id)
+  // next to the last piece, or centred at eye level on an empty wall; settle() makes room
+  const last = pieces.at(-1)
+  const p = { key: crypto.randomUUID(), id, x: last ? last.x + 40 : 0, y: EYE, size: 0, material: 'regular', finish: 'black' }
+  pieces.push(p)
+  clamp(p)
+  settle(p)
+  selected = p.key
+  drawer.classList.remove('open')
+  commit()
+}
+
+function remove(p) {
+  pieces = pieces.filter((q) => q !== p)
+  if (selected === p.key) selected = null
+  commit()
+}
+
+function commit() { save(); render() }
+
+function render() {
+  const sel = pieces.find((p) => p.key === selected)
+  for (const [key, el] of nodes) {
+    if (pieces.some((p) => p.key === key)) continue
+    nodes.delete(key)
+    el.classList.add('leaving')
+    el.addEventListener('animationend', () => el.remove(), { once: true })
+  }
+  for (const p of pieces) {
+    let el = nodes.get(p.key)
+    if (!el) {
+      el = document.createElement('div')
+      el.innerHTML = `<div class="print"><img src="${work(p.id).image}" alt="${work(p.id).title}" draggable="false"></div><div class="labels"></div>`
+      el.addEventListener('pointerdown', (e) => drag(e, p.key))
+      nodes.set(p.key, el)
+      stage.append(el)
+    }
+    const d = dims(p)
+    const dragging = el.classList.contains('dragging')
+    el.className = `piece ${p.material} ${p.finish}${p.key === selected ? ' selected' : ''}${dragging ? ' dragging' : ''}`
+    el.style.cssText = `--x:${p.x};--y:${p.y};--w:${d.w};--h:${d.h};--border:calc(${d.b} * var(--cm))`
+    const bottom = p.y - d.h / 2
+    el.lastChild.innerHTML = measure && (p === sel || !sel) ? `
+      <span class="dim w">${cm(d.w)} · ${inch(d.w)}</span>
+      <span class="dim h">${cm(d.h)} · ${inch(d.h)}</span>
+      ${p === sel ? `<span class="drop dim" style="height:calc(${bottom} * var(--cm))"><span>${cm(bottom)} from floor</span></span>` : ''}` : ''
+  }
+  stage.querySelectorAll('.gap').forEach((n) => n.remove())
+  if (measure && sel) gaps(sel)
+  $('empty').classList.toggle('hidden', pieces.length > 0)
+}
+
+/** Dashed spans to the nearest neighbour on each side that shares some height. */
+function gaps(p) {
+  const d = dims(p)
+  for (const side of [-1, 1]) {
+    let best = null
+    for (const q of pieces) {
+      if (q === p) continue
+      const e = dims(q)
+      if (Math.abs(q.y - p.y) > (d.h + e.h) / 2) continue
+      const gap = side * (q.x - p.x) - (d.w + e.w) / 2
+      if (gap > 0 && (best === null || gap < best)) best = gap
+    }
+    if (best === null) continue
+    const from = p.x + side * d.w / 2
+    const el = document.createElement('div')
+    el.className = 'gap dim'
+    el.style.cssText = `left:calc(50% + ${Math.min(from, from + side * best)} * var(--cm));top:calc(var(--floor) - ${p.y} * var(--cm));width:calc(${best} * var(--cm))`
+    el.innerHTML = `<span>${cm(best)}</span>`
+    stage.append(el)
+  }
+}
+
+function renderCard() {
+  const p = pieces.find((q) => q.key === selected)
+  card.classList.toggle('on', !!p)
+  if (!p) return // keep the old content while it fades out
+  const w = work(p.id)
+  const opts = (key, values, label = (v) => v) =>
+    values.map((v) => `<button class="opt${p[key] === v ? ' on' : ''}" data-k="${key}" data-v="${v}">${label(v)}</button>`).join('')
+  const portrait = (ratio[p.id] ?? 0) > 1
+  card.innerHTML = `
+    <img src="${w.image}" alt="">
+    <div>
+      <h3>${w.title}</h3>
+      <div class="row"><b>size</b>${SIZES.map(([s, l], i) =>
+        `<button class="opt${p.size === i ? ' on' : ''}" data-k="size" data-v="${i}">${portrait ? `${s}x${l}` : `${l}x${s}`}</button>`).join('')}</div>
+      <div class="row"><b>material</b>${opts('material', Object.keys(MATERIALS), (v) => MATERIALS[v])}</div>
+      ${p.material === 'unframed' ? '' : `<div class="row"><b>finish</b>${opts('finish', FINISHES)}</div>`}
+    </div>
+    <button class="remove" data-remove>remove ×</button>`
+}
+
+function select(key) {
+  if (selected === key) return
+  selected = key
+  render()
+  renderCard()
+}
+
+card.addEventListener('click', (e) => {
+  const p = pieces.find((q) => q.key === selected)
+  const b = e.target.closest('button')
+  if (!p || !b) return
+  if (b.dataset.remove !== undefined) {
+    remove(p)
+  } else {
+    p[b.dataset.k] = b.dataset.k === 'size' ? Number(b.dataset.v) : b.dataset.v
+    clamp(p)
+    settle(p) // a bigger size or a moulding pushes its neighbours away
+    commit()
+  }
+  renderCard()
+})
+
+/**
+ * Neighbours are pushed from where they stood when the drag began, so they
+ * glide back once the dragged work moves on instead of being shoved for good.
+ */
+function drag(e, key) {
+  if (e.button !== 0) return
+  e.preventDefault()
+  e.stopPropagation()
+  select(key)
+  const p = pieces.find((q) => q.key === key)
+  const el = nodes.get(key)
+  const origin = pieces.map((q) => ({ q, x: q.x, y: q.y }))
+  const perCm = stage.getBoundingClientRect().width * 1.995 / 1672
+  const start = { mx: e.clientX, my: e.clientY, x: p.x, y: p.y }
+  let frame = 0, last = e
+  el.setPointerCapture(e.pointerId)
+  el.classList.add('dragging')
+  stage.classList.add('dragging')
+
+  const update = () => {
+    frame = 0
+    for (const o of origin) { o.q.x = o.x; o.q.y = o.y }
+    p.x = start.x + (last.clientX - start.mx) / perCm
+    p.y = start.y - (last.clientY - start.my) / perCm
+    // snap the centre to the wall's middle and to eye level, and show the guide
+    const sx = Math.abs(p.x) < SNAP, sy = Math.abs(p.y - EYE) < SNAP
+    if (sx) p.x = 0
+    if (sy) p.y = EYE
+    $('guideV').classList.toggle('on', sx)
+    $('guideH').classList.toggle('on', sy)
+    clamp(p)
+    settle(p)
+    render()
+  }
+  const move = (ev) => {
+    last = ev
+    frame ||= requestAnimationFrame(update)
+  }
+  const up = () => {
+    cancelAnimationFrame(frame)
+    // on release the work glides onto the grid (the transition does the easing)
+    p.x = Math.round(p.x / GRID) * GRID
+    p.y = Math.round(p.y / GRID) * GRID
+    clamp(p)
+    settle(p)
+    el.removeEventListener('pointermove', move)
+    el.classList.remove('dragging')
+    stage.classList.remove('dragging')
+    $('guideV').classList.remove('on')
+    $('guideH').classList.remove('on')
+    commit()
+  }
+  el.addEventListener('pointermove', move)
+  el.addEventListener('pointerup', up, { once: true })
+  el.addEventListener('pointercancel', up, { once: true })
+}
+
+stage.addEventListener('pointerdown', () => select(null))
+
+addEventListener('keydown', (e) => {
+  const p = pieces.find((q) => q.key === selected)
+  if (!p) return
+  const step = e.shiftKey ? 10 : 1
+  const moves = { ArrowLeft: [-step, 0], ArrowRight: [step, 0], ArrowUp: [0, step], ArrowDown: [0, -step] }
+  if (moves[e.key]) {
+    e.preventDefault()
+    p.x += moves[e.key][0]
+    p.y += moves[e.key][1]
+    clamp(p)
+    settle(p)
+    commit()
+  } else if (e.key === 'Delete' || e.key === 'Backspace') {
+    remove(p)
+    renderCard()
+  } else if (e.key === 'Escape') {
+    select(null)
+  }
+})
+
+$('grid').innerHTML = WORKS.map((w) =>
+  `<button class="work" data-id="${w.id}"><img src="${w.image}" alt="" loading="lazy"><span>${w.title}</span></button>`).join('')
+$('grid').addEventListener('click', (e) => {
+  const b = e.target.closest('.work')
+  if (b) { add(b.dataset.id); renderCard() }
+})
+$('add').onclick = $('addEmpty').onclick = () => drawer.classList.add('open')
+$('closeDrawer').onclick = () => drawer.classList.remove('open')
+$('clear').onclick = () => { pieces = []; selected = null; commit(); renderCard() }
+$('measure').onclick = (e) => {
+  measure = !measure
+  e.currentTarget.setAttribute('aria-pressed', measure)
+  render()
+}
+
+pieces.forEach((p) => probe(p.id))
+render()
+</script>
+</body>
+</html>

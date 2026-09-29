@@ -58,6 +58,7 @@ const EMPTY: Draft = { name: '', email: '', subject: '', message: '' }
 export default function ContactOverlay() {
   const open = useContactStore((s) => s.open)
   const presetSubject = useContactStore((s) => s.subject)
+  const presetBody = useContactStore((s) => s.body)
   const close = useContactStore((s) => s.closeContact)
 
   const panel = useRef<HTMLElement>(null)
@@ -75,10 +76,10 @@ export default function ContactOverlay() {
   // a fresh sheet each time it opens, carrying whatever raised it
   useEffect(() => {
     if (!open) return
-    setDraft({ ...EMPTY, subject: presetSubject })
+    setDraft({ ...EMPTY, subject: presetSubject, message: presetBody })
     setSent(false)
     setMessage('')
-  }, [open, presetSubject])
+  }, [open, presetSubject, presetBody])
 
   // The panel opens the way a plate opens on this site: §5.2, the same curtain
   // /about uses on its photographs — the frame wipes up from its own bottom

@@ -11,7 +11,7 @@
     "build": "tsc --noEmit && vite build && node scripts/generate-seo.mjs",
     "verify": "node scripts/verify-site.mjs",
     "preview": "vite preview",
-    "test": "tsc --ignoreConfig src/lib/shopify.ts --outDir .test-build --rootDir src --module esnext --target es2022 && node --test test/*.test.mjs",
+    "test": "tsc --ignoreConfig src/lib/shopify.ts src/lib/wall.ts --outDir .test-build --rootDir src --module esnext --target es2022 && node --test test/*.test.mjs",
     "deploy": "npm run build && git push"
   },
   "dependencies": {

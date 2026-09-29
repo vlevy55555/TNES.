@@ -11,16 +11,19 @@ type ContactStore = {
   open: boolean
   /** prefills the subject field, e.g. `works on view — east hampton` */
   subject: string
-  openContact: (subject?: string) => void
+  /** prefills the message, e.g. the works and sizes on a gallery wall */
+  body: string
+  openContact: (subject?: string, body?: string) => void
   closeContact: () => void
 }
 
 export const useContactStore = create<ContactStore>((set) => ({
   open: false,
   subject: '',
-  openContact: (subject = '') => {
+  body: '',
+  openContact: (subject = '', body = '') => {
     trackAnalyticsEvent('inquiry_opened')
-    set({ open: true, subject })
+    set({ open: true, subject, body })
   },
   closeContact: () => set({ open: false }),
 }))
