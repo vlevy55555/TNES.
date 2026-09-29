@@ -1041,8 +1041,8 @@ button.product__cart {
   display: none;
 }
 
-.product__custom-size--mobile {
-  display: none !important;
+.product__label--sub {
+  margin-top: 24px;
 }
 
 .product__missing {
@@ -1051,19 +1051,8 @@ button.product__cart {
 
 .product__related {
   width: min(560px, calc(100% - var(--pad-x) * 2));
+  /* not pulled up under the options: "custom size" sits under the size column */
   margin: 24px var(--pad-x) clamp(80px, 10vw, 150px) auto;
-}
-
-@media (min-width: 1201px) {
-  .product__related {
-    margin-top: -106px;
-  }
-}
-
-@media (min-width: 901px) and (max-width: 1200px) {
-  .product__related {
-    margin-top: -36px;
-  }
 }
 
 .product__related-head {
@@ -1223,18 +1212,14 @@ button.product__cart {
     display: flex;
   }
 
-  .product__choices--frames .product__custom-size {
-    display: none;
-  }
-
   .product__choices--sizes {
     display: flex;
     flex-wrap: wrap;
     gap: 6px;
   }
 
-  .product__choice.product__custom-size--mobile {
-    display: block !important;
+  .product__choice.product__custom-size {
+    display: block;
     width: auto;
     flex-basis: auto;
     min-height: 38px;

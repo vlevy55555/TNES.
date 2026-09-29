@@ -1,7 +1,17 @@
 import { lazy, Suspense, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { gsap } from 'gsap'
 import { artworks, standardPrintSizes } from '../data/artworks'
-import type { FrameStyle } from '../data/artworks'
+import {
+  FRAME_FINISHES,
+  FRAME_MATERIALS,
+  frameLabelFor,
+  frameMaterialOf,
+  frameStyleFor,
+  frameStyleOf,
+  type FrameFinish,
+  type FrameMaterial,
+  type FrameStyle,
+} from '../data/artworks'
 import { defaultSelection, findVariant } from '../lib/shopify'
 import { useProductState } from '../lib/useProduct'
 import { useContactStore } from '../store/useContactStore'
@@ -12,13 +22,6 @@ import { ShopFooter, ShopHeader } from './ShopChrome'
 import './home.css'
 import './shop.css'
 
-// The mouldings the room already builds in ArtworkFrame — the same three, named
-// the way a buyer reads them.
-const FRAMES: { value: FrameStyle; label: string }[] = [
-  { value: 'unframed', label: 'unframed' },
-  { value: 'white', label: 'white' },
-  { value: 'black', label: 'black' },
-]
 
 const ProductFrame = lazy(() => import('./ProductFrame'))
 
@@ -47,6 +50,8 @@ export default function Product({ id }: { id: string }) {
       : []
   const [size, setSize] = useState('')
   const [frame, setFrame] = useState<FrameStyle>('unframed')
+  const [finish, setFinish] = useState<FrameFinish>('black')
+  const material = frameMaterialOf(frame)
   const [lightboxOpen, setLightboxOpen] = useState(false)
   const [show3D, setShow3D] = useState(false)
   const isPortrait = !!work && work.size[1] > work.size[0]
@@ -76,10 +81,7 @@ export default function Product({ id }: { id: string }) {
         ? liveSizes.find((value) => sizeKey(value).startsWith('30x20'))
         : undefined
       setSize(portraitSize ?? initial[sizeOption.name] ?? liveSizes[0] ?? '')
-      const initialFrame = frameOption ? initial[frameOption.name]?.toLowerCase() : 'unframed'
-      setFrame(initialFrame === 'white' || initialFrame === 'black'
-        ? initialFrame
-        : 'unframed')
+      setFrame(frameOption ? frameStyleOf(initial[frameOption.name]) : 'unframed')
     } else if (!productLoading) {
       const staticSizes = work ? standardPrintSizes(work) : []
       const preferredSize = isPortrait ? '30x20' : '20x30'
@@ -94,7 +96,7 @@ export default function Product({ id }: { id: string }) {
 
   // The room's three mouldings are a preview, not a merchandised option in this
   // store — but if Shopify ever sells the frame, keep the bought variant in sync.
-  const frameValue = frameOption?.values.find((v) => v.toLowerCase() === frame)
+  const frameValue = frameOption?.values.find((v) => frameStyleOf(v) === frame)
   const variantFor = (value: string) =>
     product && sizeOption
       ? findVariant(product, {
@@ -273,28 +275,43 @@ export default function Product({ id }: { id: string }) {
           </div>
 
           <div className="product__field">
-            <h2 className="product__label"><RevealText>frame</RevealText></h2>
-            <div className="product__choices product__choices--frames" role="group" aria-label="Moldura">
-              {FRAMES.map((option) => (
+            <h2 className="product__label"><RevealText>material</RevealText></h2>
+            <div className="product__choices product__choices--frames" role="group" aria-label="Material">
+              {(Object.keys(FRAME_MATERIALS) as FrameMaterial[]).map((value) => (
                 <button
-                  key={option.value}
+                  key={value}
                   type="button"
-                  className={`product__choice ${frame === option.value ? 'product__choice--on' : ''}`}
-                  aria-pressed={frame === option.value}
-                  onClick={() => setFrame(option.value)}
+                  className={`product__choice ${material === value ? 'product__choice--on' : ''}`}
+                  aria-pressed={material === value}
+                  onClick={() => setFrame(frameStyleFor(value, finish))}
                 >
-                  {option.label}
+                  {FRAME_MATERIALS[value]}
                 </button>
               ))}
-              <button
-                type="button"
-                className="product__choice product__custom-size"
-                onClick={() => openContact(`${work.title} — custom size request`)}
-              >
-                <span className="product__custom-size-full">custom size upon request</span>
-                <span className="product__custom-size-short">custom size</span>
-              </button>
             </div>
+
+            {/* same column as material: the grid is four fixed columns */}
+            {material !== 'unframed' && (
+              <>
+                <h2 className="product__label product__label--sub"><RevealText>finish</RevealText></h2>
+                <div className="product__choices product__choices--frames" role="group" aria-label="Acabamento">
+                  {FRAME_FINISHES.map((value) => (
+                    <button
+                      key={value}
+                      type="button"
+                      className={`product__choice ${finish === value ? 'product__choice--on' : ''}`}
+                      aria-pressed={finish === value}
+                      onClick={() => {
+                        setFinish(value)
+                        setFrame(frameStyleFor(material, value))
+                      }}
+                    >
+                      {value}
+                    </button>
+                  ))}
+                </div>
+              </>
+            )}
           </div>
 
           <div className="product__field">
@@ -319,10 +336,11 @@ export default function Product({ id }: { id: string }) {
               })}
               <button
                 type="button"
-                className="product__choice product__custom-size product__custom-size--mobile"
+                className="product__choice product__custom-size"
                 onClick={() => openContact(`${work.title} — custom size request`)}
               >
-                custom size
+                <span className="product__custom-size-full">custom size upon request</span>
+                <span className="product__custom-size-short">custom size</span>
               </button>
             </div>
           </div>
@@ -330,7 +348,7 @@ export default function Product({ id }: { id: string }) {
           <button
             type="button"
             className="product__cart"
-            onClick={() => openContact(`${work.title} · ${frame} · ${size || 'size upon request'}`)}
+            onClick={() => openContact(`${work.title} · ${frameLabelFor(material, finish)} · ${size || 'size upon request'}`)}
           >
             inquire
           </button>

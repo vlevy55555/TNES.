@@ -44,7 +44,38 @@ export type Artwork = {
   shopifyHandle?: string
 }
 
-export type FrameStyle = 'unframed' | 'white' | 'black'
+export type FrameStyle = 'unframed' | 'white' | 'black' | 'glass' | 'aluminium'
+
+/** The selector's two steps: what the piece is made of, then its colour. */
+export type FrameMaterial = 'unframed' | 'regular' | 'aluminium' | 'glass'
+export type FrameFinish = 'black' | 'white' | 'custom'
+
+export const FRAME_MATERIALS: Record<FrameMaterial, string> = {
+  unframed: 'unframed',
+  regular: 'regular',
+  aluminium: 'brushed aluminum',
+  glass: 'plexiglass',
+}
+export const FRAME_FINISHES: FrameFinish[] = ['black', 'white', 'custom']
+
+export const frameMaterialOf = (style: FrameStyle): FrameMaterial =>
+  style === 'white' || style === 'black' ? 'regular' : style
+
+// ponytail: only the regular moulding changes colour in 3D; custom previews as white
+export const frameStyleFor = (material: FrameMaterial, finish: FrameFinish): FrameStyle =>
+  material === 'regular' ? (finish === 'black' ? 'black' : 'white') : material
+
+/** The inquiry line for a selection, e.g. "regular · black". */
+export const frameLabelFor = (material: FrameMaterial, finish: FrameFinish) =>
+  material === 'unframed' ? FRAME_MATERIALS.unframed : `${FRAME_MATERIALS[material]} · ${finish}`
+
+/** Shopify's Frame value ('White', 'Glass Block', …) as the style the 3D builds. */
+export const frameStyleOf = (value: string | undefined): FrameStyle => {
+  const key = value?.toLowerCase() ?? ''
+  if (key.includes('glass')) return 'glass'
+  if (key.includes('alumin')) return 'aluminium'
+  return key === 'white' || key === 'black' ? key : 'unframed'
+}
 
 /** The storefront's canonical size labels, shared by live and fallback views. */
 export const standardPrintSizes = (artwork: Pick<Artwork, 'size'>) =>

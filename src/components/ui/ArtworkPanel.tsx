@@ -1,5 +1,16 @@
 import { useEffect, useState } from 'react'
-import { artworks, standardPrintSizes } from '../../data/artworks'
+import {
+  artworks,
+  FRAME_FINISHES,
+  FRAME_MATERIALS,
+  frameMaterialOf,
+  frameStyleFor,
+  frameStyleOf,
+  standardPrintSizes,
+  type FrameFinish,
+  type FrameMaterial,
+  type FrameStyle,
+} from '../../data/artworks'
 import { useGalleryStore } from '../../store/useGalleryStore'
 import { useProduct } from '../../lib/useProduct'
 import { defaultSelection, findVariant, money } from '../../lib/shopify'
@@ -21,6 +32,8 @@ export function ArtworkPanel() {
   const product = useProduct(artwork?.shopifyHandle)
 
   const [selection, setSelection] = useState<Record<string, string>>({})
+  const [finish, setFinish] = useState<FrameFinish>(selectedFrameStyle === 'black' ? 'black' : 'white')
+  const material = frameMaterialOf(selectedFrameStyle)
 
   // open on the middle size whenever a new product loads
   useEffect(() => {
@@ -50,11 +63,10 @@ export function ArtworkPanel() {
   const variant = product ? findVariant(product, selection) : null
   const buyable = !!variant?.available
 
-  const selectFrame = (style: 'unframed' | 'black' | 'white') => {
+  const selectFrame = (style: FrameStyle) => {
     setSelectedFrameStyle(style)
-    // If the Shopify catalogue later exposes a Black/White frame option, keep
-    // its real purchasable variant in sync with the live gallery preview.
-    const value = frameOption?.values.find((item) => item.toLowerCase() === style)
+    // keep the real purchasable variant in sync with the live gallery preview
+    const value = frameOption?.values.find((item) => frameStyleOf(item) === style)
     if (frameOption && value) {
       setSelection((current) => ({ ...current, [frameOption.name]: value }))
     }
@@ -76,21 +88,43 @@ export function ArtworkPanel() {
           differ per product in this store (Size / Frame / Frame Color / Framing),
           so render whatever the API reports rather than assuming a schema. */}
       <div className="panel-option">
-        <p className="panel-option-name">Frame</p>
+        <p className="panel-option-name">Material</p>
         <div className="panel-option-values">
-          {(['unframed', 'white', 'black'] as const).map((style) => (
+          {(Object.keys(FRAME_MATERIALS) as FrameMaterial[]).map((value) => (
             <button
               type="button"
-              key={style}
-              className={`opt ${selectedFrameStyle === style ? 'opt-on' : ''}`}
-              aria-pressed={selectedFrameStyle === style}
-              onClick={() => selectFrame(style)}
+              key={value}
+              className={`opt ${material === value ? 'opt-on' : ''}`}
+              aria-pressed={material === value}
+              onClick={() => selectFrame(frameStyleFor(value, finish))}
             >
-              {style}
+              {FRAME_MATERIALS[value]}
             </button>
           ))}
         </div>
       </div>
+
+      {material !== 'unframed' && (
+        <div className="panel-option">
+          <p className="panel-option-name">Finish</p>
+          <div className="panel-option-values">
+            {FRAME_FINISHES.map((value) => (
+              <button
+                type="button"
+                key={value}
+                className={`opt ${finish === value ? 'opt-on' : ''}`}
+                aria-pressed={finish === value}
+                onClick={() => {
+                  setFinish(value)
+                  selectFrame(frameStyleFor(material, value))
+                }}
+              >
+                {value}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       {product && nonFrameOptions?.map((option) => (
         <div className="panel-option" key={option.name}>
