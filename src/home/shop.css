@@ -909,6 +909,12 @@ body:has(.shop),
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
+  /* custom size spans the whole row under the three sizes */
+  .product__choices--sizes .product__custom-size {
+    grid-column: 1 / -1;
+    width: 100%;
+  }
+
   .product__choices--sizes .product__choice:not(.product__custom-size) {
     min-width: 0;
     padding-inline: clamp(6px, 0.6vw, 12px);
