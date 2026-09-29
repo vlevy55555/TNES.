@@ -39,8 +39,8 @@ the run before anything is created.
 ## What it does
 
 - creates the 10 `custom.*` metafield definitions from section 3 of the handoff
-- updates the 12 live products in place, creates the 18 new ones
-- 9 variants each (3 sizes x Unframed/White/Black) at $1600 / $2100 / $2600,
+- 15 variants each (3 sizes x Unframed/White/Black/Glass Block/Aluminium Support) at $1600 / $2100 / $2600,
+- 12 variants each (3 sizes x Unframed/White/Black/Glass Block) at $1600 / $2100 / $2600,
   untracked inventory, matching the configuration already live on the 12
 - uploads the image with its alt text; on the existing 12 it only sets alt text,
   since their masters are already in Shopify

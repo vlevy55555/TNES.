@@ -29,7 +29,7 @@ const SIZES = {
   Portrait: ['20x30', '24x36', '28x42'],
 }
 const PRICES = { 0: '1600.00', 1: '2100.00', 2: '2600.00' }
-const FRAMES = ['Unframed', 'White', 'Black']
+const FRAMES = ['Unframed', 'White', 'Black', 'Glass Block', 'Aluminium Support']
 
 const VENDOR = 'TNES.'
 const PRODUCT_TYPE = 'Fine Art Photography Print'
@@ -369,7 +369,7 @@ if (DRY) {
       `${p.orientation.padEnd(9)} ${SIZES[p.orientation].join('/')}  ` +
       `${p.subject.join(', ')}`)
   }
-  console.log(`\n${products.length} works, ${products.length * 9} variants. No calls made.`)
+  console.log(`\n${products.length} works, ${products.length * FRAMES.length * 3} variants. No calls made.`)
   process.exit(0)
 }
 
