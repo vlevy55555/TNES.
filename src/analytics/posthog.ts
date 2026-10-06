@@ -18,6 +18,9 @@ export function startPosthog() {
       api_host: host,
       defaults: '2026-08-30',
       person_profiles: 'identified_only',
+      // Left undefined, heatmaps follow a toggle in the PostHog project and
+      // stay off until someone finds it.
+      capture_heatmaps: true,
     })
     // A refusal is stored by the library itself; an earlier one would keep
     // this visitor silent even after they changed their mind.

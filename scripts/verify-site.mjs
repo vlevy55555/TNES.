@@ -13,6 +13,9 @@ assert(robots.includes(`Sitemap: ${seo.origin}/sitemap.xml`), 'robots.txt must p
 assert(!sitemap.includes('/shop'), 'Sitemap must not contain old shop URLs')
 assert(!sitemap.includes('/cart'), 'Cart must not be indexed')
 assert(vercel.redirects.some(({ source, destination }) => source === '/shop' && destination === '/works'))
+const home = await read('dist/index.html')
+assert(home.includes('"@type":"Organization"') && home.includes('"@type":"WebSite"'), 'Home must describe the organization and website')
+assert((await read('dist/about/index.html')).includes('"@type":"Person"'), '/about must describe Victor as a Person')
 assert(vercel.redirects.some(({ source, destination }) => source === '/shop/:path*' && destination === '/works/:path*'))
 
 for (const [route, page] of Object.entries(seo.pages)) {
@@ -25,6 +28,8 @@ for (const [route, page] of Object.entries(seo.pages)) {
   const image = html.match(/property="og:image" content="([^"]+)"/)?.[1]
   assert(image?.startsWith(seo.origin), `${route}: og:image missing`)
   await access(path.join(root, 'dist', new URL(image).pathname))
+  assert(/property="og:image:width" content="\d+"/.test(html) && /property="og:image:height" content="\d+"/.test(html), `${route}: og:image size missing`)
+  assert(html.includes('name="twitter:card" content="summary_large_image"'), `${route}: twitter card missing`)
   if (route !== '/') {
     assert(vercel.rewrites.some(({ source, destination }) => source === route && destination === `${route}/index.html`), `${route}: Vercel HTML rewrite missing`)
   }

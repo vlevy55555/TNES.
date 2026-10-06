@@ -35,7 +35,7 @@ export function setPageMetadata(path: string) {
   setMeta('og:description', page.description, 'property')
   setMeta('og:url', canonical, 'property')
   setMeta('og:type', work ? 'article' : 'website', 'property')
-  setMeta('twitter:card', 'summary')
+  setMeta('twitter:card', 'summary_large_image')
 
   let link = document.head.querySelector<HTMLLinkElement>('link[rel="canonical"]')
   if (!link) {

@@ -32,13 +32,17 @@ for (const work of artworks) {
 // One 1200 px JPEG per work for link previews. The originals are WebP of up to
 // 700 kB, and WhatsApp drops the picture from a preview when the image is heavy.
 await mkdir(path.join(dist, 'og'), { recursive: true })
-await Promise.all(artworks.map((work) =>
-  sharp(path.join(root, 'public', work.image.replace(/^\//, '')))
+const ogSizes = new Map(await Promise.all(artworks.map(async (work) => {
+  const { width, height } = await sharp(path.join(root, 'public', work.image.replace(/^\//, '')))
     .resize({ width: 1200, height: 1200, fit: 'inside', withoutEnlargement: true })
     .jpeg({ quality: 75, mozjpeg: true })
-    .toFile(path.join(dist, 'og', `${work.id}.jpg`))))
+    .toFile(path.join(dist, 'og', `${work.id}.jpg`))
+  return [work.id, { width, height }]
+})))
 // Pages that are not a work share the signature work's picture.
-const socialImage = (page) => new URL(`/og/${page.work?.id ?? HERO_ID}.jpg`, origin).href
+const heroWork = artworks.find((work) => work.id === HERO_ID)
+const socialWork = (page) => page.work ?? heroWork
+const socialImage = (page) => new URL(`/og/${socialWork(page).id}.jpg`, origin).href
 
 function structuredData(route, page) {
   if (page.work) return {
@@ -50,15 +54,43 @@ function structuredData(route, page) {
     url: new URL(route, origin).href,
     artform: 'Photography',
     artMedium: 'Archival pigment print',
-    creator: { '@type': 'Person', name: 'Victor Safdie Levy' },
+    creator: { '@type': 'Person', '@id': `${origin}/about#person`, name: 'Victor Safdie Levy' },
   }
   if (route === '/') return {
     '@context': 'https://schema.org',
-    '@type': 'Organization',
-    name: 'TNES.',
-    url: origin,
-    founder: { '@type': 'Person', name: 'Victor Safdie Levy' },
-    sameAs: ['https://instagram.com/vlevy_'],
+    '@graph': [
+      {
+        '@type': 'Organization',
+        '@id': `${origin}/#organization`,
+        name: 'TNES.',
+        url: `${origin}/`,
+        email: 'vlevy@tnes.studio',
+        founder: { '@id': `${origin}/about#person` },
+        sameAs: ['https://instagram.com/vlevy_'],
+      },
+      {
+        '@type': 'WebSite',
+        '@id': `${origin}/#website`,
+        name: 'TNES.',
+        url: `${origin}/`,
+        inLanguage: 'en',
+        publisher: { '@id': `${origin}/#organization` },
+      },
+    ],
+  }
+  if (route === '/about') return {
+    '@context': 'https://schema.org',
+    '@type': 'ProfilePage',
+    url: new URL(route, origin).href,
+    mainEntity: {
+      '@type': 'Person',
+      '@id': `${origin}/about#person`,
+      name: 'Victor Safdie Levy',
+      jobTitle: 'Photographer',
+      url: new URL(route, origin).href,
+      worksFor: { '@id': `${origin}/#organization` },
+      sameAs: ['https://instagram.com/vlevy_'],
+    },
   }
   if (route === '/works/catalogs/the-hamptons') return {
     '@context': 'https://schema.org',
@@ -82,6 +114,11 @@ function htmlFor(route, page) {
     `<meta property="og:type" content="${page.work ? 'article' : 'website'}" />`,
     '<meta property="og:site_name" content="TNES." />',
     `<meta property="og:image" content="${escapeHtml(socialImage(page))}" />`,
+    '<meta property="og:image:type" content="image/jpeg" />',
+    `<meta property="og:image:width" content="${ogSizes.get(socialWork(page).id).width}" />`,
+    `<meta property="og:image:height" content="${ogSizes.get(socialWork(page).id).height}" />`,
+    `<meta property="og:image:alt" content="${escapeHtml(`${socialWork(page).title} — photograph by Victor Safdie Levy`)}" />`,
+    '<meta property="og:locale" content="en_US" />',
     '<meta name="twitter:card" content="summary_large_image" />',
     ...(jsonLd ? [`<script type="application/ld+json">${JSON.stringify(jsonLd).replace(/</g, '\\u003c')}</script>`] : []),
   ].join('\n    ')
