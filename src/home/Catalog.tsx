@@ -1,5 +1,7 @@
 import { useState, type FormEvent } from 'react'
-import { artworks, INQUIRY_EMAIL } from '../data/artworks'
+import { artworks } from '../data/artworks'
+import { inquiryMailto, sendInquiry } from '../lib/contact'
+import { trackAnalyticsEvent } from '../analytics/clarity'
 import { RevealText } from './reveal'
 import { ShopFooter, ShopHeader } from './ShopChrome'
 import { useContactStore } from '../store/useContactStore'
@@ -32,25 +34,44 @@ function CatalogInquiry({ onClose }: { onClose: () => void }) {
   const [interest, setInterest] = useState('none / general')
   const [message, setMessage] = useState('')
   const [formError, setFormError] = useState('')
+  const [sending, setSending] = useState(false)
+  const [sent, setSent] = useState(false)
 
-  const sendInquiry = (event: FormEvent<HTMLFormElement>) => {
+  const submitInquiry = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
+    if (sending || sent) return
     if (!name.trim() || !/^\S+@\S+\.\S+$/.test(email)) {
       setFormError('add your name and a valid email to continue.')
       return
     }
 
-    const body = [
-      `Name: ${name.trim()}`,
-      `Email: ${email.trim()}`,
-      ...(phone.trim() ? [`Phone: ${phone.trim()}`] : []),
-      `Inquiry type: ${type}`,
-      `Work of interest: ${interest}`,
-      '',
-      message.trim() || '(no message)',
-    ].join('\n')
-
-    window.location.href = `mailto:${INQUIRY_EMAIL}?subject=${encodeURIComponent(`TNES. inquiry — ${type}`)}&body=${encodeURIComponent(body)}`
+    const details: [string, string][] = [
+      ...(phone.trim() ? [['Phone', phone.trim()] as [string, string]] : []),
+      ['Inquiry type', type],
+      ['Work of interest', interest],
+    ]
+    const inquiry = {
+      name: name.trim(),
+      email: email.trim(),
+      subject: `inquiry — ${type}`,
+      message: message.trim() || '(no message)',
+      details,
+      source: 'catalog',
+    }
+    setSending(true)
+    setFormError('')
+    try {
+      await sendInquiry(inquiry)
+      trackAnalyticsEvent('inquiry_sent')
+      setSent(true)
+      setFormError('sent. the studio will write back soon.')
+    } catch {
+      // a written inquiry is never lost: the mail app gets it instead
+      window.location.href = inquiryMailto(inquiry)
+      setFormError('opening your mail app with the inquiry written out.')
+    } finally {
+      setSending(false)
+    }
   }
 
   return (
@@ -64,7 +85,7 @@ function CatalogInquiry({ onClose }: { onClose: () => void }) {
           <button type="button" onClick={onClose} aria-label="close inquiry">×</button>
         </header>
 
-        <form className="catalog-inquiry__form ph-no-capture" onSubmit={sendInquiry} noValidate data-clarity-mask="True">
+        <form className="catalog-inquiry__form ph-no-capture" onSubmit={submitInquiry} noValidate data-clarity-mask="True">
           <label><span>name.</span><input value={name} onChange={(event) => setName(event.target.value)} placeholder="your name." /></label>
           <label><span>email.</span><input type="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="you@domain.com" /></label>
           <label><span>phone. <em>(optional)</em></span><input value={phone} onChange={(event) => setPhone(event.target.value)} placeholder="+1 555 555 5555" /></label>
@@ -83,7 +104,9 @@ function CatalogInquiry({ onClose }: { onClose: () => void }) {
           </label>
           <label className="catalog-inquiry__message"><span>message.</span><textarea rows={4} value={message} onChange={(event) => setMessage(event.target.value)} placeholder="tell us what you're considering." /></label>
           <div className="catalog-inquiry__submit">
-            <button type="submit">send inquiry <span aria-hidden="true">→</span></button>
+            <button type="submit" disabled={sending || sent}>
+              {sent ? 'inquiry sent' : sending ? 'sending…' : <>send inquiry <span aria-hidden="true">→</span></>}
+            </button>
             <p aria-live="polite">{formError}</p>
           </div>
         </form>

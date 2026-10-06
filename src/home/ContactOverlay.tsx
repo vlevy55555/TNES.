@@ -2,56 +2,17 @@ import { useEffect, useLayoutEffect, useRef, useState, type FormEvent } from 're
 import { createPortal } from 'react-dom'
 import { gsap } from 'gsap'
 import { INQUIRY_EMAIL, INQUIRY_TYPES } from '../data/artworks'
+import { inquiryMailto, sendInquiry } from '../lib/contact'
 import { useContactStore } from '../store/useContactStore'
 import { trackAnalyticsEvent } from '../analytics/clarity'
 
 /**
- * Where a message goes. This site is a STATIC deploy — no server of ours to
- * post to — so a message lands in a Google Sheet fronted by an Apps Script web
- * app, exactly as the countdown's email list already does. Same contract, its
- * own deployment, because the list script only reads `{ email }` and would
- * silently drop everything a message actually carries.
- *
- * Set VITE_CONTACT_URL in the Render dashboard to this deployment:
- *
- *   // Extensions ▸ Apps Script on the sheet, then Deploy ▸ New deployment ▸
- *   // Web app, execute as Me, access "Anyone". Paste the /exec URL.
- *   function doPost(e) {
- *     const { name, email, subject, message } = JSON.parse(e.postData.contents)
- *     SpreadsheetApp.getActiveSheet()
- *       .appendRow([new Date(), name, email, subject, message])
- *     return ContentService.createTextOutput('ok')
- *   }
- *
- * ponytail: a spreadsheet and six lines of Apps Script, not a helpdesk.
- * Ceiling: no threading, no auto-reply, no spam filtering beyond the honeypot —
- * move to a real inbox when the volume earns one.
- *
- * Unset, the form hands the finished message to the visitor's mail app instead
- * of dropping it on the floor. That is worse than posting, but it is strictly
- * better than the bare `mailto:` links this replaces: by then every field is
- * already written.
+ * Where a message goes: /api/contact (api/contact.js), which mails it to the
+ * studio through Resend with the visitor as reply-to. If that fails for any
+ * reason, the finished message is handed to the visitor's mail app instead of
+ * being lost.
  */
-const CONTACT_URL = import.meta.env.VITE_CONTACT_URL as string | undefined
-
 type Draft = { name: string; email: string; subject: string; message: string }
-
-const mailtoFor = ({ name, email, subject, message }: Draft) =>
-  `mailto:${INQUIRY_EMAIL}?subject=${encodeURIComponent(subject || 'Inquiry')}&body=${encodeURIComponent(
-    `${message}\n\n— ${name}\n${email}`,
-  )}`
-
-async function send(draft: Draft) {
-  if (!CONTACT_URL) throw new Error('no-endpoint')
-  // text/plain keeps this a "simple" request, so the browser sends no CORS
-  // preflight — an Apps Script web app cannot answer an OPTIONS
-  const response = await fetch(CONTACT_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-    body: JSON.stringify({ ...draft, at: new Date().toISOString() }),
-  })
-  if (!response.ok) throw new Error(`contact: ${response.status}`)
-}
 
 const EMPTY: Draft = { name: '', email: '', subject: '', message: '' }
 
@@ -130,19 +91,15 @@ export default function ContactOverlay() {
 
     setSending(true)
     setMessage('')
+    const inquiry = { ...draft, source: 'contact panel' }
     try {
-      await send(draft)
+      await sendInquiry(inquiry)
       trackAnalyticsEvent('inquiry_sent')
       setSent(true)
-    } catch (error) {
-      if ((error as Error).message === 'no-endpoint') {
-        // nothing is configured to receive this yet — hand the finished message
-        // to the mail app rather than pretend it was delivered
-        window.location.assign(mailtoFor(draft))
-        setMessage('opening your mail app with the message written out')
-      } else {
-        setMessage('that did not go through — please try again')
-      }
+    } catch {
+      // never pretend it was delivered, and never drop a written message
+      window.location.assign(inquiryMailto(inquiry))
+      setMessage('opening your mail app with the message written out')
     } finally {
       setSending(false)
     }

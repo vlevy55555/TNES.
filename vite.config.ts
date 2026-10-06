@@ -8,11 +8,13 @@ function apiInDev(): Plugin {
     name: 'tnes-api-in-dev',
     apply: 'serve',
     configureServer(server) {
-      Object.assign(process.env, loadEnv('development', process.cwd(), 'MAILERLITE_'))
-      server.middlewares.use('/api/subscribe', async (req, res) => {
+      Object.assign(process.env, loadEnv('development', process.cwd(), ['MAILERLITE_', 'RESEND_', 'CONTACT_']))
+      server.middlewares.use('/api', async (req, res, next) => {
+        const name = req.url?.split('?')[0].replace(/^\//, '')
+        if (name !== 'subscribe' && name !== 'contact') return next()
         const chunks: Buffer[] = []
         for await (const chunk of req) chunks.push(chunk as Buffer)
-        const { POST } = await server.ssrLoadModule('/api/subscribe.js')
+        const { POST } = await server.ssrLoadModule(`/api/${name}.js`)
         if (req.method !== 'POST') {
           res.statusCode = 405
           res.end()
