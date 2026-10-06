@@ -12,6 +12,9 @@ import './works.css'
 
 gsap.registerPlugin(ScrollTrigger)
 
+// Every frame the store sells, one drawn at random each time a work is hovered.
+const HOVER_FRAMES = ['black', 'white', 'aluminium', 'glass'] as const
+
 const PLACES = ['all', 'south america', 'europe', 'north america']
 const SCENE_FILTERS = ['all', 'beach', 'water', 'desert', 'alpine', 'landscape', 'street', 'architecture', 'people', 'animals', 'objects']
 
@@ -186,7 +189,7 @@ function ShopIndex() {
               <div
                 className="works-page__frame-hover"
                 onMouseEnter={(event) => {
-                  event.currentTarget.dataset.frame = Math.random() < 0.5 ? 'black' : 'white'
+                  event.currentTarget.dataset.frame = HOVER_FRAMES[Math.floor(Math.random() * HOVER_FRAMES.length)]
                 }}
               >
                 <figure className="shop__figure">
