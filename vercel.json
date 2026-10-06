@@ -6,7 +6,11 @@
   "redirects": [
     { "source": "/home", "destination": "/", "permanent": true },
     { "source": "/shop", "destination": "/works", "permanent": true },
-    { "source": "/shop/:path*", "destination": "/works/:path*", "permanent": true }
+    { "source": "/shop/:path*", "destination": "/works/:path*", "permanent": true },
+    { "source": "/prototype-3d/:method(1|2|3)", "has": [{ "type": "host", "value": "www.tnes.studio" }], "destination": "/prototype-3d", "permanent": false },
+    { "source": "/prototype-3d/lab/:path*", "has": [{ "type": "host", "value": "www.tnes.studio" }], "destination": "/prototype-3d", "permanent": false },
+    { "source": "/prototype-3d/:method(1|2|3)", "has": [{ "type": "host", "value": "tnes.studio" }], "destination": "/prototype-3d", "permanent": false },
+    { "source": "/prototype-3d/lab/:path*", "has": [{ "type": "host", "value": "tnes.studio" }], "destination": "/prototype-3d", "permanent": false }
   ],
   "rewrites": [
     { "source": "/works", "destination": "/works/index.html" },
@@ -22,6 +26,7 @@
     { "source": "/gallery", "destination": "/gallery/index.html" },
     { "source": "/home-black", "destination": "/home-black/index.html" },
     { "source": "/prototype-3d", "destination": "/prototype-3d/index.html" },
+    { "source": "/prototype-3d/:method(1|2|3)", "destination": "/prototype-3d/lab/index.html" },
     {
       "source": "/(.*)",
       "destination": "/index.html"
