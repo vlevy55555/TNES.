@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://tnes.studio/sitemap.xml
+Sitemap: https://www.tnes.studio/sitemap.xml

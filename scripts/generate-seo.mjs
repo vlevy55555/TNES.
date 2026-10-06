@@ -1,5 +1,6 @@
 import { readFile, mkdir, writeFile, access } from 'node:fs/promises'
 import path from 'node:path'
+import sharp from 'sharp'
 import { transformWithOxc } from 'vite'
 
 const root = path.resolve(import.meta.dirname, '..')
@@ -7,7 +8,7 @@ const dist = path.join(root, 'dist')
 const seo = JSON.parse(await readFile(path.join(root, 'src/data/seo-pages.json'), 'utf8'))
 const source = await readFile(path.join(root, 'src/data/artworks.ts'), 'utf8')
 const compiled = await transformWithOxc(source, 'artworks.ts')
-const { artworks } = await import(`data:text/javascript;base64,${Buffer.from(compiled.code).toString('base64')}`)
+const { artworks, HERO_ID } = await import(`data:text/javascript;base64,${Buffer.from(compiled.code).toString('base64')}`)
 const baseHtml = await readFile(path.join(dist, 'index.html'), 'utf8')
 const origin = new URL(seo.origin).origin
 
@@ -27,6 +28,17 @@ for (const work of artworks) {
     work,
   })
 }
+
+// One 1200 px JPEG per work for link previews. The originals are WebP of up to
+// 700 kB, and WhatsApp drops the picture from a preview when the image is heavy.
+await mkdir(path.join(dist, 'og'), { recursive: true })
+await Promise.all(artworks.map((work) =>
+  sharp(path.join(root, 'public', work.image.replace(/^\//, '')))
+    .resize({ width: 1200, height: 1200, fit: 'inside', withoutEnlargement: true })
+    .jpeg({ quality: 75, mozjpeg: true })
+    .toFile(path.join(dist, 'og', `${work.id}.jpg`))))
+// Pages that are not a work share the signature work's picture.
+const socialImage = (page) => new URL(`/og/${page.work?.id ?? HERO_ID}.jpg`, origin).href
 
 function structuredData(route, page) {
   if (page.work) return {
@@ -68,7 +80,9 @@ function htmlFor(route, page) {
     `<meta property="og:description" content="${escapeHtml(page.description)}" />`,
     `<meta property="og:url" content="${escapeHtml(canonical)}" />`,
     `<meta property="og:type" content="${page.work ? 'article' : 'website'}" />`,
-    '<meta name="twitter:card" content="summary" />',
+    '<meta property="og:site_name" content="TNES." />',
+    `<meta property="og:image" content="${escapeHtml(socialImage(page))}" />`,
+    '<meta name="twitter:card" content="summary_large_image" />',
     ...(jsonLd ? [`<script type="application/ld+json">${JSON.stringify(jsonLd).replace(/</g, '\\u003c')}</script>`] : []),
   ].join('\n    ')
   return baseHtml

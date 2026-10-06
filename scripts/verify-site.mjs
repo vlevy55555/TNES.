@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict'
-import { readFile, readdir } from 'node:fs/promises'
+import { access, readFile, readdir } from 'node:fs/promises'
 import path from 'node:path'
 
 const root = path.resolve(import.meta.dirname, '..')
@@ -9,7 +9,7 @@ const vercel = JSON.parse(await read('vercel.json'))
 const sitemap = await read('dist/sitemap.xml')
 const robots = await read('dist/robots.txt')
 
-assert.match(robots, /Sitemap: https:\/\/tnes\.studio\/sitemap\.xml/)
+assert(robots.includes(`Sitemap: ${seo.origin}/sitemap.xml`), 'robots.txt must point at the canonical sitemap')
 assert(!sitemap.includes('/shop'), 'Sitemap must not contain old shop URLs')
 assert(!sitemap.includes('/cart'), 'Cart must not be indexed')
 assert(vercel.redirects.some(({ source, destination }) => source === '/shop' && destination === '/works'))
@@ -22,6 +22,9 @@ for (const [route, page] of Object.entries(seo.pages)) {
   assert(html.includes(`<title>${page.title}</title>`), `${route}: title missing`)
   assert(html.includes(`rel="canonical" href="${canonical}"`), `${route}: canonical missing`)
   assert(html.includes(`name="robots" content="${page.index ? 'index, follow' : 'noindex, follow'}"`), `${route}: robots metadata missing`)
+  const image = html.match(/property="og:image" content="([^"]+)"/)?.[1]
+  assert(image?.startsWith(seo.origin), `${route}: og:image missing`)
+  await access(path.join(root, 'dist', new URL(image).pathname))
   if (route !== '/') {
     assert(vercel.rewrites.some(({ source, destination }) => source === route && destination === `${route}/index.html`), `${route}: Vercel HTML rewrite missing`)
   }

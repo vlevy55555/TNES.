@@ -1,5 +1,5 @@
 {
-  "origin": "https://tnes.studio",
+  "origin": "https://www.tnes.studio",
   "pages": {
     "/": {
       "title": "TNES. — Fine Art Photography by Victor Safdie Levy",
@@ -19,6 +19,11 @@
     "/moments": {
       "title": "Moments — TNES.",
       "description": "Places, exhibitions and moments from the photographic practice of Victor Safdie Levy.",
+      "index": true
+    },
+    "/wall": {
+      "title": "Your Wall — TNES.",
+      "description": "Hang TNES. photographs on a gallery wall at true scale and see how sizes and frames sit together before you choose.",
       "index": true
     },
     "/about": {
