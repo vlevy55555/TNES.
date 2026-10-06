@@ -15,77 +15,39 @@
     padding: 14px 28px; border: 0; background: #131313; color: #fff; font: inherit; letter-spacing: .08em; text-transform: uppercase;
   }
 </style>
-<script type="importmap">
-{
-  "imports": {
-    "three": "https://cdn.jsdelivr.net/npm/three@0.185.1/build/three.module.js",
-    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.185.1/examples/jsm/"
-  }
-}
-</script>
 <script type="module" src="https://cdn.jsdelivr.net/npm/@google/model-viewer@4.1.0/dist/model-viewer.min.js"></script>
 </head>
 <body>
-<!-- O model-viewer faz a parte de AR: WebXR no Android (detecção de plano vertical via ARCore),
-     Quick Look no iPhone (ARKit). ar-placement="wall" pede parede; ar-scale="fixed" trava o tamanho real.
-     ponytail: sem scene-viewer em ar-modes — o app do Google baixa o GLB por conta própria e não
-     alcança o blob: gerado aqui. Volta quando o GLB for um arquivo estático servido pelo site. -->
-<model-viewer id="mv" ar ar-modes="webxr quick-look" ar-placement="wall" ar-scale="fixed"
-              camera-controls shadow-intensity="0">
+<!-- O model-viewer só entrega o quadro ao AR do aparelho; ar-placement="wall" pede parede e
+     ar-scale="fixed" trava o tamanho real. O GLB é um arquivo estático em metros, gerado por
+     scripts/build-ar-glb.mjs, porque o Scene Viewer baixa o modelo por conta própria.
+     Ordem no Android: Scene Viewer (o app de AR do Google, com posicionamento vertical) e, se ele
+     não existir no aparelho, WebXR dentro do Chrome. No iPhone, Quick Look.
+     ponytail: sem ios-src — o model-viewer converte o GLB em USDZ sozinho, e hoje esse USDZ sai com
+     ancoragem horizontal (google/model-viewer#3989). Exportar um USDZ próprio é o passo do iPhone. -->
+<model-viewer id="mv" src="/prototype-3d/rio-runner-36x24.glb" ar ar-modes="scene-viewer webxr quick-look"
+              ar-placement="wall" ar-scale="fixed" camera-controls shadow-intensity="0">
   <button slot="ar-button">Ver na minha parede</button>
   <!-- Dentro do model-viewer de propósito: só os filhos dele continuam visíveis na sessão de AR. -->
-  <p id="status">Montando o quadro…</p>
+  <p id="status">Carregando o quadro…</p>
 </model-viewer>
 
 <script type="module">
-import * as THREE from 'three'
-import { GLTFExporter } from 'three/addons/exporters/GLTFExporter.js'
-
-// Tudo em metros: o AR mostra o GLB no tamanho em que ele foi modelado.
-const IN = 0.0254
-const PRINT = { w: 36 * IN, h: 24 * IN, src: '/artworks/rio-runner.jpg' }
-const MOULDING = 0.03 // face da moldura regular, igual a src/lib/wall.ts
-const DEPTH = 0.03 // quanto a moldura sai da parede
-const RECESS = 0.008 // a foto fica um pouco para dentro da face da moldura
-
 const mv = document.getElementById('mv')
 const status = document.getElementById('status')
-const W = PRINT.w + 2 * MOULDING
-const H = PRINT.h + 2 * MOULDING
 
-try {
-  // Costas em z=0 (é o lado que encosta na parede), frente virada para +Z.
-  const scene = new THREE.Scene()
-  const black = new THREE.MeshStandardMaterial({ color: 0x0a0a0a, roughness: 0.55 })
-  for (const [w, h, x, y] of [
-    [W, MOULDING, 0, (H - MOULDING) / 2],
-    [W, MOULDING, 0, -(H - MOULDING) / 2],
-    [MOULDING, PRINT.h, -(W - MOULDING) / 2, 0],
-    [MOULDING, PRINT.h, (W - MOULDING) / 2, 0],
-  ]) {
-    const bar = new THREE.Mesh(new THREE.BoxGeometry(w, h, DEPTH), black)
-    bar.position.set(x, y, DEPTH / 2)
-    scene.add(bar)
-  }
-  const map = await new THREE.TextureLoader().loadAsync(PRINT.src)
-  map.colorSpace = THREE.SRGBColorSpace
-  const print = new THREE.Mesh(new THREE.PlaneGeometry(PRINT.w, PRINT.h), new THREE.MeshStandardMaterial({ map, roughness: 0.85 }))
-  print.position.z = DEPTH - RECESS
-  scene.add(print)
-
-  // ponytail: sem ios-src — o model-viewer gera o USDZ do iPhone a partir deste GLB, já ancorado
-  // em plano vertical. Exportar o USDZ aqui (USDZExporter) só se a conversão ficar lenta ou errada.
-  const glb = await new GLTFExporter().parseAsync(scene, { binary: true, maxTextureSize: 2048 })
-  mv.src = URL.createObjectURL(new Blob([glb], { type: 'model/gltf-binary' }))
-} catch (e) {
-  status.textContent = 'Não consegui montar o quadro: ' + e.message
-}
+// Botão de calibração para comparar os motores no aparelho: ?ar=webxr ou ?ar=scene-viewer força um só.
+const forced = new URLSearchParams(location.search).get('ar')
+if (forced) mv.setAttribute('ar-modes', forced)
 
 const cm = (m) => Math.round(m * 100)
-// No celular não há console: o estado da sessão de AR aparece na tela.
-// O model-viewer só mostra o quadro depois que o aparelho se localiza, e só o leva para a parede
-// quando o ARCore acha um plano vertical; até lá ele fica onde a câmera apontava no primeiro quadro.
+// No celular não há console: o estado do AR aparece na tela. Os estados de sessão abaixo só existem
+// no WebXR (o Scene Viewer é outro app e não devolve nada à página). No WebXR o model-viewer só mostra
+// o quadro depois que o aparelho se localiza, e só o leva para a parede quando o ARCore acha um plano
+// vertical; até lá ele fica onde a câmera apontava no primeiro quadro.
 function show() {
+  if (!mv.loaded) return
+  const { x: W, y: H } = mv.getDimensions()
   const ar = mv.getAttribute('ar-status')
   const inSession = ar === 'session-started' || ar === 'object-placed'
   status.textContent =
