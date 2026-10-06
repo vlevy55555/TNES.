@@ -20,7 +20,7 @@ import { trackAnalyticsEvent } from '../analytics/clarity'
 import { RevealText, useSectionTextReveal } from './reveal'
 import { ShopFooter, ShopHeader } from './ShopChrome'
 import WallBuilder from './WallBuilder'
-import { EYE, sizeIndexOf, type Piece } from '../lib/wall'
+import { dims, EYE, sizeIndexOf, type Piece } from '../lib/wall'
 import './home.css'
 import './shop.css'
 
@@ -182,6 +182,18 @@ export default function Product({ id }: { id: string }) {
   }
 
   const [where, year] = work.subtitle.split(' · ')
+  // The true-size page is a static file outside the app, so what hangs travels in
+  // its address: the picture, the print's size in cm and the chosen finishing.
+  const hung = dims({ size: sizeIndexOf(size), material, portrait: isPortrait })
+  const trueSizeHref = `/true-size?${new URLSearchParams({
+    img: work.image,
+    w: (hung.w - 2 * hung.b).toFixed(2),
+    h: (hung.h - 2 * hung.b).toFixed(2),
+    frame: material,
+    finish,
+    title: work.title,
+    back: `/works/${work.id}`,
+  })}`
   const orientation = work.size[1] > work.size[0] ? 'portrait' : 'landscape'
   const workIndex = artworks.findIndex((artwork) => artwork.id === work.id)
   const relatedWorks = Array.from(
@@ -369,6 +381,9 @@ export default function Product({ id }: { id: string }) {
             <button type="button" className="product__cart product__cart--wall" onClick={() => setWallOpen(true)}>
               see on wall
             </button>
+            <a className="product__cart product__cart--wall" href={trueSizeHref}>
+              see at true size
+            </a>
           </div>
         </section>
       </div>

@@ -1010,6 +1010,12 @@ button.product__cart {
   font-family: inherit;
 }
 
+/* A link dressed as the same button. `.shop a` resets a link's font, so the
+   weight the button has is restated here. */
+a.product__cart {
+  font-weight: 500;
+}
+
 .product__cart {
   display: grid;
   place-items: center;

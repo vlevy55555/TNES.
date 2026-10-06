@@ -8,10 +8,9 @@
 // the WebXR session on a phone, or a simulated room (?sim=1) that lets the same logic and the
 // same drawing be exercised on a desktop, where no AR session exists.
 import * as THREE from 'three'
-import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js'
 import * as G from './geometry.js'
+import { frameMeshes } from './models.js'
 
-const MODEL = '/prototype-3d/rio-runner-36x24.glb'
 const REACH = 6 // metres: farthest the floor marker or the print may be from the phone
 const FEET = 0.5 // a floor point closer than this, measured along the floor, is the user's own feet
 const SAME_FLOOR = 0.15 // floor hits within this height of each other are the same floor
@@ -176,7 +175,20 @@ function softShadow(width, height) {
   return mesh
 }
 
-export async function createStage(renderer) {
+const geometryOf = (mesh) => {
+  const geometry = new THREE.BufferGeometry()
+  geometry.setAttribute('position', new THREE.Float32BufferAttribute(mesh.pos, 3))
+  geometry.setAttribute('normal', new THREE.Float32BufferAttribute(mesh.nor, 3))
+  geometry.setAttribute('uv', new THREE.Float32BufferAttribute(mesh.uv, 2))
+  geometry.setIndex(mesh.idx)
+  return geometry
+}
+
+/**
+ * `work` is what hangs: `{ image, w, h, moulding, depth, recess, color }`, sizes in metres and
+ * `color` the hex colour of the moulding or mount.
+ */
+export async function createStage(work) {
   const scene = new THREE.Scene()
   // An ambient light of pi returns the print's own colours; the directional one only gives
   // the moulding a little shape.
@@ -185,14 +197,18 @@ export async function createStage(renderer) {
   sun.position.set(-0.4, 1, 0.8)
   scene.add(sun)
 
-  const gltf = await new GLTFLoader().loadAsync(MODEL)
-  const size = new THREE.Box3().setFromObject(gltf.scene).getSize(new THREE.Vector3())
+  const meshes = frameMeshes(work)
+  const size = new THREE.Vector3(...meshes.size)
+  const picture = await new THREE.TextureLoader().setCrossOrigin('anonymous').loadAsync(work.image)
+  picture.colorSpace = THREE.SRGBColorSpace
+  picture.flipY = false // the meshes carry glTF texture coordinates, v=0 at the top
+  const materials = [
+    new THREE.MeshStandardMaterial({ color: work.color, roughness: 0.55, transparent: true }),
+    new THREE.MeshStandardMaterial({ map: picture, roughness: 0.85, transparent: true }),
+  ]
   const print = new THREE.Group()
-  print.add(softShadow(size.x, size.y), gltf.scene)
+  print.add(softShadow(size.x, size.y), new THREE.Mesh(geometryOf(meshes.body), materials[0]), new THREE.Mesh(geometryOf(meshes.print), materials[1]))
   print.matrixAutoUpdate = false
-  const materials = []
-  gltf.scene.traverse((node) => { if (node.material) materials.push(node.material) })
-  for (const material of materials) material.transparent = true
 
   const ink = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.95, depthTest: false })
   const marker = new THREE.Mesh(new THREE.RingGeometry(0.035, 0.05, 32).rotateX(-Math.PI / 2), ink)
@@ -229,7 +245,7 @@ export async function createStage(renderer) {
 // ---- sources --------------------------------------------------------------------------------
 
 /** The phone's AR session. Resolves once it has ended. */
-export async function runXR({ method, overlay, onState, onStart }) {
+export async function runXR({ method, work, overlay, onState, onStart }) {
   const init = { requiredFeatures: ['hit-test', 'dom-overlay'], optionalFeatures: ['anchors'], domOverlay: { root: overlay } }
   if (method.key === 'auto') {
     init.optionalFeatures.push('depth-sensing')
@@ -238,7 +254,7 @@ export async function runXR({ method, overlay, onState, onStart }) {
   }
   const session = await navigator.xr.requestSession('immersive-ar', init)
   try {
-    await runSession(session, { method, onState, onStart })
+    await runSession(session, { method, work, onState, onStart })
   } catch (error) {
     // A failure while setting up would otherwise leave the camera open under an empty overlay.
     await session.end().catch(() => {})
@@ -246,14 +262,14 @@ export async function runXR({ method, overlay, onState, onStart }) {
   }
 }
 
-async function runSession(session, { method, onState, onStart }) {
+async function runSession(session, { method, work, onState, onStart }) {
   const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true })
   renderer.setPixelRatio(window.devicePixelRatio)
   renderer.xr.enabled = true
   renderer.xr.setReferenceSpaceType('local')
   await renderer.xr.setSession(session)
   const camera = new THREE.PerspectiveCamera()
-  const stage = await createStage(renderer)
+  const stage = await createStage(work)
   const placement = createPlacement(method)
   const viewerSpace = await session.requestReferenceSpace('viewer')
   const hitSource = await session.requestHitTestSource({ space: viewerSpace })
@@ -309,12 +325,12 @@ async function runSession(session, { method, onState, onStart }) {
  * a plain wall 2.6 m ahead, turned 12 degrees, that gives no plane hits at all. `window.sim`
  * turns the camera and taps.
  */
-export async function runSim({ method, canvas, onState, onStart }) {
+export async function runSim({ method, work, canvas, onState, onStart }) {
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true })
   renderer.setPixelRatio(window.devicePixelRatio)
   renderer.setClearColor(0x9a9a96)
   const camera = new THREE.PerspectiveCamera(60, 1, 0.05, 50)
-  const stage = await createStage(renderer)
+  const stage = await createStage(work)
   const placement = createPlacement(method)
 
   const FLOOR_Y = -1.35

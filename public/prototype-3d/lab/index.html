@@ -26,7 +26,8 @@
   header { display: flex; align-items: baseline; justify-content: space-between; gap: 24px; padding: var(--pad-y) var(--pad-x) 0; }
   .logo { font: 500 clamp(26px, 2.4vw, 38px)/1 Helvetica, 'Helvetica Neue', Arial, sans-serif; letter-spacing: 0.14em; text-decoration: none; }
   nav { display: flex; gap: 18px; }
-  nav a { color: var(--muted); text-decoration: none; }
+  nav a, #back { color: var(--muted); text-decoration: none; }
+  #back:hover { color: var(--ink); }
   nav a[aria-current], nav a:hover { color: var(--ink); }
   nav a[aria-current] { text-decoration: underline; text-underline-offset: 5px; }
 
@@ -65,7 +66,8 @@
 <body>
 <header>
   <a class="logo" href="/">TNES.</a>
-  <nav aria-label="Placement methods">
+  <a id="back" hidden>back to the work</a>
+  <nav id="methods" aria-label="Placement methods">
     <a href="/prototype-3d/1">1</a>
     <a href="/prototype-3d/2">2</a>
     <a href="/prototype-3d/3">3</a>
@@ -76,13 +78,13 @@
   <p class="eyebrow" id="number"></p>
   <h1 id="name"></h1>
   <p id="how"></p>
-  <button class="start" id="start" type="button" hidden>start</button>
+  <button class="start" id="start" type="button" hidden>see it on your wall</button>
   <div class="phone" id="phone" hidden>
     <span id="qr"></span>
-    <p>This runs in Chrome on an Android phone. Scan the code to open it there.</p>
+    <p>AR opens on a phone. Scan the code to carry on there, at true size.</p>
   </div>
   <p class="muted" id="status">Checking this browser…</p>
-  <p class="muted">Rio Runner · 36 × 24 in print, black frame · 97 × 67 cm on the wall</p>
+  <p class="muted" id="spec"></p>
 </main>
 
 <canvas id="sim" hidden></canvas>
@@ -101,16 +103,64 @@
 // three.js loads with the page, not on the tap: an AR session may only be requested while the
 // tap still counts as a user gesture, and a download in between would let it lapse.
 import { METHODS, runSim, runXR } from '/prototype-3d/lab/lab.js'
+import { buildUsdz, frameMeshes } from '/prototype-3d/lab/models.js'
 
 const query = new URLSearchParams(location.search)
-// /prototype-3d/1, /2 and /3 all serve this page; the number picks the method.
-const number = location.pathname.match(/\/([123])\/?$/)?.[1] ?? query.get('m') ?? '1'
-const method = METHODS[number] ?? METHODS[1]
 const $ = (id) => document.getElementById(id)
-$('number').textContent = `Method ${number} of 3`
-$('name').textContent = method.name
+
+// ---- what hangs ----
+// A work's page links here as /true-size?img=…&w=…&h=…&frame=…&finish=…&title=…&back=…, sizes
+// being the print's in centimetres. With no work given, this is the lab and hangs Rio Runner.
+// How each finishing sits on the wall, in metres: the moulding's face, how far it stands off
+// the wall, and how far the print sits behind a moulding's face.
+const FRAMES = {
+  regular: { moulding: 0.03, depth: 0.03, recess: 0.008 },
+  unframed: { moulding: 0, depth: 0.004 },
+  aluminium: { moulding: 0, depth: 0.02 },
+  glass: { moulding: 0, depth: 0.025 },
+}
+const COLORS = { black: 0x0a0a0a, white: 0xf0efeb, unframed: 0xe8e6e1, aluminium: 0xb9bcc0, glass: 0xd4dcdf }
+const forWork = query.has('img')
+// Everything in the address is somebody's input: sizes are clamped, the picture may only come
+// from this site or the studio's image CDN, and the way back may only be a work's own page.
+const cm = (name, fallback) => Math.min(300, Math.max(10, Number(query.get(name)) || fallback)) / 100
+const allowedImage = (src) => {
+  if (!src) return null // an empty address would resolve to this very page
+  try {
+    const url = new URL(src, location.origin)
+    return url.origin === location.origin || (url.protocol === 'https:' && url.hostname === 'cdn.sanity.io') ? url.href : null
+  } catch { return null }
+}
+const frame = Object.hasOwn(FRAMES, query.get('frame')) ? query.get('frame') : 'regular'
+const finish = query.get('finish') === 'white' ? 'white' : 'black'
+const work = {
+  image: allowedImage(query.get('img') ?? '') ?? '/artworks/rio-runner.jpg',
+  w: cm('w', 91.44),
+  h: cm('h', 60.96),
+  ...FRAMES[frame],
+  color: COLORS[frame === 'regular' ? finish : frame],
+}
+const title = forWork ? (query.get('title') ?? '').slice(0, 80) : 'Rio Runner'
+const back = /^\/works\/[\w-]+$/.test(query.get('back') ?? '') ? query.get('back') : null
+const outer = [work.w + 2 * work.moulding, work.h + 2 * work.moulding].map((m) => Math.round(m * 100))
+$('spec').textContent = `${title ? `${title} · ` : ''}${outer[0]} × ${outer[1]} cm on the wall`
+
+// ---- which way of finding the wall ----
+// /prototype-3d/1, /2 and /3 serve this page as the lab, one method each. A work's page gets
+// method 1, the one the apps that manage plain walls ship; ?method= overrides it for a trial.
+const number = location.pathname.match(/\/([123])\/?$/)?.[1] ?? query.get('method') ?? '1'
+const method = METHODS[number] ?? METHODS[1]
+if (forWork) {
+  $('methods').hidden = true
+  if (back) Object.assign($('back'), { href: back, hidden: false })
+  $('number').textContent = 'See it at true size'
+  $('name').textContent = title || 'On your wall'
+} else {
+  $('number').textContent = `Method ${number} of 3`
+  $('name').textContent = method.name
+  document.querySelector(`#methods a[href$="/${number}"]`)?.setAttribute('aria-current', 'page')
+}
 $('how').textContent = method.how
-document.querySelector(`nav a[href$="/${number}"]`)?.setAttribute('aria-current', 'page')
 
 const overlay = $('overlay')
 let controls = null
@@ -130,45 +180,72 @@ function onState(s) {
 }
 const onStart = (c) => { controls = c }
 
+// ---- iPhone: the same work as a .usdz for AR Quick Look ----
+// Safari has no WebXR on phones; Quick Look finds the wall itself. The file is made here, from
+// the picture drawn to a canvas, and is ready before the tap that opens it.
+const linear = (hex) => [16, 8, 0].map((shift) => { const c = ((hex >> shift) & 255) / 255; return c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4 })
+async function quickLookFile() {
+  const image = new Image()
+  image.crossOrigin = 'anonymous'
+  image.src = work.image
+  await image.decode()
+  const scale = Math.min(1, 2048 / Math.max(image.naturalWidth, image.naturalHeight))
+  const canvas = document.createElement('canvas')
+  canvas.width = Math.round(image.naturalWidth * scale)
+  canvas.height = Math.round(image.naturalHeight * scale)
+  canvas.getContext('2d').drawImage(image, 0, 0, canvas.width, canvas.height)
+  const jpeg = await new Promise((resolve) => canvas.toBlob(resolve, 'image/jpeg', 0.9))
+  return buildUsdz(frameMeshes(work), new Uint8Array(await jpeg.arrayBuffer()), { bodyColor: linear(work.color) })
+}
+
 if (query.has('sim')) {
   // Desktop rehearsal of the same logic in a made-up room; see runSim.
   $('intro').hidden = true
   $('sim').hidden = false
   overlay.hidden = false
-  runSim({ method, canvas: $('sim'), onState, onStart })
-} else {
-  const supported = await navigator.xr?.isSessionSupported?.('immersive-ar').catch(() => false)
-  if (supported) {
-    $('status').textContent = 'The print appears at its real size. Allow the camera when asked.'
-    $('start').hidden = false
-    $('start').addEventListener('click', async () => {
-      overlay.hidden = false
-      try {
-        await runXR({ method, overlay, onState, onStart })
-        $('status').textContent = 'Session ended. Start again whenever you like.'
-      } catch (error) {
-        $('status').textContent = `AR could not start: ${error.message}`
-      }
-      overlay.hidden = true
-      controls = null
-    })
-  } else if (/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
-    $('status').textContent = /iPhone|iPad|iPod/i.test(navigator.userAgent)
-      ? 'These three methods need Chrome on Android. On an iPhone, use the Quick Look version at /prototype-3d.'
-      : 'This browser cannot open AR. Use Chrome on a phone with Google Play Services for AR.'
-  } else {
-    $('status').textContent = ''
-    const script = document.createElement('script')
-    script.src = 'https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js'
-    script.onload = () => {
-      const qr = window.qrcode(0, 'M')
-      qr.addData(location.href)
-      qr.make()
-      $('qr').innerHTML = qr.createSvgTag({ cellSize: 4, margin: 0, scalable: true })
-      $('phone').hidden = false
+  runSim({ method, work, canvas: $('sim'), onState, onStart })
+  if (query.has('usdz')) window.usdz = quickLookFile() // lets a test read the file Quick Look would get
+} else if (await navigator.xr?.isSessionSupported?.('immersive-ar').catch(() => false)) {
+  $('status').textContent = 'The work appears at its real size. Allow the camera when asked.'
+  $('start').hidden = false
+  $('start').addEventListener('click', async () => {
+    overlay.hidden = false
+    try {
+      await runXR({ method, work, overlay, onState, onStart })
+      $('status').textContent = 'Session ended. Start again whenever you like.'
+    } catch (error) {
+      $('status').textContent = `AR could not start: ${error.message}`
     }
-    document.head.appendChild(script)
+    overlay.hidden = true
+    controls = null
+  })
+} else if (document.createElement('a').relList.supports('ar')) {
+  $('how').textContent = 'Your iPhone finds the wall itself. Point the camera at it and move slowly until the work appears, then drag it into place.'
+  try {
+    const file = URL.createObjectURL(new Blob([await quickLookFile()], { type: 'model/vnd.usdz+zip' }))
+    // Quick Look opens from a link marked rel="ar" that holds an image; the fragment locks the size.
+    const link = Object.assign(document.createElement('a'), { rel: 'ar', href: `${file}#allowsContentScaling=0`, download: 'true-size.usdz' })
+    link.appendChild(document.createElement('img'))
+    $('status').textContent = 'The work appears at its real size.'
+    $('start').hidden = false
+    $('start').addEventListener('click', () => link.click())
+  } catch {
+    $('status').textContent = 'The work could not be prepared for AR.'
   }
+} else if (/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+  $('status').textContent = 'This browser cannot open AR. Use Chrome on Android, with Google Play Services for AR, or Safari on iPhone.'
+} else {
+  $('status').textContent = ''
+  const script = document.createElement('script')
+  script.src = 'https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js'
+  script.onload = () => {
+    const qr = window.qrcode(0, 'L')
+    qr.addData(location.href)
+    qr.make()
+    $('qr').innerHTML = qr.createSvgTag({ cellSize: 4, margin: 0, scalable: true })
+    $('phone').hidden = false
+  }
+  document.head.appendChild(script)
 }
 </script>
 </body>
