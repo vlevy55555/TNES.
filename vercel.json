@@ -20,6 +20,7 @@
     { "source": "/special-prices", "destination": "/special-prices/index.html" },
     { "source": "/gallery", "destination": "/gallery/index.html" },
     { "source": "/home-black", "destination": "/home-black/index.html" },
+    { "source": "/prototype-3d", "destination": "/prototype-3d/index.html" },
     {
       "source": "/(.*)",
       "destination": "/index.html"

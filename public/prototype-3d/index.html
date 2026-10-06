@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>TNES — quadro na parede (POC de AR)</title>
+<style>
+  html, body { height: 100%; margin: 0; background: #ecebe7; color: #131313; font: 14px/1.4 Helvetica, Arial, sans-serif; }
+  model-viewer { width: 100%; height: 100%; }
+  #status { position: fixed; left: 0; right: 0; top: 0; margin: 0; padding: 16px; text-align: center; }
+  button[slot="ar-button"] {
+    position: absolute; left: 50%; bottom: 32px; transform: translateX(-50%);
+    padding: 14px 28px; border: 0; background: #131313; color: #fff; font: inherit; letter-spacing: .08em; text-transform: uppercase;
+  }
+</style>
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.185.1/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.185.1/examples/jsm/"
+  }
+}
+</script>
+<script type="module" src="https://cdn.jsdelivr.net/npm/@google/model-viewer@4.1.0/dist/model-viewer.min.js"></script>
+</head>
+<body>
+<!-- O model-viewer faz a parte de AR: WebXR no Android (detecção de plano vertical via ARCore),
+     Quick Look no iPhone (ARKit). ar-placement="wall" pede parede; ar-scale="fixed" trava o tamanho real.
+     ponytail: sem scene-viewer em ar-modes — o app do Google baixa o GLB por conta própria e não
+     alcança o blob: gerado aqui. Volta quando o GLB for um arquivo estático servido pelo site. -->
+<model-viewer id="mv" ar ar-modes="webxr quick-look" ar-placement="wall" ar-scale="fixed"
+              camera-controls shadow-intensity="0">
+  <button slot="ar-button">Ver na minha parede</button>
+</model-viewer>
+<p id="status">Montando o quadro…</p>
+
+<script type="module">
+import * as THREE from 'three'
+import { GLTFExporter } from 'three/addons/exporters/GLTFExporter.js'
+
+// Tudo em metros: o AR mostra o GLB no tamanho em que ele foi modelado.
+const IN = 0.0254
+const PRINT = { w: 36 * IN, h: 24 * IN, src: '/artworks/rio-runner.jpg' }
+const MOULDING = 0.03 // face da moldura regular, igual a src/lib/wall.ts
+const DEPTH = 0.03 // quanto a moldura sai da parede
+const RECESS = 0.008 // a foto fica um pouco para dentro da face da moldura
+
+const mv = document.getElementById('mv')
+const status = document.getElementById('status')
+const W = PRINT.w + 2 * MOULDING
+const H = PRINT.h + 2 * MOULDING
+
+try {
+  // Costas em z=0 (é o lado que encosta na parede), frente virada para +Z.
+  const scene = new THREE.Scene()
+  const black = new THREE.MeshStandardMaterial({ color: 0x0a0a0a, roughness: 0.55 })
+  for (const [w, h, x, y] of [
+    [W, MOULDING, 0, (H - MOULDING) / 2],
+    [W, MOULDING, 0, -(H - MOULDING) / 2],
+    [MOULDING, PRINT.h, -(W - MOULDING) / 2, 0],
+    [MOULDING, PRINT.h, (W - MOULDING) / 2, 0],
+  ]) {
+    const bar = new THREE.Mesh(new THREE.BoxGeometry(w, h, DEPTH), black)
+    bar.position.set(x, y, DEPTH / 2)
+    scene.add(bar)
+  }
+  const map = await new THREE.TextureLoader().loadAsync(PRINT.src)
+  map.colorSpace = THREE.SRGBColorSpace
+  const print = new THREE.Mesh(new THREE.PlaneGeometry(PRINT.w, PRINT.h), new THREE.MeshStandardMaterial({ map, roughness: 0.85 }))
+  print.position.z = DEPTH - RECESS
+  scene.add(print)
+
+  // ponytail: sem ios-src — o model-viewer gera o USDZ do iPhone a partir deste GLB, já ancorado
+  // em plano vertical. Exportar o USDZ aqui (USDZExporter) só se a conversão ficar lenta ou errada.
+  const glb = await new GLTFExporter().parseAsync(scene, { binary: true, maxTextureSize: 2048 })
+  mv.src = URL.createObjectURL(new Blob([glb], { type: 'model/gltf-binary' }))
+} catch (e) {
+  status.textContent = 'Não consegui montar o quadro: ' + e.message
+}
+
+const cm = (m) => Math.round(m * 100)
+mv.addEventListener('load', () => {
+  status.textContent = mv.canActivateAR
+    ? `Tamanho real: ${cm(W)} × ${cm(H)} cm. Toque no botão e aponte a câmera para a parede.`
+    : `Prévia 3D (${cm(W)} × ${cm(H)} cm). O AR abre no celular: Chrome no Android ou Safari no iPhone.`
+})
+mv.addEventListener('error', () => { status.textContent = 'O model-viewer não conseguiu carregar o quadro.' })
+// No celular não há console: o estado da sessão de AR aparece na tela.
+mv.addEventListener('ar-status', (e) => {
+  if (e.detail.status === 'failed') status.textContent = 'O AR não abriu neste aparelho (sem ARCore/ARKit ou câmera bloqueada).'
+})
+</script>
+</body>
+</html>
