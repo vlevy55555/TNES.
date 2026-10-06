@@ -1,7 +1,8 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
-import { artworks, BRAND_STATEMENT, HERO_ID } from '../data/artworks'
+import { artworks } from '../data/artworks'
+import { cms, linesOf, sized } from '../data/cms'
 import { RevealText, useSectionTextReveal } from './reveal'
 import { useCartCount } from '../store/useCartStore'
 import { SiteNav } from './SiteNav'
@@ -12,22 +13,23 @@ import './shop.css'
 
 gsap.registerPlugin(ScrollTrigger)
 
-// The works the hero cycles, in order. The first one is the signature work and
-// carries the [O] instead of its title — it is the brand's own entry in the
-// list, and behaves exactly like the others.
-const HOME_IDS = [HERO_ID, 'runner', 'wied-il-ghasri', 'praia-da-baleia']
+// The works the hero cycles, in the order the Studio's Home lists them. The
+// first one is the signature work and carries the [O] instead of its title —
+// it is the brand's own entry in the list, and behaves exactly like the others.
 const HERO_AUTOPLAY_MS = 5_000
 
-const projects = HOME_IDS.map((id) => {
-  const a = artworks.find((w) => w.id === id)!
-  return {
+const projects = cms.home.heroIds.flatMap((id) => {
+  const a = artworks.find((w) => w.id === id)
+  // a work unpublished in the Studio drops out of the hero instead of breaking it
+  if (!a) return []
+  return [{
     id: a.id,
     // year comes from the artwork's own subtitle ("Malta · 2025") — one source
     // of truth, no second list to keep in sync
     title: a.title,
     year: a.subtitle.match(/\d{4}/)?.[0] ?? '',
     poster: a.image,
-  }
+  }]
 })
 
 // ponytail: hrefs are placeholders until each destination exists — only cart and
@@ -84,15 +86,10 @@ function useInView<T extends HTMLElement>() {
   return [ref, seen] as const
 }
 
-const STATEMENT_TITLE_LINES = ['nothing', 'happens', 'twice']
-const STATEMENT_COPY_LINES = [
-  'the same moment never comes back.',
-  'TNES. is built around noticing the people,',
-  'places, and details that will never exist in',
-  'quite the same way again — and giving them',
-  'a life after they pass.',
-]
-const STATEMENT_ARTWORK = artworks.find((work) => work.id === 'the-pool')!
+const STATEMENT_TITLE_LINES = linesOf(cms.home.statementTitle)
+const STATEMENT_COPY_LINES = linesOf(cms.home.statementCopy)
+const STATEMENT_ARTWORK =
+  artworks.find((work) => work.id === cms.home.statementArtworkId) ?? artworks.find((work) => work.id === projects[0]?.id) ?? artworks[0]
 
 function Statement() {
   const ref = useRef<HTMLElement>(null)
@@ -164,7 +161,7 @@ function Statement() {
 
   return (
     <section className="statement" ref={ref}>
-      <h1 className="statement__line" aria-label={BRAND_STATEMENT}>
+      <h1 className="statement__line" aria-label={STATEMENT_TITLE_LINES.join(' ')}>
         {STATEMENT_TITLE_LINES.map((line) => (
           <span className="statement__line-mask" key={line}>
             <span className="statement__title-reveal">{line}</span>
@@ -255,7 +252,7 @@ function SelectedWorks() {
     <section className={`works reveal ${seen ? 'reveal--in' : ''}`} ref={ref}>
       <header className="works__head">
         <h2>
-          <RevealText block>selected works</RevealText>
+          <RevealText block>{cms.home.selectedWorksTitle}</RevealText>
         </h2>
 
       </header>
@@ -296,7 +293,7 @@ function SelectedWorks() {
                   pixel width — thousands of px wide. */}
               <a className="works__link" href={workHref(work)} tabIndex={isClone ? -1 : undefined}>
                 <div className="works__frame">
-                  <img src={work.image} alt={isClone ? '' : work.title} loading="lazy" />
+                  <img src={sized(work.image, 1200)} alt={isClone ? '' : work.title} loading="lazy" />
                 </div>
 
                 <p className="works__title"><RevealText>{work.title}</RevealText></p>

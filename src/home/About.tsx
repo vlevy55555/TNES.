@@ -2,6 +2,7 @@ import { useLayoutEffect, useRef } from 'react'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { ABOUT, VSL_URL } from '../data/artworks'
+import { cms, linesOf, paragraphsOf, sized } from '../data/cms'
 import { drawnFraction } from '../data/signaturePath'
 import { SignatureInk } from '../components/ui/SignatureInk'
 import { RevealText, useSectionTextReveal } from './reveal'
@@ -15,19 +16,13 @@ gsap.registerPlugin(ScrollTrigger)
 // The name is set the way the text reference sets a title: one word per line,
 // caps, stacked tight. Written out rather than split at render so the break
 // never depends on the column width.
-const NAME_LINES = ['victor', 'safdie', 'levy']
+const NAME_LINES = linesOf(cms.about.name)
 
 // Victor's second passage. The title is hand-broken so the rag never depends on
 // the column width — each line is its own §5.1 mask, and a line that re-wrapped
 // inside one would slide as a slab and get clipped.
-const SPLIT_TITLE = ['the photograph', 'is what is left', 'of the looking.']
-const SPLIT_COPY = [
-  `no one goes back for a moment. stand in the same place a year later and it
-   hands you something else. what is here is one person's record of time and
-   space. not a group show, not a marketplace.`,
-  `owning a piece is keeping the minute someone stopped, and deciding it was
-   worth keeping. good or bad, nothing happens twice.`,
-]
+const SPLIT_TITLE = linesOf(cms.about.splitTitle)
+const SPLIT_COPY = paragraphsOf(cms.about.splitText)
 
 /**
  * Wraps a paragraph into lines of at most `max` characters. Every line becomes
@@ -147,8 +142,8 @@ function Opening() {
 
         <figure className="about__hero-media">
           <img
-            src="/about/stamping.webp"
-            alt="Victor stamping and signing a print at the studio desk"
+            src={sized(cms.about.heroImage.src, 2400)}
+            alt={cms.about.heroImage.alt}
             fetchPriority="high"
           />
         </figure>
@@ -212,7 +207,7 @@ export default function About() {
       {/* The landing's split, mirrored: photo on one side, words on the other. */}
       <section className="about__split" ref={split}>
         <figure className="about__split-figure">
-          <img src="/about/subway.webp" alt="Victor on a subway platform, print under his arm" loading="lazy" />
+          <img src={sized(cms.about.splitImage.src, 2000)} alt={cms.about.splitImage.alt} loading="lazy" />
         </figure>
 
         <div className="about__split-body">
@@ -238,7 +233,7 @@ export default function About() {
           <RevealText>{ABOUT.cta} <span className="shop__arrow" aria-hidden="true">→</span></RevealText>
         </a>
         <p className="shop__meta">
-          <RevealText>the mind behind the studio</RevealText>
+          <RevealText>{cms.about.closingNote}</RevealText>
         </p>
       </section>
 

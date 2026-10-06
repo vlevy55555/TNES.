@@ -1,6 +1,7 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { subscribeToNewsletter } from '../lib/newsletter'
 import { trackAnalyticsEvent } from '../analytics/clarity'
+import { cms } from '../data/cms'
 
 const ARCHIVE_OPENING = new Date('2026-09-21T00:00:00-03:00')
 
@@ -27,9 +28,9 @@ async function subscribe(email: string) {
 export default function EarlyAccess({
   showCountdown = false,
   className = '',
-  eyebrow = 'early access',
-  title = 'be the first to know.',
-  copy = 'early access to new work, limited objects, and studio collaborations.',
+  eyebrow = cms.settings.earlyAccess.eyebrow,
+  title = cms.settings.earlyAccess.title,
+  copy = cms.settings.earlyAccess.copy,
 }: {
   showCountdown?: boolean
   className?: string

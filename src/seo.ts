@@ -1,8 +1,29 @@
 import { artworks } from './data/artworks'
+import { cms, type Seo } from './data/cms'
 import seo from './data/seo-pages.json'
 
 type PageMeta = { title: string; description: string; index: boolean }
-const pages = seo.pages as Record<string, PageMeta>
+
+// The same merge scripts/generate-seo.mjs makes for the prerendered HTML: the
+// Studio's SEO fields where filled, seo-pages.json where not.
+const withSeo = (page: PageMeta, fields?: Seo): PageMeta => ({
+  ...page,
+  ...(fields?.title && { title: fields.title }),
+  ...(fields?.description && { description: fields.description }),
+})
+const base = seo.pages as Record<string, PageMeta>
+const pages: Record<string, PageMeta> = {
+  ...base,
+  '/': withSeo(base['/'], cms.home.seo),
+  '/works': withSeo(base['/works'], cms.works.seo),
+  '/about': withSeo(base['/about'], cms.about.seo),
+  '/moments': withSeo(base['/moments'], cms.momentsPage.seo),
+  ...Object.fromEntries(cms.catalogs.map((catalog) => [`/works/catalogs/${catalog.slug}`, {
+    title: catalog.seo?.title || `${catalog.title.replace(/(^|\s)\S/g, (c) => c.toUpperCase())} Catalog — TNES.`,
+    description: catalog.seo?.description || catalog.description,
+    index: !catalog.password,
+  }])),
+}
 
 function setMeta(name: string, content: string, attribute: 'name' | 'property' = 'name') {
   let meta = document.head.querySelector<HTMLMetaElement>(`meta[${attribute}="${name}"]`)

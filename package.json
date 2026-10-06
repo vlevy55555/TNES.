@@ -8,11 +8,15 @@
   },
   "scripts": {
     "dev": "vite",
-    "build": "tsc --noEmit && vite build && node scripts/generate-seo.mjs",
+    "build": "node scripts/cms/fetch-content.mjs && tsc --noEmit && vite build && node scripts/generate-seo.mjs",
     "verify": "node scripts/verify-site.mjs",
     "preview": "vite preview",
     "test": "tsc --ignoreConfig src/lib/shopify.ts src/lib/wall.ts --outDir .test-build --rootDir src --module esnext --target es2022 && node --test test/*.test.mjs",
-    "deploy": "npm run build && git push"
+    "deploy": "npm run build && git push",
+    "cms:pull": "node scripts/cms/fetch-content.mjs",
+    "cms:import": "node scripts/cms/import-to-sanity.mjs",
+    "studio": "npm --prefix studio run dev",
+    "studio:deploy": "npm --prefix studio run deploy"
   },
   "dependencies": {
     "@react-three/drei": "^10.7.7",
@@ -25,11 +29,13 @@
     "zustand": "^5.0.14"
   },
   "devDependencies": {
+    "@sanity/client": "^8.9.0",
     "@types/node": "^24.19.1",
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
     "@types/three": "^0.185.1",
     "@vitejs/plugin-react": "^6.0.3",
+    "lexorank": "^1.0.5",
     "sharp": "^0.35.3",
     "typescript": "^7.0.2",
     "vite": "^8.1.3"

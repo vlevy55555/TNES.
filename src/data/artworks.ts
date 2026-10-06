@@ -1,3 +1,5 @@
+import { cms } from './cms'
+
 export const WALL_SPACING = 10
 // The Manifesto is a physical side room off the Signature wall, deliberately
 // absent from `walls` so it never becomes a top-level navigation destination.
@@ -109,18 +111,22 @@ export const ABOUT_DOOR_W = 1.9
 export const ABOUT_DOOR_H = 3.5
 export const OPENING_DATE = new Date('2026-09-09T18:00:00-03:00')
 
-// the opening (Signature) wall's one-line brand statement, cut into the concrete
-export const BRAND_STATEMENT = 'nothing happens twice'
+// Everything below that a person would want to change — the works, the
+// contact details, the About text — comes from the Studio (src/data/cms.ts).
+// The names stay the ones the 3D gallery and the shop have always imported.
 
-// the single work hung on the opening wall
-export const HERO_ID = 'the-pool'
+// the opening (Signature) wall's one-line brand statement, cut into the concrete
+export const BRAND_STATEMENT = cms.settings.brandStatement
+
+// the signature work: first in the home hero, hung alone on the opening wall,
+// and the picture a shared link to a page without its own work shows
+export const HERO_ID = cms.home.heroIds[0]
 
 // the About wall: Victor's portrait, a wall-text, and a link out to VSL — the
 // immersive site that is the artist's mind behind this exhibition.
-export const VSL_URL = 'https://vsl.photography/'
+export const VSL_URL = cms.about.ctaUrl
 
-// inquiries are composed client-side and handed to the visitor's mail app
-export const INQUIRY_EMAIL = 'vlevy@tnes.studio'
+export const INQUIRY_EMAIL = cms.settings.inquiryEmail
 export const INQUIRY_TYPES = [
   'acquisition',
   'commission',
@@ -131,524 +137,65 @@ export const INQUIRY_TYPES = [
 export const ABOUT = {
   // Victor's B&W headshot — VSL's contact portrait, pre-cropped to 2:3 vertical
   // and desaturated to match how vsl.studio renders it. Larger than an artwork.
+  // Only the 3D About wall hangs it, so it stays a file rather than CMS content.
   portrait: '/victor-headshot-bw.webp',
   // hung nearly floor-to-eye, the way the reference frames him
   portraitSize: [1.8, 2.7] as [number, number],
   name: 'Victor Safdie Levy',
-  role: 'ARTIST AND FOUNDER OF TNES.',
-  // one first-person block, in his voice — the reference layout has no room for
-  // a pull-quote AND a separate bio, and this is the wording it carries
-  statement: `I started taking photographs as a way of keeping track of time — where I was, who was there, and what was happening before it became something else. I was always more interested in people and places as I found them: unposed, unplanned, already in motion. Over time, that personal archive became TNES., a studio built around one idea: nothing happens twice.`,
+  role: cms.about.role,
+  // one first-person block, in his voice
+  statement: cms.about.statement,
   // the one label for the doorway out to VSL — the 3D wall and /about both read
   // it from here, so the two surfaces cannot say different things
-  cta: 'enter the mind in VSL',
+  cta: cms.about.ctaLabel,
   contact: {
-    email: 'vlevy@tnes.studio',
-    phone: '+1 917 445 4067',
-    instagram: '@vlevy_',
-    instagramUrl: 'https://instagram.com/vlevy_',
+    email: cms.settings.inquiryEmail,
+    phone: cms.settings.phone,
+    instagram: cms.settings.instagramHandle,
+    instagramUrl: cms.settings.instagramUrl,
   },
 }
 
-// ---- V1 products: the twelve works currently shown in the TNES. archive ----
-// Data sourced from tnes.studio/artifacts (title, location, year) and the
-// tnes-3 store (medium + made-to-order print sizes). The archive publishes no
-// public price or edition count — both are "available by inquiry" — so those
-// fields carry the real state, not the previously-assumed £/edition numbers.
-// Descriptions written from the actual photographs. Frame `size` = each
-// photo's true aspect (3:2 landscape / 2:3 portrait) so nothing distorts.
-const EDITION = 'Archival pigment print · edition by inquiry'
+// Not edited per work: the archive publishes no public price, and the print
+// sizes are the store's standard three.
 const DIMENSIONS = '60 × 84 · 42 × 60 · 30 × 42 cm'
 const PRICE = 'Price on request'
+
+// Frame `size` follows each photograph's true aspect so nothing distorts. The
+// three shapes the archive has shot keep the exact proportions the 3D room was
+// tuned with; anything else scales from the same long edge.
 const LANDSCAPE: [number, number] = [1.42, 0.95]
 const PORTRAIT: [number, number] = [0.95, 1.42]
 const FOUR_BY_FIVE: [number, number] = [1, 1.25]
+const frameSizeFor = (width: number, height: number): [number, number] => {
+  const aspect = width / height
+  const near = (target: number) => Math.abs(aspect - target) < 0.03
+  if (near(3 / 2)) return LANDSCAPE
+  if (near(2 / 3)) return PORTRAIT
+  if (near(4 / 5)) return FOUR_BY_FIVE
+  return aspect >= 1 ? [1.42, 1.42 / aspect] : [1.42 * aspect, 1.42]
+}
 
-export const artworks: Artwork[] = [
-  {
-    id: 'the-pool',
-    title: 'Everyone In',
-    subtitle: 'St. Peter\'s Pool, Malta · 2025',
-    description:
-      'Swimmers jump, dive and gather around the limestone basin at St. Peter\'s Pool.',
-    price: PRICE,
-    image: '/artworks/v1/stpeterspool_hero_2025_v1.webp',
-    wallIndex: ARCHIVE_WALL,
-    position: [-2.5, 0.3, 0],
-    // the source file is 2560x1707 — a 3:2 landscape, not a portrait
-    size: LANDSCAPE,
-    edition: EDITION,
-    dimensions: DIMENSIONS,
-    frameStyle: 'white',
-    shopifyHandle: 'st-peters-pool-v1',
-  },
-  {
-    id: 'runner',
-    title: 'Rio Runner',
-    subtitle: 'Ipanema, Rio de Janeiro, Brazil · 2025',
-    description:
-      'A runner crosses Ipanema with Dois Irmãos and the city fading into sea mist.',
-    price: PRICE,
-    image: '/artworks/v1/ipanema_riorunner_2025_v1.webp',
-    wallIndex: ARCHIVE_WALL,
-    position: [0.1, -0.5, 0],
-    size: LANDSCAPE,
-    // Shopify sells this one as an open edition, so it contradicts the archive's
-    // "edition by inquiry" — the store is the truth for anything purchasable.
-    edition: 'Archival pigment print · open edition, framed ready to hang',
-    dimensions: DIMENSIONS,
-    frameStyle: 'white',
-    shopifyHandle: 'rio-runner',
-  },
-  {
-    id: 'wied-il-ghasri',
-    title: 'Under the Limestone',
-    subtitle: 'Gozo, Malta · 2025',
-    description:
-      'A woman rests beneath a huge limestone overhang on the coast of Gozo.',
-    price: PRICE,
-    image: '/artworks/v1/gozo_cavegirl_2025_v1.webp',
-    wallIndex: ARCHIVE_WALL,
-    position: [2.45, 0.45, 0],
-    size: LANDSCAPE,
-    edition: EDITION,
-    dimensions: DIMENSIONS,
-    frameStyle: 'white',
-    shopifyHandle: 'gozo-cave-girl',
-  },
-  {
-    id: 'lauterbrunnen',
-    title: 'Foggy Cows',
-    subtitle: 'Mürren, Switzerland · 2025',
-    description:
-      'Two cows stand in dense fog on a mountain trail above Mürren.',
-    price: PRICE,
-    image: '/artworks/v1/murren_foggycows_2025_v1.webp',
-    wallIndex: ARCHIVE_WALL,
-    position: [-2.4, 0.2, 0],
-    size: PORTRAIT,
-    edition: EDITION,
-    dimensions: DIMENSIONS,
-    frameStyle: 'white',
-    shopifyHandle: 'murren-foggy-cows',
-  },
-  {
-    id: 'praia-da-baleia',
-    title: 'The Biker',
-    subtitle: 'Praia da Baleia, São Sebastião, Brazil · 2026',
-    description:
-      'A cyclist carries a mint-green surfboard across Praia da Baleia.',
-    price: PRICE,
-    image: '/artworks/v1/baleia_biker_2025_v1.webp',
-    wallIndex: ARCHIVE_WALL,
-    position: [0, -0.2, 0],
-    size: LANDSCAPE,
-    edition: EDITION,
-    dimensions: DIMENSIONS,
-    frameStyle: 'white',
-    shopifyHandle: 'praia-da-baleia',
-  },
-  {
-    id: 'playa-roja',
-    title: 'Dune Lines',
-    subtitle: 'Paracas, Peru · 2025',
-    description:
-      'Wind draws repeating lines across the dunes of Paracas.',
-    price: PRICE,
-    image: '/artworks/v1/paracas_flatdunes_2025_v1.webp',
-    wallIndex: ARCHIVE_WALL,
-    position: [2.45, 0.3, 0],
-    size: LANDSCAPE,
-    edition: EDITION,
-    dimensions: DIMENSIONS,
-    frameStyle: 'white',
-    shopifyHandle: 'paracas-flat-dunes',
-  },
-  {
-    id: 'calpe-muralla-roja',
-    title: 'Between Walls',
-    subtitle: 'La Muralla Roja, Calpe, Spain · 2025',
-    description:
-      'Blue, coral and violet walls stack against the sky at La Muralla Roja.',
-    price: PRICE,
-    image: '/artworks/v1/calpe_murallaroja_2025_v1.webp',
-    wallIndex: ARCHIVE_WALL,
-    position: [-2.4, 0.2, 0],
-    size: PORTRAIT,
-    edition: EDITION,
-    dimensions: DIMENSIONS,
-    frameStyle: 'white',
-    shopifyHandle: 'calpe-muralla-roja',
-  },
-  {
-    id: 'moreira-crowded-beach',
-    title: 'Grey Day',
-    subtitle: 'Moraira, Spain · 2025',
-    description:
-      'Beachgoers dot a grey afternoon in Moraira with small bursts of color.',
-    price: PRICE,
-    image: '/artworks/v1/moreira_crowdedbeach_2025_v1.webp',
-    wallIndex: ARCHIVE_WALL,
-    position: [0, -0.2, 0],
-    size: FOUR_BY_FIVE,
-    edition: EDITION,
-    dimensions: DIMENSIONS,
-    frameStyle: 'white',
-    shopifyHandle: 'grey-day-moraira',
-  },
-  {
-    id: 'florence-dogman',
-    title: 'Man and Dog',
-    subtitle: 'Florence, Italy · 2025',
-    description:
-      'A man sits on a stone ledge in Florence beside his sleeping dog.',
-    price: PRICE,
-    image: '/artworks/v1/florence_dogman_2025_v1.webp',
-    wallIndex: ARCHIVE_WALL,
-    position: [2.45, 0.3, 0],
-    size: PORTRAIT,
-    edition: EDITION,
-    dimensions: DIMENSIONS,
-    frameStyle: 'white',
-    shopifyHandle: 'florence-dog-man',
-  },
-  {
-    id: 'ischia-mezzatorre',
-    title: 'The Swimmer',
-    subtitle: 'Mezzatorre, Ischia, Italy · 2025',
-    description:
-      'A swimmer moves through the pool below striped umbrellas and the Mediterranean.',
-    price: PRICE,
-    image: '/artworks/v1/ischia_mezzatorre_2025_v1.webp',
-    wallIndex: ARCHIVE_WALL,
-    position: [-2.5, 0.3, 0],
-    size: PORTRAIT,
-    edition: EDITION,
-    dimensions: DIMENSIONS,
-    frameStyle: 'white',
-    shopifyHandle: 'ischia-mezzatorre',
-  },
-  {
-    id: 'ditch-plains-far',
-    title: 'Before Summer',
-    subtitle: 'Ditch Plains, Montauk, New York, United States · 2026',
-    description:
-      'A weathered dune fence runs toward an almost-empty Ditch Plains beach.',
-    price: PRICE,
-    image: '/artworks/v1/ditchplains_far_2026_v1.webp',
-    wallIndex: ARCHIVE_WALL,
-    position: [0, -0.2, 0],
-    size: PORTRAIT,
-    edition: EDITION,
-    dimensions: DIMENSIONS,
-    frameStyle: 'white',
-    shopifyHandle: 'ditch-plains-far',
-  },
-  {
-    id: 'appenzell-alpine-lake',
-    title: 'The Lake Below',
-    subtitle: 'Appenzell, Switzerland · 2025',
-    description:
-      'A turquoise alpine lake appears between the forest and rock far below Appenzell.',
-    price: PRICE,
-    image: '/artworks/v1/appenzell_alpinelake_2025_v1.webp',
-    wallIndex: ARCHIVE_WALL,
-    position: [2.45, 0.3, 0],
-    size: LANDSCAPE,
-    edition: EDITION,
-    dimensions: DIMENSIONS,
-    frameStyle: 'white',
-    shopifyHandle: 'appenzell-alpine-lake',
-  },
-  {
-    id: 'christ-in-fog-rio-de-janeiro',
-    title: 'Christ in Fog',
-    subtitle: 'Rio de Janeiro, Brazil · 2025',
-    description:
-      'Christ the Redeemer nearly disappears into dense fog above Rio.',
-    price: PRICE,
-    image: '/artworks/v1/rio_christfog_2025_v1.webp',
-    wallIndex: ARCHIVE_WALL,
-    position: [-2.5, 0.3, 0],
-    size: PORTRAIT,
-    edition: EDITION,
-    dimensions: DIMENSIONS,
-    frameStyle: 'white',
-    shopifyHandle: 'christ-in-fog-rio-de-janeiro',
-  },
-  {
-    id: 'pink-lagoon-paracas',
-    title: 'Pink Lagoon',
-    subtitle: 'Paracas, Peru · 2025',
-    description:
-      'Pink salt water stretches across the pale desert in Paracas.',
-    price: PRICE,
-    image: '/artworks/v1/paracas_pinklagoon_2025_v1.webp',
-    wallIndex: ARCHIVE_WALL,
-    position: [0, -0.2, 0],
-    size: LANDSCAPE,
-    edition: EDITION,
-    dimensions: DIMENSIONS,
-    frameStyle: 'white',
-    shopifyHandle: 'pink-lagoon-paracas',
-  },
-  {
-    id: 'moraira-from-above',
-    title: 'Moraira from Above',
-    subtitle: 'Moraira, Spain · 2025',
-    description:
-      'A curved beach and hillside houses wrap around the water in Moraira.',
-    price: PRICE,
-    image: '/artworks/v1/moraira_aerialbeach_2025_v1.webp',
-    wallIndex: ARCHIVE_WALL,
-    position: [2.45, 0.3, 0],
-    size: LANDSCAPE,
-    edition: EDITION,
-    dimensions: DIMENSIONS,
-    frameStyle: 'white',
-    shopifyHandle: 'moraira-from-above',
-  },
-  {
-    id: 'fishing-bay-paracas',
-    title: 'Fishing Bay',
-    subtitle: 'Paracas, Peru · 2025',
-    description:
-      'Fishing boats scatter across turquoise water beside the desert coast of Paracas.',
-    price: PRICE,
-    image: '/artworks/v1/paracas_fishingboats_2025_v1.webp',
-    wallIndex: ARCHIVE_WALL,
-    position: [-2.5, 0.3, 0],
-    size: LANDSCAPE,
-    edition: EDITION,
-    dimensions: DIMENSIONS,
-    frameStyle: 'white',
-    shopifyHandle: 'fishing-bay-paracas',
-  },
-  {
-    id: 'ipanema-at-dusk',
-    title: 'Ipanema at Dusk',
-    subtitle: 'Ipanema, Rio de Janeiro, Brazil · 2025',
-    description:
-      'Ipanema fills with people, mist and late sun as the mountains fade behind the beach.',
-    price: PRICE,
-    image: '/artworks/v1/ipanema_dusk_2025_v1.webp',
-    wallIndex: ARCHIVE_WALL,
-    position: [0, -0.2, 0],
-    size: LANDSCAPE,
-    edition: EDITION,
-    dimensions: DIMENSIONS,
-    frameStyle: 'white',
-    shopifyHandle: 'ipanema-at-dusk',
-  },
-  {
-    id: 'after-the-fog-murren',
-    title: 'After the Fog',
-    subtitle: 'Mürren, Switzerland · 2025',
-    description:
-      'A narrow road runs through green pasture toward the mountains after the weather clears.',
-    price: PRICE,
-    image: '/artworks/v1/murren_alpineroad_2025_v1.webp',
-    wallIndex: ARCHIVE_WALL,
-    position: [2.45, 0.3, 0],
-    size: LANDSCAPE,
-    edition: EDITION,
-    dimensions: DIMENSIONS,
-    frameStyle: 'white',
-    shopifyHandle: 'after-the-fog-murren',
-  },
-  {
-    id: 'perigo-praia-da-baleia',
-    title: 'Perigo',
-    subtitle: 'Praia da Baleia, São Sebastião, Brazil · 2025',
-    description:
-      'A red PERIGO sign stands alone against a purple-grey beach at dusk.',
-    price: PRICE,
-    image: '/artworks/v1/baleia_perigosign_2025_v1.webp',
-    wallIndex: ARCHIVE_WALL,
-    position: [-2.5, 0.3, 0],
-    size: LANDSCAPE,
-    edition: EDITION,
-    dimensions: DIMENSIONS,
-    frameStyle: 'white',
-    shopifyHandle: 'perigo-praia-da-baleia',
-  },
-  {
-    id: 'appenzell-valley',
-    title: 'Appenzell Valley',
-    subtitle: 'Appenzell, Switzerland · 2025',
-    description:
-      'Green hills, roads and scattered houses unfold below the cable car in Appenzell.',
-    price: PRICE,
-    image: '/artworks/v1/appenzell_valley_2025_v1.webp',
-    wallIndex: ARCHIVE_WALL,
-    position: [0, -0.2, 0],
-    size: LANDSCAPE,
-    edition: EDITION,
-    dimensions: DIMENSIONS,
-    frameStyle: 'white',
-    shopifyHandle: 'appenzell-valley',
-  },
-  {
-    id: 'first-bells-mount-rigi',
-    title: 'First Bells',
-    subtitle: 'Mount Rigi, Switzerland · 2025',
-    description:
-      'A black-and-white cow grazes on Mount Rigi as the rest of the herd disappears into mist.',
-    price: PRICE,
-    image: '/artworks/v1/rigi_cow_2025_v1.webp',
-    wallIndex: ARCHIVE_WALL,
-    position: [2.45, 0.3, 0],
-    size: PORTRAIT,
-    edition: EDITION,
-    dimensions: DIMENSIONS,
-    frameStyle: 'white',
-    shopifyHandle: 'first-bells-mount-rigi',
-  },
-  {
-    id: 'red-rooms-calpe',
-    title: 'Red Rooms',
-    subtitle: 'La Muralla Roja, Calpe, Spain · 2025',
-    description:
-      'Red walls, plants and open corridors frame the sea at La Muralla Roja.',
-    price: PRICE,
-    image: '/artworks/v1/calpe_redrooms_2025_v1.webp',
-    wallIndex: ARCHIVE_WALL,
-    position: [-2.5, 0.3, 0],
-    size: PORTRAIT,
-    edition: EDITION,
-    dimensions: DIMENSIONS,
-    frameStyle: 'white',
-    shopifyHandle: 'red-rooms-calpe',
-  },
-  {
-    id: 'blue-edge-gozo',
-    title: 'Blue Edge',
-    subtitle: 'Gozo, Malta · 2025',
-    description:
-      'A concrete platform points toward an uninterrupted blue horizon on Gozo.',
-    price: PRICE,
-    image: '/artworks/v1/gozo_blueedge_2025_v1.webp',
-    wallIndex: ARCHIVE_WALL,
-    position: [0, -0.2, 0],
-    size: PORTRAIT,
-    edition: EDITION,
-    dimensions: DIMENSIONS,
-    frameStyle: 'white',
-    shopifyHandle: 'blue-edge-gozo',
-  },
-  {
-    id: 'narrow-opening-wied-il-ghasri',
-    title: 'Narrow Opening',
-    subtitle: 'Wied il-Għasri, Gozo, Malta · 2025',
-    description:
-      'The limestone inlet at Wied il-Għasri opens into the Mediterranean.',
-    price: PRICE,
-    image: '/artworks/v1/wiedilghasri_inlet_2025_v1.webp',
-    wallIndex: ARCHIVE_WALL,
-    position: [2.45, 0.3, 0],
-    size: LANDSCAPE,
-    edition: EDITION,
-    dimensions: DIMENSIONS,
-    frameStyle: 'white',
-    shopifyHandle: 'narrow-opening-wied-il-ghasri',
-  },
-  {
-    id: 'carousel-florence',
-    title: 'Carousel',
-    subtitle: 'Florence, Italy · 2025',
-    description:
-      'A carousel turns into bands of light at night in Florence.',
-    price: PRICE,
-    image: '/artworks/v1/lorence_carousel_2025_v1.webp',
-    wallIndex: ARCHIVE_WALL,
-    position: [-2.5, 0.3, 0],
-    size: LANDSCAPE,
-    edition: EDITION,
-    dimensions: DIMENSIONS,
-    frameStyle: 'white',
-    shopifyHandle: 'carousel-florence',
-  },
-  {
-    id: 'low-tide-praia-da-baleia',
-    title: 'Low Tide',
-    subtitle: 'Praia da Baleia, São Sebastião, Brazil · 2025',
-    description:
-      'Wet sand reflects a dark headland at low tide.',
-    price: PRICE,
-    image: '/artworks/v1/baleia_lowtide_2025_v1.webp',
-    wallIndex: ARCHIVE_WALL,
-    position: [0, -0.2, 0],
-    size: LANDSCAPE,
-    edition: EDITION,
-    dimensions: DIMENSIONS,
-    frameStyle: 'white',
-    shopifyHandle: 'low-tide-praia-da-baleia',
-  },
-  {
-    id: 'ipanema-promenade',
-    title: 'Ipanema Promenade',
-    subtitle: 'Ipanema, Rio de Janeiro, Brazil · 2025',
-    description:
-      'A vendor works beneath the palms with Ipanema beach and Dois Irmãos behind him.',
-    price: PRICE,
-    image: '/artworks/v1/ipanema_promenade_2025_v1.webp',
-    wallIndex: ARCHIVE_WALL,
-    position: [2.45, 0.3, 0],
-    size: PORTRAIT,
-    edition: EDITION,
-    dimensions: DIMENSIONS,
-    frameStyle: 'white',
-    shopifyHandle: 'ipanema-promenade',
-  },
-  {
-    id: 'on-dry-land-gozo',
-    title: 'On Dry Land',
-    subtitle: 'Gozo, Malta · 2025',
-    description:
-      'An orange life ring hangs alone against pale limestone in Gozo.',
-    price: PRICE,
-    image: '/artworks/v1/gozo_lifering_2025_v1.webp',
-    wallIndex: ARCHIVE_WALL,
-    position: [-2.5, 0.3, 0],
-    size: PORTRAIT,
-    edition: EDITION,
-    dimensions: DIMENSIONS,
-    frameStyle: 'white',
-    shopifyHandle: 'on-dry-land-gozo',
-  },
-  {
-    id: 'red-car-gozo',
-    title: 'Red Car',
-    subtitle: 'Gozo, Malta · 2025',
-    description:
-      'A red car and a few scuba divers sit above a rough limestone inlet in Gozo.',
-    price: PRICE,
-    image: '/artworks/v1/gozo_redcar_2025_v1.webp',
-    wallIndex: ARCHIVE_WALL,
-    position: [0, -0.2, 0],
-    size: LANDSCAPE,
-    edition: EDITION,
-    dimensions: DIMENSIONS,
-    frameStyle: 'white',
-    shopifyHandle: 'red-car-gozo',
-  },
-  {
-    id: 'playa-roja-paracas',
-    title: 'Playa Roja',
-    subtitle: 'Playa Roja, Paracas, Peru · 2025',
-    description:
-      'Red sand sits between rust-colored cliffs and green-blue water at Playa Roja.',
-    price: PRICE,
-    image: '/artworks/v1/paracas_playaroja_2025_v1.webp',
-    wallIndex: ARCHIVE_WALL,
-    position: [2.45, 0.3, 0],
-    size: PORTRAIT,
-    edition: EDITION,
-    dimensions: DIMENSIONS,
-    frameStyle: 'white',
-    shopifyHandle: 'playa-roja-paracas',
-  },
-]
+// Where a work hangs when the 3D room places it by itself: left, centre, right
+// of the Prints wall, in turn. The Archive's own slots override this.
+const HANG: [number, number, number][] = [[-2.5, 0.3, 0], [0, -0.2, 0], [2.45, 0.3, 0]]
+
+/** Every published work, in the order the Studio lists them. */
+export const artworks: Artwork[] = cms.artworks.map((work, index) => ({
+  id: work.id,
+  title: work.title,
+  subtitle: `${work.location} · ${work.year}`,
+  description: work.description,
+  price: PRICE,
+  image: work.image,
+  wallIndex: ARCHIVE_WALL,
+  position: HANG[index % HANG.length],
+  size: frameSizeFor(work.imageWidth, work.imageHeight),
+  edition: work.edition,
+  dimensions: DIMENSIONS,
+  frameStyle: 'white',
+  shopifyHandle: work.shopifyHandle || undefined,
+}))
 
 export const FRAME_BORDER = 0.26
 export const MAT_BORDER = 0.2

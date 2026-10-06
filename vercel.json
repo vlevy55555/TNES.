@@ -14,7 +14,7 @@
   ],
   "rewrites": [
     { "source": "/works", "destination": "/works/index.html" },
-    { "source": "/works/catalogs/the-hamptons", "destination": "/works/catalogs/the-hamptons/index.html" },
+    { "source": "/works/catalogs/:slug", "destination": "/works/catalogs/:slug/index.html" },
     { "source": "/works/:id", "destination": "/works/:id/index.html" },
     { "source": "/moments", "destination": "/moments/index.html" },
     { "source": "/wall", "destination": "/wall/index.html" },

@@ -1,0 +1,1066 @@
+{
+  "source": "seed",
+  "settings": {
+    "inquiryEmail": "vlevy@tnes.studio",
+    "phone": "+1 917 445 4067",
+    "instagramHandle": "@vlevy_",
+    "instagramUrl": "https://instagram.com/vlevy_",
+    "brandStatement": "nothing happens twice",
+    "footerTagline": "photographs found in the in-between,\nmade to live with.",
+    "footerPlaces": "new york · são paulo",
+    "copyright": "© victor safdie levy",
+    "earlyAccess": {
+      "eyebrow": "early access",
+      "title": "be the first to know.",
+      "copy": "early access to new work, limited objects, and studio collaborations."
+    }
+  },
+  "artworks": [
+    {
+      "id": "the-pool",
+      "title": "Everyone In",
+      "location": "St. Peter's Pool, Malta",
+      "year": 2025,
+      "description": "Swimmers jump, dive and gather around the limestone basin at St. Peter's Pool.",
+      "image": "/artworks/v1/stpeterspool_hero_2025_v1.webp",
+      "imageWidth": 2560,
+      "imageHeight": 1707,
+      "region": "europe",
+      "scenes": [
+        "water",
+        "people",
+        "landscape"
+      ],
+      "shopifyHandle": "st-peters-pool-v1",
+      "edition": "Archival pigment print · edition by inquiry"
+    },
+    {
+      "id": "runner",
+      "title": "Rio Runner",
+      "location": "Ipanema, Rio de Janeiro, Brazil",
+      "year": 2025,
+      "description": "A runner crosses Ipanema with Dois Irmãos and the city fading into sea mist.",
+      "image": "/artworks/v1/ipanema_riorunner_2025_v1.webp",
+      "imageWidth": 2560,
+      "imageHeight": 1707,
+      "region": "south america",
+      "scenes": [
+        "beach",
+        "people"
+      ],
+      "shopifyHandle": "rio-runner",
+      "edition": "Archival pigment print · open edition, framed ready to hang"
+    },
+    {
+      "id": "wied-il-ghasri",
+      "title": "Under the Limestone",
+      "location": "Gozo, Malta",
+      "year": 2025,
+      "description": "A woman rests beneath a huge limestone overhang on the coast of Gozo.",
+      "image": "/artworks/v1/gozo_cavegirl_2025_v1.webp",
+      "imageWidth": 2560,
+      "imageHeight": 1707,
+      "region": "europe",
+      "scenes": [
+        "water",
+        "people",
+        "landscape"
+      ],
+      "shopifyHandle": "gozo-cave-girl",
+      "edition": "Archival pigment print · edition by inquiry"
+    },
+    {
+      "id": "lauterbrunnen",
+      "title": "Foggy Cows",
+      "location": "Mürren, Switzerland",
+      "year": 2025,
+      "description": "Two cows stand in dense fog on a mountain trail above Mürren.",
+      "image": "/artworks/v1/murren_foggycows_2025_v1.webp",
+      "imageWidth": 2560,
+      "imageHeight": 3840,
+      "region": "europe",
+      "scenes": [
+        "alpine",
+        "animals",
+        "landscape"
+      ],
+      "shopifyHandle": "murren-foggy-cows",
+      "edition": "Archival pigment print · edition by inquiry"
+    },
+    {
+      "id": "praia-da-baleia",
+      "title": "The Biker",
+      "location": "Praia da Baleia, São Sebastião, Brazil",
+      "year": 2026,
+      "description": "A cyclist carries a mint-green surfboard across Praia da Baleia.",
+      "image": "/artworks/v1/baleia_biker_2025_v1.webp",
+      "imageWidth": 2560,
+      "imageHeight": 1707,
+      "region": "south america",
+      "scenes": [
+        "beach",
+        "people"
+      ],
+      "shopifyHandle": "praia-da-baleia",
+      "edition": "Archival pigment print · edition by inquiry"
+    },
+    {
+      "id": "playa-roja",
+      "title": "Dune Lines",
+      "location": "Paracas, Peru",
+      "year": 2025,
+      "description": "Wind draws repeating lines across the dunes of Paracas.",
+      "image": "/artworks/v1/paracas_flatdunes_2025_v1.webp",
+      "imageWidth": 2560,
+      "imageHeight": 1707,
+      "region": "south america",
+      "scenes": [
+        "desert",
+        "landscape"
+      ],
+      "shopifyHandle": "paracas-flat-dunes",
+      "edition": "Archival pigment print · edition by inquiry"
+    },
+    {
+      "id": "calpe-muralla-roja",
+      "title": "Between Walls",
+      "location": "La Muralla Roja, Calpe, Spain",
+      "year": 2025,
+      "description": "Blue, coral and violet walls stack against the sky at La Muralla Roja.",
+      "image": "/artworks/v1/calpe_murallaroja_2025_v1.webp",
+      "imageWidth": 2560,
+      "imageHeight": 3840,
+      "region": "europe",
+      "scenes": [
+        "architecture"
+      ],
+      "shopifyHandle": "calpe-muralla-roja",
+      "edition": "Archival pigment print · edition by inquiry"
+    },
+    {
+      "id": "moreira-crowded-beach",
+      "title": "Grey Day",
+      "location": "Moraira, Spain",
+      "year": 2025,
+      "description": "Beachgoers dot a grey afternoon in Moraira with small bursts of color.",
+      "image": "/artworks/v1/moreira_crowdedbeach_2025_v1.webp",
+      "imageWidth": 1024,
+      "imageHeight": 1280,
+      "region": "europe",
+      "scenes": [
+        "beach",
+        "water",
+        "people"
+      ],
+      "shopifyHandle": "grey-day-moraira",
+      "edition": "Archival pigment print · edition by inquiry"
+    },
+    {
+      "id": "florence-dogman",
+      "title": "Man and Dog",
+      "location": "Florence, Italy",
+      "year": 2025,
+      "description": "A man sits on a stone ledge in Florence beside his sleeping dog.",
+      "image": "/artworks/v1/florence_dogman_2025_v1.webp",
+      "imageWidth": 2560,
+      "imageHeight": 3840,
+      "region": "europe",
+      "scenes": [
+        "street",
+        "people",
+        "animals"
+      ],
+      "shopifyHandle": "florence-dog-man",
+      "edition": "Archival pigment print · edition by inquiry"
+    },
+    {
+      "id": "ischia-mezzatorre",
+      "title": "The Swimmer",
+      "location": "Mezzatorre, Ischia, Italy",
+      "year": 2025,
+      "description": "A swimmer moves through the pool below striped umbrellas and the Mediterranean.",
+      "image": "/artworks/v1/ischia_mezzatorre_2025_v1.webp",
+      "imageWidth": 2560,
+      "imageHeight": 3840,
+      "region": "europe",
+      "scenes": [
+        "water",
+        "people",
+        "architecture"
+      ],
+      "shopifyHandle": "ischia-mezzatorre",
+      "edition": "Archival pigment print · edition by inquiry"
+    },
+    {
+      "id": "ditch-plains-far",
+      "title": "Before Summer",
+      "location": "Ditch Plains, Montauk, New York, United States",
+      "year": 2026,
+      "description": "A weathered dune fence runs toward an almost-empty Ditch Plains beach.",
+      "image": "/artworks/v1/ditchplains_far_2026_v1.webp",
+      "imageWidth": 2560,
+      "imageHeight": 3840,
+      "region": "north america",
+      "scenes": [
+        "beach",
+        "landscape"
+      ],
+      "shopifyHandle": "ditch-plains-far",
+      "edition": "Archival pigment print · edition by inquiry"
+    },
+    {
+      "id": "appenzell-alpine-lake",
+      "title": "The Lake Below",
+      "location": "Appenzell, Switzerland",
+      "year": 2025,
+      "description": "A turquoise alpine lake appears between the forest and rock far below Appenzell.",
+      "image": "/artworks/v1/appenzell_alpinelake_2025_v1.webp",
+      "imageWidth": 2560,
+      "imageHeight": 1707,
+      "region": "europe",
+      "scenes": [
+        "water",
+        "alpine",
+        "landscape"
+      ],
+      "shopifyHandle": "appenzell-alpine-lake",
+      "edition": "Archival pigment print · edition by inquiry"
+    },
+    {
+      "id": "pink-lagoon-paracas",
+      "title": "Pink Lagoon",
+      "location": "Paracas, Peru",
+      "year": 2025,
+      "description": "Pink salt water stretches across the pale desert in Paracas.",
+      "image": "/artworks/v1/paracas_pinklagoon_2025_v1.webp",
+      "imageWidth": 2560,
+      "imageHeight": 1706,
+      "region": "south america",
+      "scenes": [
+        "water",
+        "desert",
+        "landscape"
+      ],
+      "shopifyHandle": "pink-lagoon-paracas",
+      "edition": "Archival pigment print · edition by inquiry"
+    },
+    {
+      "id": "moraira-from-above",
+      "title": "Moraira from Above",
+      "location": "Moraira, Spain",
+      "year": 2025,
+      "description": "A curved beach and hillside houses wrap around the water in Moraira.",
+      "image": "/artworks/v1/moraira_aerialbeach_2025_v1.webp",
+      "imageWidth": 2560,
+      "imageHeight": 1706,
+      "region": "europe",
+      "scenes": [
+        "beach",
+        "water",
+        "landscape"
+      ],
+      "shopifyHandle": "moraira-from-above",
+      "edition": "Archival pigment print · edition by inquiry"
+    },
+    {
+      "id": "fishing-bay-paracas",
+      "title": "Fishing Bay",
+      "location": "Paracas, Peru",
+      "year": 2025,
+      "description": "Fishing boats scatter across turquoise water beside the desert coast of Paracas.",
+      "image": "/artworks/v1/paracas_fishingboats_2025_v1.webp",
+      "imageWidth": 2560,
+      "imageHeight": 1706,
+      "region": "south america",
+      "scenes": [
+        "water",
+        "landscape"
+      ],
+      "shopifyHandle": "fishing-bay-paracas",
+      "edition": "Archival pigment print · edition by inquiry"
+    },
+    {
+      "id": "ipanema-at-dusk",
+      "title": "Ipanema at Dusk",
+      "location": "Ipanema, Rio de Janeiro, Brazil",
+      "year": 2025,
+      "description": "Ipanema fills with people, mist and late sun as the mountains fade behind the beach.",
+      "image": "/artworks/v1/ipanema_dusk_2025_v1.webp",
+      "imageWidth": 2560,
+      "imageHeight": 1706,
+      "region": "south america",
+      "scenes": [
+        "beach",
+        "water",
+        "people",
+        "landscape"
+      ],
+      "shopifyHandle": "ipanema-at-dusk",
+      "edition": "Archival pigment print · edition by inquiry"
+    },
+    {
+      "id": "after-the-fog-murren",
+      "title": "After the Fog",
+      "location": "Mürren, Switzerland",
+      "year": 2025,
+      "description": "A narrow road runs through green pasture toward the mountains after the weather clears.",
+      "image": "/artworks/v1/murren_alpineroad_2025_v1.webp",
+      "imageWidth": 2560,
+      "imageHeight": 1706,
+      "region": "europe",
+      "scenes": [
+        "alpine",
+        "landscape"
+      ],
+      "shopifyHandle": "after-the-fog-murren",
+      "edition": "Archival pigment print · edition by inquiry"
+    },
+    {
+      "id": "perigo-praia-da-baleia",
+      "title": "Perigo",
+      "location": "Praia da Baleia, São Sebastião, Brazil",
+      "year": 2025,
+      "description": "A red PERIGO sign stands alone against a purple-grey beach at dusk.",
+      "image": "/artworks/v1/baleia_perigosign_2025_v1.webp",
+      "imageWidth": 2048,
+      "imageHeight": 1365,
+      "region": "south america",
+      "scenes": [
+        "beach",
+        "objects"
+      ],
+      "shopifyHandle": "perigo-praia-da-baleia",
+      "edition": "Archival pigment print · edition by inquiry"
+    },
+    {
+      "id": "appenzell-valley",
+      "title": "Appenzell Valley",
+      "location": "Appenzell, Switzerland",
+      "year": 2025,
+      "description": "Green hills, roads and scattered houses unfold below the cable car in Appenzell.",
+      "image": "/artworks/v1/appenzell_valley_2025_v1.webp",
+      "imageWidth": 2560,
+      "imageHeight": 1706,
+      "region": "europe",
+      "scenes": [
+        "alpine",
+        "landscape"
+      ],
+      "shopifyHandle": "appenzell-valley",
+      "edition": "Archival pigment print · edition by inquiry"
+    },
+    {
+      "id": "first-bells-mount-rigi",
+      "title": "First Bells",
+      "location": "Mount Rigi, Switzerland",
+      "year": 2025,
+      "description": "A black-and-white cow grazes on Mount Rigi as the rest of the herd disappears into mist.",
+      "image": "/artworks/v1/rigi_cow_2025_v1.webp",
+      "imageWidth": 1706,
+      "imageHeight": 2560,
+      "region": "europe",
+      "scenes": [
+        "alpine",
+        "animals",
+        "landscape"
+      ],
+      "shopifyHandle": "first-bells-mount-rigi",
+      "edition": "Archival pigment print · edition by inquiry"
+    },
+    {
+      "id": "red-rooms-calpe",
+      "title": "Red Rooms",
+      "location": "La Muralla Roja, Calpe, Spain",
+      "year": 2025,
+      "description": "Red walls, plants and open corridors frame the sea at La Muralla Roja.",
+      "image": "/artworks/v1/calpe_redrooms_2025_v1.webp",
+      "imageWidth": 1706,
+      "imageHeight": 2560,
+      "region": "europe",
+      "scenes": [
+        "architecture"
+      ],
+      "shopifyHandle": "red-rooms-calpe",
+      "edition": "Archival pigment print · edition by inquiry"
+    },
+    {
+      "id": "blue-edge-gozo",
+      "title": "Blue Edge",
+      "location": "Gozo, Malta",
+      "year": 2025,
+      "description": "A concrete platform points toward an uninterrupted blue horizon on Gozo.",
+      "image": "/artworks/v1/gozo_blueedge_2025_v1.webp",
+      "imageWidth": 1706,
+      "imageHeight": 2560,
+      "region": "europe",
+      "scenes": [
+        "water",
+        "architecture",
+        "landscape"
+      ],
+      "shopifyHandle": "blue-edge-gozo",
+      "edition": "Archival pigment print · edition by inquiry"
+    },
+    {
+      "id": "narrow-opening-wied-il-ghasri",
+      "title": "Narrow Opening",
+      "location": "Wied il-Għasri, Gozo, Malta",
+      "year": 2025,
+      "description": "The limestone inlet at Wied il-Għasri opens into the Mediterranean.",
+      "image": "/artworks/v1/wiedilghasri_inlet_2025_v1.webp",
+      "imageWidth": 2560,
+      "imageHeight": 1706,
+      "region": "europe",
+      "scenes": [
+        "water",
+        "landscape"
+      ],
+      "shopifyHandle": "narrow-opening-wied-il-ghasri",
+      "edition": "Archival pigment print · edition by inquiry"
+    },
+    {
+      "id": "carousel-florence",
+      "title": "Carousel",
+      "location": "Florence, Italy",
+      "year": 2025,
+      "description": "A carousel turns into bands of light at night in Florence.",
+      "image": "/artworks/v1/lorence_carousel_2025_v1.webp",
+      "imageWidth": 2560,
+      "imageHeight": 1706,
+      "region": "europe",
+      "scenes": [
+        "street",
+        "people",
+        "objects"
+      ],
+      "shopifyHandle": "carousel-florence",
+      "edition": "Archival pigment print · edition by inquiry"
+    },
+    {
+      "id": "low-tide-praia-da-baleia",
+      "title": "Low Tide",
+      "location": "Praia da Baleia, São Sebastião, Brazil",
+      "year": 2025,
+      "description": "Wet sand reflects a dark headland at low tide.",
+      "image": "/artworks/v1/baleia_lowtide_2025_v1.webp",
+      "imageWidth": 2560,
+      "imageHeight": 1707,
+      "region": "south america",
+      "scenes": [
+        "beach",
+        "water",
+        "landscape"
+      ],
+      "shopifyHandle": "low-tide-praia-da-baleia",
+      "edition": "Archival pigment print · edition by inquiry"
+    },
+    {
+      "id": "ipanema-promenade",
+      "title": "Ipanema Promenade",
+      "location": "Ipanema, Rio de Janeiro, Brazil",
+      "year": 2025,
+      "description": "A vendor works beneath the palms with Ipanema beach and Dois Irmãos behind him.",
+      "image": "/artworks/v1/ipanema_promenade_2025_v1.webp",
+      "imageWidth": 1706,
+      "imageHeight": 2560,
+      "region": "south america",
+      "scenes": [
+        "street",
+        "people",
+        "beach"
+      ],
+      "shopifyHandle": "ipanema-promenade",
+      "edition": "Archival pigment print · edition by inquiry"
+    },
+    {
+      "id": "on-dry-land-gozo",
+      "title": "On Dry Land",
+      "location": "Gozo, Malta",
+      "year": 2025,
+      "description": "An orange life ring hangs alone against pale limestone in Gozo.",
+      "image": "/artworks/v1/gozo_lifering_2025_v1.webp",
+      "imageWidth": 1706,
+      "imageHeight": 2560,
+      "region": "europe",
+      "scenes": [
+        "objects",
+        "landscape"
+      ],
+      "shopifyHandle": "on-dry-land-gozo",
+      "edition": "Archival pigment print · edition by inquiry"
+    },
+    {
+      "id": "red-car-gozo",
+      "title": "Red Car",
+      "location": "Gozo, Malta",
+      "year": 2025,
+      "description": "A red car and a few scuba divers sit above a rough limestone inlet in Gozo.",
+      "image": "/artworks/v1/gozo_redcar_2025_v1.webp",
+      "imageWidth": 2560,
+      "imageHeight": 1706,
+      "region": "europe",
+      "scenes": [
+        "water",
+        "people",
+        "objects",
+        "landscape"
+      ],
+      "shopifyHandle": "red-car-gozo",
+      "edition": "Archival pigment print · edition by inquiry"
+    },
+    {
+      "id": "playa-roja-paracas",
+      "title": "Playa Roja",
+      "location": "Playa Roja, Paracas, Peru",
+      "year": 2025,
+      "description": "Red sand sits between rust-colored cliffs and green-blue water at Playa Roja.",
+      "image": "/artworks/v1/paracas_playaroja_2025_v1.webp",
+      "imageWidth": 1707,
+      "imageHeight": 2560,
+      "region": "south america",
+      "scenes": [
+        "beach",
+        "water",
+        "desert",
+        "landscape"
+      ],
+      "shopifyHandle": "playa-roja-paracas",
+      "edition": "Archival pigment print · edition by inquiry"
+    },
+    {
+      "id": "christ-in-fog-rio-de-janeiro",
+      "title": "Christ in Fog",
+      "location": "Rio de Janeiro, Brazil",
+      "year": 2025,
+      "description": "Christ the Redeemer nearly disappears into dense fog above Rio.",
+      "image": "/artworks/v1/rio_christfog_2025_v1.webp",
+      "imageWidth": 1706,
+      "imageHeight": 2560,
+      "region": "south america",
+      "scenes": [
+        "architecture"
+      ],
+      "shopifyHandle": "christ-in-fog-rio-de-janeiro",
+      "edition": "Archival pigment print · edition by inquiry"
+    }
+  ],
+  "home": {
+    "heroIds": [
+      "the-pool",
+      "runner",
+      "wied-il-ghasri",
+      "praia-da-baleia"
+    ],
+    "statementTitle": "nothing\nhappens\ntwice",
+    "statementCopy": "the same moment never comes back.\nTNES. is built around noticing the people,\nplaces, and details that will never exist in\nquite the same way again — and giving them\na life after they pass.",
+    "statementArtworkId": "the-pool",
+    "selectedWorksTitle": "selected works",
+    "seo": {
+      "title": "TNES. — Fine Art Photography by Victor Safdie Levy",
+      "description": "Photographs of the moments that never happen twice. Explore the works, catalogs and studio of Victor Safdie Levy."
+    }
+  },
+  "works": {
+    "eyebrow": "tnes. opening selection",
+    "title": "Works",
+    "description": "Photographs from across the archive. Each is shown in its complete composition and offered for inquiry as a physical work.",
+    "catalogsTitle": "catalogs.",
+    "catalogsSubtitle": "work from the archive, gathered into sets. a place, a season, a way of looking.",
+    "seo": {
+      "title": "Works — TNES.",
+      "description": "Explore fine art photographs by Victor Safdie Levy. Archival pigment prints available by inquiry."
+    }
+  },
+  "about": {
+    "name": "victor\nsafdie\nlevy",
+    "role": "ARTIST AND FOUNDER OF TNES.",
+    "statement": "I started taking photographs as a way of keeping track of time — where I was, who was there, and what was happening before it became something else. I was always more interested in people and places as I found them: unposed, unplanned, already in motion. Over time, that personal archive became TNES., a studio built around one idea: nothing happens twice.",
+    "heroImage": {
+      "src": "/about/stamping.webp",
+      "alt": "Victor stamping and signing a print at the studio desk",
+      "width": 1800,
+      "height": 1200
+    },
+    "splitImage": {
+      "src": "/about/subway.webp",
+      "alt": "Victor on a subway platform, print under his arm",
+      "width": 1350,
+      "height": 1800
+    },
+    "splitTitle": "the photograph\nis what is left\nof the looking.",
+    "splitText": "no one goes back for a moment. stand in the same place a year later and it hands you something else. what is here is one person's record of time and space. not a group show, not a marketplace.\n\nowning a piece is keeping the minute someone stopped, and deciding it was worth keeping. good or bad, nothing happens twice.",
+    "ctaLabel": "enter the mind in VSL",
+    "ctaUrl": "https://vsl.photography/",
+    "closingNote": "the mind behind the studio",
+    "seo": {
+      "title": "About Victor Safdie Levy — TNES.",
+      "description": "Meet Victor Safdie Levy, the photographer and founder of TNES., a studio built around one idea: nothing happens twice."
+    }
+  },
+  "momentsPage": {
+    "pretitle": "[moments]",
+    "title": "moments.",
+    "intro": "these are the places where TNES. has existed in real life. each appearance changes a space for a moment, then it is gone. this is the record of where the work has been.",
+    "introImages": [
+      {
+        "src": "/moments/east-hampton-art-affair/intro.webp",
+        "alt": "",
+        "width": 1800,
+        "height": 2400
+      },
+      {
+        "src": "/moments/nyc-soft-launch/intro.webp",
+        "alt": "",
+        "width": 2400,
+        "height": 1600
+      }
+    ],
+    "release": {
+      "eyebrow": "seasonal release 01",
+      "title": "the archive opens.",
+      "copy": "release announced to the list first."
+    },
+    "seo": {
+      "title": "Moments — TNES.",
+      "description": "Places, exhibitions and moments from the photographic practice of Victor Safdie Levy."
+    }
+  },
+  "moments": [
+    {
+      "place": "new york",
+      "status": "past",
+      "title": "nyc soft\nlaunch.",
+      "date": "03/27/26",
+      "abstract": "the first private showing of TNES. one night in new york, shared with friends, family, and a small group of invited guests before the work had ever been shown publicly.",
+      "links": [
+        {
+          "label": "view the archive",
+          "href": "/works"
+        }
+      ],
+      "photos": [
+        {
+          "src": "/moments/nyc-soft-launch/cover.webp",
+          "alt": "",
+          "width": 2400,
+          "height": 1600
+        },
+        {
+          "src": "/moments/nyc-soft-launch/01.webp",
+          "alt": "",
+          "width": 1600,
+          "height": 2400
+        },
+        {
+          "src": "/moments/nyc-soft-launch/02.webp",
+          "alt": "",
+          "width": 2400,
+          "height": 1600
+        },
+        {
+          "src": "/moments/nyc-soft-launch/03.webp",
+          "alt": "",
+          "width": 2400,
+          "height": 1600
+        }
+      ]
+    },
+    {
+      "place": "são paulo",
+      "status": "past",
+      "title": "encontros.",
+      "date": "04/28/26",
+      "abstract": "the first event in brazil, where TNES. began — and where the name came from. my cousins call me “vitones.” take out the o, and you get TNES.",
+      "links": [
+        {
+          "label": "view the archive",
+          "href": "/works"
+        }
+      ],
+      "photos": [
+        {
+          "src": "/moments/encontros/cover.webp",
+          "alt": "",
+          "width": 2400,
+          "height": 1600
+        },
+        {
+          "src": "/moments/encontros/01.webp",
+          "alt": "",
+          "width": 1600,
+          "height": 2400
+        },
+        {
+          "src": "/moments/encontros/02.webp",
+          "alt": "",
+          "width": 2400,
+          "height": 1600
+        },
+        {
+          "src": "/moments/encontros/03.webp",
+          "alt": "",
+          "width": 2400,
+          "height": 1600
+        }
+      ]
+    },
+    {
+      "place": "east hampton, new york",
+      "status": "current",
+      "title": "4th annual\neast hampton\nart affair.",
+      "date": "06/27–06/28/26",
+      "abstract": "the first public appearance of TNES. and my first art fair. shown alongside other artists, with work made in the same place I had always gone to slow down, wander, and follow my eye. the beginning of TNES. entering the world publicly.",
+      "links": [
+        {
+          "label": "inquire about works on view",
+          "contactSubject": "works on view — east hampton art affair"
+        },
+        {
+          "label": "view the archive",
+          "href": "/works"
+        }
+      ],
+      "photos": [
+        {
+          "src": "/moments/east-hampton-art-affair/cover.webp",
+          "alt": "",
+          "width": 2400,
+          "height": 1800
+        },
+        {
+          "src": "/moments/east-hampton-art-affair/01.webp",
+          "alt": "",
+          "width": 1800,
+          "height": 2400
+        },
+        {
+          "src": "/moments/east-hampton-art-affair/02.webp",
+          "alt": "",
+          "width": 1800,
+          "height": 2400
+        },
+        {
+          "src": "/moments/east-hampton-art-affair/03.webp",
+          "alt": "",
+          "width": 1800,
+          "height": 2400
+        }
+      ]
+    },
+    {
+      "place": "new york",
+      "status": "next",
+      "title": "seasonal\nrelease.",
+      "date": "next",
+      "abstract": "six works from the archive and one exclusive object, released together and never reissued.",
+      "links": [
+        {
+          "label": "count down to the release",
+          "href": "#release"
+        },
+        {
+          "label": "view the archive",
+          "href": "/works"
+        }
+      ],
+      "photos": []
+    }
+  ],
+  "catalogs": [
+    {
+      "slug": "the-hamptons",
+      "title": "the hamptons",
+      "showOnWorks": true,
+      "description": "the body of work shown for the east coast summer — coastline, light, and the hours around it. available as custom prints framed to the room.",
+      "meta": "summer 2026  ·  east hampton, napeague, montauk  ·  36 works",
+      "inquireSubject": "the hamptons catalog inquiry",
+      "studioNote": {
+        "label": "the studio",
+        "title": "nothing happens twice.",
+        "text": "no one goes back for a moment. stand in\nthe same place a year later and it hands\nyou something else.\n\nwhat is here is one person's record of one\nsummer in the hamptons. not a group show.\nnot a marketplace.\n\nowning a piece is keeping the minute\nsomeone stopped, and deciding it was\nworth keeping.\n\nthirty-six images here. one becomes the print."
+      },
+      "photos": [
+        {
+          "location": "main beach",
+          "image": "/images/catalogs/the-hamptons/01-main-beach.webp",
+          "width": 1600,
+          "height": 2400,
+          "compact": false
+        },
+        {
+          "location": "georgica beach",
+          "image": "/images/catalogs/the-hamptons/02-georgica-beach.webp",
+          "width": 1600,
+          "height": 2400,
+          "compact": false
+        },
+        {
+          "location": "main beach",
+          "image": "/images/catalogs/the-hamptons/03-main-beach.webp",
+          "width": 1600,
+          "height": 2400,
+          "compact": false
+        },
+        {
+          "location": "atlantic ave beach",
+          "image": "/images/catalogs/the-hamptons/04-atlantic-ave-beach.webp",
+          "width": 1600,
+          "height": 2400,
+          "compact": false
+        },
+        {
+          "location": "indian wells beach",
+          "image": "/images/catalogs/the-hamptons/05-indian-wells-beach.webp",
+          "width": 2400,
+          "height": 1600,
+          "compact": false
+        },
+        {
+          "location": "ditch plains",
+          "image": "/images/catalogs/the-hamptons/06-ditch-plains.webp",
+          "width": 1600,
+          "height": 2400,
+          "compact": false
+        },
+        {
+          "location": "ditch plains",
+          "image": "/images/catalogs/the-hamptons/07-ditch-plains.webp",
+          "width": 1600,
+          "height": 2400,
+          "compact": true
+        },
+        {
+          "location": "ditch plains",
+          "image": "/images/catalogs/the-hamptons/08-ditch-plains.webp",
+          "width": 2400,
+          "height": 1600,
+          "compact": false
+        },
+        {
+          "location": "main beach",
+          "image": "/images/catalogs/the-hamptons/09-main-beach.webp",
+          "width": 2400,
+          "height": 1600,
+          "compact": false
+        },
+        {
+          "location": "main beach",
+          "image": "/images/catalogs/the-hamptons/10-main-beach.webp",
+          "width": 2400,
+          "height": 1600,
+          "compact": false
+        },
+        {
+          "location": "main beach",
+          "image": "/images/catalogs/the-hamptons/11-main-beach.webp",
+          "width": 2400,
+          "height": 1600,
+          "compact": false
+        },
+        {
+          "location": "shadmoor park",
+          "image": "/images/catalogs/the-hamptons/12-shadmoor-park.webp",
+          "width": 2400,
+          "height": 1600,
+          "compact": false
+        },
+        {
+          "location": "shadmoor park",
+          "image": "/images/catalogs/the-hamptons/13-shadmoor-park.webp",
+          "width": 1600,
+          "height": 2400,
+          "compact": false
+        },
+        {
+          "location": "shadmoor park",
+          "image": "/images/catalogs/the-hamptons/14-shadmoor-park.webp",
+          "width": 1600,
+          "height": 2400,
+          "compact": false
+        },
+        {
+          "location": "ditch plains",
+          "image": "/images/catalogs/the-hamptons/15-ditch-plains.webp",
+          "width": 2400,
+          "height": 1600,
+          "compact": false
+        },
+        {
+          "location": "main beach",
+          "image": "/images/catalogs/the-hamptons/16-main-beach.webp",
+          "width": 2400,
+          "height": 1600,
+          "compact": false
+        },
+        {
+          "location": "atlantic ave beach",
+          "image": "/images/catalogs/the-hamptons/17-atlantic-ave-beach.webp",
+          "width": 1600,
+          "height": 2400,
+          "compact": false
+        },
+        {
+          "location": "hook pond",
+          "image": "/images/catalogs/the-hamptons/18-hook-pond.webp",
+          "width": 1600,
+          "height": 2400,
+          "compact": false
+        },
+        {
+          "location": "napeague",
+          "image": "/images/catalogs/the-hamptons/19-napeague.webp",
+          "width": 1600,
+          "height": 2400,
+          "compact": false
+        },
+        {
+          "location": "napeague",
+          "image": "/images/catalogs/the-hamptons/20-napeague.webp",
+          "width": 1600,
+          "height": 2400,
+          "compact": false
+        },
+        {
+          "location": "napeague",
+          "image": "/images/catalogs/the-hamptons/21-napeague.webp",
+          "width": 2400,
+          "height": 1600,
+          "compact": false
+        },
+        {
+          "location": "montauk",
+          "image": "/images/catalogs/the-hamptons/22-montauk.webp",
+          "width": 2400,
+          "height": 1600,
+          "compact": false
+        },
+        {
+          "location": "east hampton",
+          "image": "/images/catalogs/the-hamptons/23-east-hampton.webp",
+          "width": 2400,
+          "height": 1600,
+          "compact": false
+        },
+        {
+          "location": "montauk",
+          "image": "/images/catalogs/the-hamptons/24-montauk.webp",
+          "width": 2400,
+          "height": 1600,
+          "compact": false
+        },
+        {
+          "location": "montauk",
+          "image": "/images/catalogs/the-hamptons/25-montauk.webp",
+          "width": 1600,
+          "height": 2400,
+          "compact": false
+        },
+        {
+          "location": "napeague",
+          "image": "/images/catalogs/the-hamptons/26-napeague.webp",
+          "width": 1600,
+          "height": 2400,
+          "compact": false
+        },
+        {
+          "location": "montauk",
+          "image": "/images/catalogs/the-hamptons/27-montauk.webp",
+          "width": 1600,
+          "height": 2400,
+          "compact": false
+        },
+        {
+          "location": "montauk",
+          "image": "/images/catalogs/the-hamptons/28-montauk.webp",
+          "width": 1600,
+          "height": 2400,
+          "compact": false
+        },
+        {
+          "location": "napeague",
+          "image": "/images/catalogs/the-hamptons/29-napeague.webp",
+          "width": 1600,
+          "height": 2400,
+          "compact": true
+        },
+        {
+          "location": "napeague",
+          "image": "/images/catalogs/the-hamptons/30-napeague.webp",
+          "width": 2400,
+          "height": 1600,
+          "compact": false
+        },
+        {
+          "location": "east hampton",
+          "image": "/images/catalogs/the-hamptons/31-east-hampton.webp",
+          "width": 2400,
+          "height": 1600,
+          "compact": false
+        },
+        {
+          "location": "napeague",
+          "image": "/images/catalogs/the-hamptons/32-napeague.webp",
+          "width": 1600,
+          "height": 2400,
+          "compact": true
+        },
+        {
+          "location": "napeague",
+          "image": "/images/catalogs/the-hamptons/33-napeague.webp",
+          "width": 2400,
+          "height": 1600,
+          "compact": false
+        },
+        {
+          "location": "napeague",
+          "image": "/images/catalogs/the-hamptons/34-napeague.webp",
+          "width": 2400,
+          "height": 1600,
+          "compact": false
+        },
+        {
+          "location": "napeague",
+          "image": "/images/catalogs/the-hamptons/35-napeague.webp",
+          "width": 1600,
+          "height": 2400,
+          "compact": true
+        },
+        {
+          "location": "main beach",
+          "image": "/images/catalogs/the-hamptons/36-main-beach.webp",
+          "width": 2400,
+          "height": 1600,
+          "compact": false
+        }
+      ],
+      "cardImage": {
+        "src": "/images/catalogs/the-hamptons/24-montauk.webp",
+        "alt": "the hamptons",
+        "width": 2400,
+        "height": 1600
+      },
+      "cardCaption": "24 — montauk",
+      "cardDetails": "36 works  ·  seasonal selection",
+      "cardNote": "",
+      "spreads": [
+        4,
+        3,
+        3,
+        4,
+        3,
+        4,
+        3,
+        4,
+        2,
+        2,
+        2,
+        2
+      ],
+      "password": "",
+      "seo": {
+        "title": "The Hamptons Catalog — TNES.",
+        "description": "Thirty-six photographs from an East Coast summer in East Hampton, Napeague and Montauk. Explore the complete TNES. catalog."
+      }
+    }
+  ]
+}

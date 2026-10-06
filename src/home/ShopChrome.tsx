@@ -1,4 +1,5 @@
 import { ABOUT } from '../data/artworks'
+import { cms, linesOf } from '../data/cms'
 import { useCartCount } from '../store/useCartStore'
 import { useContactStore } from '../store/useContactStore'
 import { SiteNav } from './SiteNav'
@@ -56,9 +57,9 @@ export function ShopFooter() {
       <span className="shop__mark">[O]</span>
       <div className="shop__footer-body">
         <p className="shop__footer-tagline">
-          photographs found in the in-between,
-          <br />
-          made to live with.
+          {linesOf(cms.settings.footerTagline).map((line, index) => (
+            <span key={index}>{index > 0 && <br />}{line}</span>
+          ))}
         </p>
         <div className="shop__footer-links">
           <div>
@@ -83,8 +84,8 @@ export function ShopFooter() {
         </div>
       </div>
       <div className="shop__footer-base">
-        <span>new york · são paulo</span>
-        <span>© victor safdie levy</span>
+        <span>{cms.settings.footerPlaces}</span>
+        <span>{cms.settings.copyright}</span>
       </div>
 
       {/* the footer is on every screen, so the panel it raises is too */}

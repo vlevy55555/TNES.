@@ -24,6 +24,7 @@ const Wall = lazy(() => import('./home/Wall'))
 //   /home-black       the dark variant, at the address it has always had
 //   /works            the print index
 //   /works/<id>       one work, by its artwork id
+//   /works/catalogs/<slug>  one catalog, as the Studio publishes it
 //   /cart             the selection, as a page of the shop
 //   /favorites        saved works, as a page of the shop
 //   /special-prices   works offered at special prices
@@ -45,7 +46,7 @@ if (path === '/works' && new URLSearchParams(search).get('catalog') === 'the-ham
 if (path !== requestedPath || search !== window.location.search) {
   window.history.replaceState(null, '', `${path}${search}${window.location.hash}`)
 }
-const isCatalogPath = path === '/works/catalogs/the-hamptons'
+const isCatalogPath = path.startsWith('/works/catalogs/')
 const productId = path.startsWith('/works/') && !isCatalogPath ? path.slice('/works/'.length) : ''
 setPageMetadata(path || '/')
 

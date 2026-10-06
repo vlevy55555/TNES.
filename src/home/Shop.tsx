@@ -2,8 +2,9 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { artworks } from '../data/artworks'
+import { cms, sized } from '../data/cms'
 import { RevealText, useSectionTextReveal } from './reveal'
-import { catalogHref, ShopFooter, ShopHeader } from './ShopChrome'
+import { ShopFooter, ShopHeader } from './ShopChrome'
 import Catalog, { isCatalogSlug } from './Catalog'
 import './home.css'
 import './shop.css'
@@ -11,97 +12,27 @@ import './works.css'
 
 gsap.registerPlugin(ScrollTrigger)
 
-// The country is the last segment of each work's own subtitle ("Gozo, Malta ·
-// 2025"), so the region below is the only thing this screen has to state.
-const REGION: Record<string, string> = {
-  Brazil: 'south america',
-  Peru: 'south america',
-  Malta: 'europe',
-  Italy: 'europe',
-  Spain: 'europe',
-  Portugal: 'europe',
-  Switzerland: 'europe',
-  'New York': 'north america',
-  'United States': 'north america',
-}
-
-// What is in the frame. Shop-only metadata — the 3D room never asks for it.
-const SCENES: Record<string, string[]> = {
-  'appenzell-alpine-lake': ['water', 'alpine', 'landscape'],
-  'praia-da-baleia': ['beach', 'people'],
-  'calpe-muralla-roja': ['architecture'],
-  'ditch-plains-far': ['beach', 'landscape'],
-  'florence-dogman': ['street', 'people', 'animals'],
-  'wied-il-ghasri': ['water', 'people', 'landscape'],
-  runner: ['beach', 'people'],
-  'ischia-mezzatorre': ['water', 'people', 'architecture'],
-  'moreira-crowded-beach': ['beach', 'water', 'people'],
-  lauterbrunnen: ['alpine', 'animals', 'landscape'],
-  'playa-roja': ['desert', 'landscape'],
-  'the-pool': ['water', 'people', 'landscape'],
-  'christ-in-fog-rio-de-janeiro': ['architecture'],
-  'pink-lagoon-paracas': ['water', 'desert', 'landscape'],
-  'moraira-from-above': ['beach', 'water', 'landscape'],
-  'fishing-bay-paracas': ['water', 'landscape'],
-  'ipanema-at-dusk': ['beach', 'water', 'people', 'landscape'],
-  'after-the-fog-murren': ['alpine', 'landscape'],
-  'perigo-praia-da-baleia': ['beach', 'objects'],
-  'appenzell-valley': ['alpine', 'landscape'],
-  'first-bells-mount-rigi': ['alpine', 'animals', 'landscape'],
-  'red-rooms-calpe': ['architecture'],
-  'blue-edge-gozo': ['water', 'architecture', 'landscape'],
-  'narrow-opening-wied-il-ghasri': ['water', 'landscape'],
-  'carousel-florence': ['street', 'people', 'objects'],
-  'low-tide-praia-da-baleia': ['beach', 'water', 'landscape'],
-  'ipanema-promenade': ['street', 'people', 'beach'],
-  'on-dry-land-gozo': ['objects', 'landscape'],
-  'red-car-gozo': ['water', 'people', 'objects', 'landscape'],
-  'playa-roja-paracas': ['beach', 'water', 'desert', 'landscape'],
-}
-
 const PLACES = ['all', 'south america', 'europe', 'north america']
 const SCENE_FILTERS = ['all', 'beach', 'water', 'desert', 'alpine', 'landscape', 'street', 'architecture', 'people', 'animals', 'objects']
 
-const shopArtworks = [
-  ...artworks.filter((work) => work.id !== 'christ-in-fog-rio-de-janeiro'),
-  ...artworks.filter((work) => work.id === 'christ-in-fog-rio-de-janeiro'),
-]
+// Region and scenes are set per work in the Studio; the order is the Studio's.
+const regionOf = new Map(cms.artworks.map((work) => [work.id, work.region]))
+const scenesOf = new Map(cms.artworks.map((work) => [work.id, work.scenes]))
 
-const works = shopArtworks.map((work) => {
+const works = artworks.map((work) => {
   const [where, year] = work.subtitle.split(' · ')
-  const country = where.split(', ').pop()!
   return {
     ...work,
-    place: REGION[country] ?? 'elsewhere',
-    scenes: SCENES[work.id] ?? [],
+    place: regionOf.get(work.id) ?? 'elsewhere',
+    scenes: scenesOf.get(work.id) ?? [],
     meta: `${where.toLowerCase()} · ${year}`,
     ratio: work.size[0] / work.size[1],
     href: `/works/${work.id}`,
   }
 })
 
-// two large pieces standing in for the wider bodies of work
-const CATALOGS = [
-  {
-    title: 'the hamptons',
-    image: '/images/catalogs/the-hamptons/24-montauk.webp',
-    imageCaption: '24 — montauk',
-    description: 'the body of work shown for the east coast summer — coastline, light, and the hours around it. available as custom prints framed to the room.',
-    details: '36 works  ·  seasonal selection',
-    note: '',
-  },
-  {
-    title: 'selected works',
-    image: '/catalogs/product4-cows-tall.webp',
-    imageCaption: '',
-    description: 'a wider selection from the archive. brazil, malta, peru, italy, switzerland. shown for custom orders, interiors, and collectors working at scale.',
-    details: '60+ works.',
-    note: 'this is a selection, not the archive. if the place you are looking for is not here, write to the studio.',
-  },
-]
-
-// Selected Works stays prepared in the source, but is currently off the public site.
-const VISIBLE_CATALOGS = CATALOGS.filter((catalog) => catalog.title !== 'selected works')
+// The catalogs the Studio marks "show on /works", each linking to its own page.
+const VISIBLE_CATALOGS = cms.catalogs.filter((catalog) => catalog.showOnWorks)
 
 function Filter({
   label,
@@ -223,9 +154,9 @@ function ShopIndex() {
       <ShopHeader showSpecialPrices />
 
       <section className="shop__intro" ref={head}>
-        <p className="works-page__eyebrow">tnes. opening selection</p>
-        <h1 className="shop__title"><RevealText block>Works</RevealText></h1>
-        <p className="works-page__description">Photographs from across the archive. Each is shown in its complete composition and offered for inquiry as a physical work.</p>
+        <p className="works-page__eyebrow">{cms.works.eyebrow}</p>
+        <h1 className="shop__title"><RevealText block>{cms.works.title}</RevealText></h1>
+        <p className="works-page__description">{cms.works.description}</p>
 
         <nav className="shop__tabs" aria-label="Seções da loja">
           <a className="shop__tab shop__tab--on" href="#works"><RevealText>available works</RevealText></a>
@@ -260,7 +191,7 @@ function ShopIndex() {
               >
                 <figure className="shop__figure">
                   <img
-                    src={work.image}
+                    src={sized(work.image, 1400)}
                     alt={`${work.title}, ${work.subtitle}`}
                     width={Math.round(work.size[0] * 1000)}
                     height={Math.round(work.size[1] * 1000)}
@@ -285,31 +216,31 @@ function ShopIndex() {
       </div>
 
       <section className="shop__catalogs" id="catalogs" ref={catalogs}>
-        <h2 className="shop__section-title"><RevealText block>catalogs.</RevealText></h2>
+        <h2 className="shop__section-title"><RevealText block>{cms.works.catalogsTitle}</RevealText></h2>
         <p className="shop__section-sub">
-          <RevealText>work from the archive, gathered into sets. a place, a season, a way of looking.</RevealText>
+          <RevealText>{cms.works.catalogsSubtitle}</RevealText>
         </p>
 
         <div className="shop__catalog-grid">
           {VISIBLE_CATALOGS.map((catalog) => (
-            <a className="shop__catalog" key={catalog.title} href={catalogHref(catalog.title)}>
+            <a className="shop__catalog" key={catalog.slug} href={`/works/catalogs/${catalog.slug}`}>
               <div className="shop__catalog-media">
                 <figure className="shop__figure">
-                  <img src={catalog.image} alt={catalog.title} loading="lazy" />
-                  {catalog.title !== 'the hamptons' && <span className="shop__catalog-private">[O] private</span>}
+                  {catalog.cardImage && <img src={sized(catalog.cardImage.src, 1400)} alt={catalog.cardImage.alt || catalog.title} loading="lazy" />}
+                  {catalog.password && <span className="shop__catalog-private">[O] private</span>}
                 </figure>
-                {catalog.imageCaption && <p className="shop__catalog-caption">{catalog.imageCaption}</p>}
+                {catalog.cardCaption && <p className="shop__catalog-caption">{catalog.cardCaption}</p>}
               </div>
               <div className="shop__catalog-info">
                 <p className="shop__catalog-title">{catalog.title}.</p>
                 {catalog.description && (
                   <p className="shop__catalog-description">{catalog.description}</p>
                 )}
-                {catalog.details && (
-                  <p className="shop__catalog-details">{catalog.details}</p>
+                {catalog.cardDetails && (
+                  <p className="shop__catalog-details">{catalog.cardDetails}</p>
                 )}
-                {catalog.note && (
-                  <p className="shop__catalog-note">{catalog.note}</p>
+                {catalog.cardNote && (
+                  <p className="shop__catalog-note">{catalog.cardNote}</p>
                 )}
                 <p className="shop__catalog-link">
                   view catalog <span className="shop__arrow" aria-hidden="true">→</span>

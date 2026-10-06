@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from 'react'
 import { artworks } from '../data/artworks'
+import { cms, paragraphsOf, sized, type CmsCatalog } from '../data/cms'
 import { inquiryMailto, sendInquiry } from '../lib/contact'
 import { trackAnalyticsEvent } from '../analytics/clarity'
 import { RevealText } from './reveal'
@@ -9,13 +10,6 @@ import EarlyAccess from './EarlyAccess'
 import './home.css'
 import './shop.css'
 import './catalog.css'
-
-type CatalogSlug = 'the-hamptons' | 'selected-works'
-
-const CATALOG_PASSWORDS: Record<CatalogSlug, string> = {
-  'the-hamptons': 'hampTNES.',
-  'selected-works': 'victor',
-}
 
 const CATALOG_INQUIRY_TYPES = [
   'acquisition',
@@ -115,81 +109,47 @@ function CatalogInquiry({ onClose }: { onClose: () => void }) {
   )
 }
 
-const catalogCopy = {
-  'the-hamptons': {
-    title: 'the hamptons',
-    description: 'the body of work shown for the east coast summer — coastline, light, and the hours around it. available as custom prints framed to the room.',
-    meta: 'summer 2026  ·  east hampton, napeague, montauk  ·  36 works',
-    ids: ['runner', 'the-pool', 'ditch-plains-far', 'praia-da-baleia', 'wied-il-ghasri', 'ischia-mezzatorre'],
-  },
-  'selected-works': {
-    title: 'selected works',
-    description: 'a wider selection from the archive across brazil, malta, peru, italy, and switzerland — shown for custom orders, interiors, and collectors working at scale.',
-    meta: '60+ works  ·  archive selection  ·  studio catalog',
-    ids: ['wied-il-ghasri', 'moreira-crowded-beach', 'florence-dogman', 'lauterbrunnen', 'ditch-plains-far', 'appenzell-alpine-lake'],
-  },
-} as const
+// Blocks of photographs, in order. Unset in the Studio, the catalog takes the
+// rhythm The Hamptons was laid out with; photographs left over sit in pairs.
+const DEFAULT_SPREADS = [4, 3, 3, 4, 3, 4, 3, 4]
 
-const hamptonsLocations = [
-  'main beach', 'georgica beach', 'main beach', 'atlantic ave beach',
-  'indian wells beach', 'ditch plains', 'ditch plains', 'ditch plains',
-  'main beach', 'main beach', 'main beach', 'shadmoor park',
-  'shadmoor park', 'shadmoor park', 'ditch plains', 'main beach',
-  'atlantic ave beach', 'hook pond', 'napeague', 'napeague',
-  'napeague', 'montauk', 'east hampton', 'montauk',
-  'montauk', 'napeague', 'montauk', 'montauk',
-  'napeague', 'napeague', 'east hampton', 'napeague',
-  'napeague', 'napeague', 'napeague', 'main beach',
-] as const
-
-const hamptonsWorks = hamptonsLocations.map((location, index) => {
-  const number = String(index + 1).padStart(2, '0')
-  return {
-    number,
-    location,
-    image: `/images/catalogs/the-hamptons/${number}-${location.replaceAll(' ', '-')}.webp`,
-    preview: `/images/catalogs/the-hamptons/${number}-${location.replaceAll(' ', '-')}-1200.webp`,
+function spreadsOf<T>(photos: T[], sizes: number[]) {
+  const spreads: T[][] = []
+  let used = 0
+  for (const size of sizes.length ? sizes : DEFAULT_SPREADS) {
+    if (used >= photos.length) break
+    spreads.push(photos.slice(used, used + size))
+    used += size
   }
-})
-
-// One website spread per photographic page in the final catalog PDF.
-const hamptonsSpreadSizes = [4, 3, 3, 4, 3, 4, 3, 4, 2, 2, 2, 2] as const
-const hamptonsSpreads = hamptonsSpreadSizes.map((size, spreadIndex) => {
-  const start = hamptonsSpreadSizes.slice(0, spreadIndex).reduce<number>((total, value) => total + value, 0)
-  return hamptonsWorks.slice(start, start + size)
-})
-
-const chapterCopy = [
-  ['coastline', 'edges of land and water. undulating shorelines and open horizon.'],
-  ['light', 'light in motion. reflective water and moments that fade.'],
-  ['stillness', 'quiet scenes held long enough to breathe, observe, and be.'],
-  ['distance', 'places remembered by atmosphere, scale, and the space between.'],
-] as const
-
-export function isCatalogSlug(value: string | null): value is CatalogSlug {
-  return value === 'the-hamptons'
+  while (used < photos.length) {
+    spreads.push(photos.slice(used, used + 2))
+    used += 2
+  }
+  return spreads
 }
 
-export default function Catalog({ slug }: { slug: CatalogSlug }) {
+// The Studio serves every size from one upload; the files the site shipped
+// with before the Studio kept a 1200 px copy beside each original.
+const previewOf = (src: string) => src.startsWith('https://') ? sized(src, 1200) : src.replace(/\.webp$/, '-1200.webp')
+
+export function isCatalogSlug(value: string | null): value is string {
+  return cms.catalogs.some((catalog) => catalog.slug === value)
+}
+
+export default function Catalog({ slug }: { slug: string }) {
+  const catalog = cms.catalogs.find((entry) => entry.slug === slug) as CmsCatalog
   const openContact = useContactStore((state) => state.openContact)
-  const [unlocked, setUnlocked] = useState(slug === 'the-hamptons')
+  const [unlocked, setUnlocked] = useState(!catalog.password)
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [inquiryOpen, setInquiryOpen] = useState(false)
   const [error, setError] = useState('')
-  const catalog = catalogCopy[slug]
-  const selected = catalog.ids
-    .map((id) => artworks.find((work) => work.id === id))
-    .filter((work): work is (typeof artworks)[number] => Boolean(work))
-  const chapterOffset = slug === 'selected-works' ? 2 : 0
-  const chapters = Array.from({ length: Math.ceil(selected.length / 3) }, (_, index) => ({
-    label: chapterCopy[(index + chapterOffset) % chapterCopy.length],
-    works: selected.slice(index * 3, index * 3 + 3),
-  }))
+  const photos = catalog.photos.map((photo, index) => ({ ...photo, number: String(index + 1).padStart(2, '0') }))
+  const spreads = spreadsOf(photos, catalog.spreads)
 
   const unlockCatalog = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
-    if (password !== CATALOG_PASSWORDS[slug]) {
+    if (password !== catalog.password) {
       setError('incorrect password. please try again.')
       return
     }
@@ -259,114 +219,73 @@ export default function Catalog({ slug }: { slug: CatalogSlug }) {
           <div className="catalog-page__lead">
             <h1><RevealText block>{catalog.title}.</RevealText></h1>
             <p>{catalog.description}</p>
-            <p className="catalog-page__meta">{catalog.meta}</p>
-            {slug === 'the-hamptons' && (
-              <button
-                className="catalog-page__lead-inquire"
-                type="button"
-                onClick={() => openContact('the hamptons catalog inquiry')}
-              >
-                inquire <span aria-hidden="true">→</span>
-              </button>
-            )}
+            {catalog.meta && <p className="catalog-page__meta">{catalog.meta}</p>}
+            <button
+              className="catalog-page__lead-inquire"
+              type="button"
+              onClick={() => openContact(catalog.inquireSubject || `${catalog.title} catalog inquiry`)}
+            >
+              inquire <span aria-hidden="true">→</span>
+            </button>
           </div>
 
-          <div className="catalog-page__facts">
-            {slug === 'the-hamptons' ? (
+          {catalog.studioNote.text && (
+            <div className="catalog-page__facts">
               <div className="catalog-page__studio-note">
-                <p className="catalog-page__studio-label">the studio</p>
-                <h2>nothing happens twice.</h2>
-                <p>
-                  no one goes back for a moment. stand in<br />
-                  the same place a year later and it hands<br />
-                  you something else.
-                </p>
-                <p>
-                  what is here is one person's record of one<br />
-                  summer in the hamptons. not a group show.<br />
-                  not a marketplace.
-                </p>
-                <p>
-                  owning a piece is keeping the minute<br />
-                  someone stopped, and deciding it was<br />
-                  worth keeping.
-                </p>
-                <p>thirty-six images here. one becomes the print.</p>
+                {catalog.studioNote.label && <p className="catalog-page__studio-label">{catalog.studioNote.label}</p>}
+                {catalog.studioNote.title && <h2>{catalog.studioNote.title}</h2>}
+                {/* a blank line in the Studio starts a paragraph; a single
+                    line break stays a break, the way the text was set */}
+                {paragraphsOf(catalog.studioNote.text).map((paragraph) => (
+                  <p key={paragraph}>
+                    {paragraph.split('\n').map((line, index) => (
+                      <span key={index}>{index > 0 && <br />}{line}</span>
+                    ))}
+                  </p>
+                ))}
               </div>
-            ) : (
-              <dl>
-                <div><dt>purpose</dt><dd>a curated body of work for custom prints and collector editions.</dd></div>
-                <div><dt>prints</dt><dd>available in multiple sizes with archival materials and framing options.</dd></div>
-                <div><dt>interiors</dt><dd>selected works shown in residential and hospitality spaces.</dd></div>
-                <div><dt>collectors</dt><dd>for collectors, curators, and design professionals.</dd></div>
-                <div><dt>orders</dt><dd>all orders placed upon inquiry.</dd></div>
-              </dl>
-            )}
-            {slug !== 'the-hamptons' && (
-              <div className="catalog-page__actions">
-                <button type="button" onClick={() => openContact(`${catalog.title} print inquiry`)}>
-                  inquire about prints <span aria-hidden="true">→</span>
-                </button>
-                <a href="/works#catalogs">all catalogs <span aria-hidden="true">→</span></a>
-              </div>
-            )}
-          </div>
+            </div>
+          )}
         </div>
       </section>
 
-      {slug === 'the-hamptons' ? (
-        <section className="catalog-page__hamptons" aria-label="the hamptons works 01 through 36">
-          {hamptonsSpreads.map((works, spreadIndex) => (
-            <div
-              className={`catalog-page__spread catalog-page__spread--${works.length} ${works.length === 3 && spreadIndex === 1 ? 'catalog-page__spread--wide-last' : ''}`}
-              key={works[0].number}
-            >
-              {works.map((work, workIndex) => (
-                <figure
-                  className={`catalog-page__hamptons-work ${works.length === 3 && workIndex === (spreadIndex === 1 ? 2 : 0) ? 'catalog-page__hamptons-work--wide' : ''} ${['07', '29', '32', '35'].includes(work.number) ? 'catalog-page__hamptons-work--compact' : ''}`}
-                  key={work.number}
+      <section
+        className="catalog-page__hamptons"
+        aria-label={`${catalog.title} works 01 through ${String(photos.length).padStart(2, '0')}`}
+      >
+        {spreads.map((works, spreadIndex) => (
+          <div
+            className={`catalog-page__spread catalog-page__spread--${works.length} ${works.length === 3 && spreadIndex === 1 ? 'catalog-page__spread--wide-last' : ''}`}
+            key={works[0].number}
+          >
+            {works.map((work, workIndex) => (
+              <figure
+                className={`catalog-page__hamptons-work ${works.length === 3 && workIndex === (spreadIndex === 1 ? 2 : 0) ? 'catalog-page__hamptons-work--wide' : ''} ${work.compact ? 'catalog-page__hamptons-work--compact' : ''}`}
+                key={work.number}
+              >
+                <button
+                  className="catalog-page__hamptons-trigger"
+                  type="button"
+                  onClick={() => openContact(`${catalog.title} — photograph ${work.number} — ${work.location}`)}
+                  aria-label={`inquire about photograph ${work.number}, ${work.location}`}
                 >
-                  <button
-                    className="catalog-page__hamptons-trigger"
-                    type="button"
-                    onClick={() => openContact(`the hamptons — photograph ${work.number} — ${work.location}`)}
-                    aria-label={`inquire about photograph ${work.number}, ${work.location}`}
-                  >
-                    <img
-                      src={work.preview}
-                      srcSet={`${work.preview} 1200w, ${work.image} 2400w`}
-                      sizes="(max-width: 800px) calc(100vw - 32px), 50vw"
-                      alt={`${work.number}, ${work.location}, the hamptons, 2026`}
-                      loading={spreadIndex === 0 ? 'eager' : 'lazy'}
-                      decoding="async"
-                    />
-                    <span className="catalog-page__hamptons-caption"><span>{work.number}</span>{work.location}</span>
-                  </button>
-                </figure>
-              ))}
-            </div>
-          ))}
-        </section>
-      ) : (
-        <section className="catalog-page__timeline" aria-label={`${catalog.title} works`}>
-          {chapters.map(({ label: [title, description], works }, index) => (
-            <article className="catalog-page__chapter" key={`${title}-${index}`}>
-              <header>
-                <p><span>{String(index + chapterOffset + 1).padStart(2, '0')}</span>{title}</p>
-                <p>{description}</p>
-              </header>
-              <div className={`catalog-page__mosaic catalog-page__mosaic--${works.length}`}>
-                {works.map((work, workIndex) => (
-                  <a className={`catalog-page__work catalog-page__work--${workIndex + 1} catalog-page__work--${work.id}`} href={work.shopifyHandle ? `/works/${work.id}` : '/works'} key={work.id}>
-                    <figure><img src={work.image} alt={`${work.title}, ${work.subtitle}`} loading="lazy" /></figure>
-                    <p><span>{work.title.toLowerCase()}.</span><span>{work.subtitle.toLowerCase()}</span></p>
-                  </a>
-                ))}
-              </div>
-            </article>
-          ))}
-        </section>
-      )}
+                  <img
+                    src={previewOf(work.image)}
+                    srcSet={`${previewOf(work.image)} 1200w, ${sized(work.image, 2400)} 2400w`}
+                    sizes="(max-width: 800px) calc(100vw - 32px), 50vw"
+                    width={work.width}
+                    height={work.height}
+                    alt={`${work.number}, ${work.location}, ${catalog.title}`}
+                    loading={spreadIndex === 0 ? 'eager' : 'lazy'}
+                    decoding="async"
+                  />
+                  <span className="catalog-page__hamptons-caption"><span>{work.number}</span>{work.location}</span>
+                </button>
+              </figure>
+            ))}
+          </div>
+        ))}
+      </section>
 
       <EarlyAccess />
       <ShopFooter />

@@ -3,6 +3,8 @@ import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { SplitText } from 'gsap/SplitText'
 import { useContactStore } from '../store/useContactStore'
+import { artworks } from '../data/artworks'
+import { cms, linesOf, sized } from '../data/cms'
 import { RevealText, useSectionTextReveal } from './reveal'
 import EarlyAccess from './EarlyAccess'
 import { ShopFooter, ShopHeader } from './ShopChrome'
@@ -28,24 +30,11 @@ gsap.registerPlugin(ScrollTrigger, SplitText)
  *   · the sticky cover pair, held by CSS, not by `pin`
  */
 
-// The last chapter has not happened yet, so it has no photographs of its own.
-// It alone still draws from the v1 prints as placeholders; every chapter that
-// already took place carries its real installation shots in `photos`.
-const POOL = [
-  'appenzell_alpinelake_2025_v1.webp',
-  'baleia_biker_2025_v1.webp',
-  'calpe_murallaroja_2025_v1.webp',
-  'ditchplains_far_2026_v1.webp',
-  'florence_dogman_2025_v1.webp',
-  'gozo_cavegirl_2025_v1.webp',
-  'ipanema_riorunner_2025_v1.webp',
-  'ischia_mezzatorre_2025_v1.webp',
-  'moreira_crowdedbeach_2025_v1.webp',
-  'murren_foggycows_2025_v1.webp',
-  'paracas_flatdunes_2025_v1.webp',
-  'stpeterspool_hero_2025_v1.webp',
-]
-const photo = (i: number) => `/artworks/v1/${POOL[((i % POOL.length) + POOL.length) % POOL.length]}`
+// A chapter that has not happened yet has no photographs of its own, so it
+// draws from the archive's works as placeholders; every chapter that already
+// took place carries its real installation shots in `photos`.
+const POOL = artworks.slice(0, 12).map((work) => sized(work.image, 1600))
+const photo = (i: number) => POOL[((i % POOL.length) + POOL.length) % POOL.length]
 
 type Moment = {
   index: string
@@ -68,75 +57,21 @@ type Moment = {
 /** a chapter's own photograph where it has one, the placeholder pool where not */
 const shot = (moment: Moment, i: number) => moment.photos?.[i] ?? photo(moment.seed + i)
 
-const MOMENT_ENTRIES: Moment[] = [
-  {
-    index: '01',
-    place: 'new york',
-    titleLines: ['nyc soft', 'launch.'],
-    date: '03/27/26',
-    abstract:
-      'the first private showing of TNES. one night in new york, shared with friends, family, and a small group of invited guests before the work had ever been shown publicly.',
-    links: [{ label: 'view the archive', href: '/works' }],
-    seed: 0,
-    photos: [
-      '/moments/nyc-soft-launch/cover.webp',
-      '/moments/nyc-soft-launch/01.webp',
-      '/moments/nyc-soft-launch/02.webp',
-      '/moments/nyc-soft-launch/03.webp',
-    ],
-  },
-  {
-    index: '02',
-    place: 'são paulo',
-    titleLines: ['encontros.'],
-    date: '04/28/26',
-    abstract:
-      'the first event in brazil, where TNES. began — and where the name came from. my cousins call me “vitones.” take out the o, and you get TNES.',
-    links: [{ label: 'view the archive', href: '/works' }],
-    seed: 3,
-    photos: [
-      '/moments/encontros/cover.webp',
-      '/moments/encontros/01.webp',
-      '/moments/encontros/02.webp',
-      '/moments/encontros/03.webp',
-    ],
-  },
-  {
-    index: '03',
-    place: 'east hampton, new york',
-    status: 'current',
-    titleLines: ['4th annual', 'east hampton', 'art affair.'],
-    date: '06/27–06/28/26',
-    abstract:
-      'the first public appearance of TNES. and my first art fair. shown alongside other artists, with work made in the same place I had always gone to slow down, wander, and follow my eye. the beginning of TNES. entering the world publicly.',
-    links: [
-      // no href: this one raises the contact panel with its subject written
-      { label: 'inquire about works on view', contact: 'works on view — east hampton art affair' },
-      { label: 'view the archive', href: '/works' },
-    ],
-    seed: 6,
-    photos: [
-      '/moments/east-hampton-art-affair/cover.webp',
-      '/moments/east-hampton-art-affair/01.webp',
-      '/moments/east-hampton-art-affair/02.webp',
-      '/moments/east-hampton-art-affair/03.webp',
-    ],
-  },
-  {
-    index: '04',
-    place: 'new york',
-    status: 'next',
-    titleLines: ['seasonal', 'release.'],
-    date: 'next',
-    abstract:
-      'six works from the archive and one exclusive object, released together and never reissued.',
-    links: [
-      { label: 'count down to the release', href: '#release' },
-      { label: 'view the archive', href: '/works' },
-    ],
-    seed: 9,
-  },
-]
+// The chapters, in the order the Studio lists them, numbered by that order.
+const MOMENT_ENTRIES: Moment[] = cms.moments.map((entry, index) => ({
+  index: String(index + 1).padStart(2, '0'),
+  place: entry.place,
+  status: entry.status === 'past' ? undefined : entry.status,
+  titleLines: linesOf(entry.title),
+  date: entry.date,
+  abstract: entry.abstract,
+  links: entry.links.map(({ label, href, contactSubject }) =>
+    href ? { label, href } : { label, contact: contactSubject || label }),
+  seed: index * 3,
+  photos: entry.photos.length === 4
+    ? [sized(entry.photos[0].src, 2400), sized(entry.photos[1].src, 1600), sized(entry.photos[2].src, 1600), sized(entry.photos[3].src, 1600)]
+    : undefined,
+}))
 
 const TILES = 5
 
@@ -203,24 +138,22 @@ function Intro() {
   return (
     <section className="moments__intro" ref={root}>
       <div className="moments__sides" aria-hidden="true">
-        <figure className="moments__side">
-          <img src="/moments/east-hampton-art-affair/intro.webp" alt="" loading="lazy" decoding="async" />
-        </figure>
-        <figure className="moments__side">
-          <img src="/moments/nyc-soft-launch/intro.webp" alt="" loading="lazy" decoding="async" />
-        </figure>
+        {cms.momentsPage.introImages.map((image) => (
+          <figure className="moments__side" key={image.src}>
+            <img src={sized(image.src, 1600)} alt="" loading="lazy" decoding="async" />
+          </figure>
+        ))}
       </div>
 
       <div className="moments__intro-inner">
         <p className="moments__pretitle" data-lines>
-          [moments]
+          {cms.momentsPage.pretitle}
         </p>
         <h1 className="moments__display" data-lines>
-          moments.
+          {cms.momentsPage.title}
         </h1>
         <p className="moments__abstract" data-lines>
-          these are the places where TNES. has existed in real life. each appearance changes a space
-          for a moment, then it is gone. this is the record of where the work has been.
+          {cms.momentsPage.intro}
         </p>
       </div>
     </section>
@@ -589,9 +522,9 @@ export default function Moments() {
       <section className="moments__release" id="release">
         <EarlyAccess
           className="moments__signup"
-          eyebrow="seasonal release 01"
-          title="the archive opens."
-          copy="release announced to the list first."
+          eyebrow={cms.momentsPage.release.eyebrow}
+          title={cms.momentsPage.release.title}
+          copy={cms.momentsPage.release.copy}
         />
       </section>
 
