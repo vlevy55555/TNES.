@@ -1,67 +1,166 @@
 <!doctype html>
-<html lang="pt-BR">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex">
-<title>TNES — quadro na parede (POC de AR)</title>
+<title>See it on your wall — TNES.</title>
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <style>
-  html, body { height: 100%; margin: 0; background: #ecebe7; color: #131313; font: 14px/1.4 Helvetica, Arial, sans-serif; }
-  model-viewer { width: 100%; height: 100%; }
-  /* Fundo escuro: durante o AR o texto fica por cima da imagem da câmera. */
-  #status { position: absolute; left: 0; right: 0; top: 0; margin: 0; padding: 16px; text-align: center; background: rgba(19, 19, 19, .85); color: #fff; }
-  button[slot="ar-button"] {
-    position: absolute; left: 50%; bottom: 32px; transform: translateX(-50%);
-    padding: 14px 28px; border: 0; background: #131313; color: #fff; font: inherit; letter-spacing: .08em; text-transform: uppercase;
+  /* The site's own paper, ink and type (src/home/shop.css), restated here because this page
+     is a static file outside the app's bundle. */
+  @font-face { font-family: 'Manrope'; src: url('/fonts/Manrope-Regular.ttf') format('truetype'); font-weight: 400; font-display: swap; }
+  @font-face { font-family: 'Manrope'; src: url('/fonts/Manrope-Medium.ttf') format('truetype'); font-weight: 500; font-display: swap; }
+  :root {
+    --paper: #f8f7f4;
+    --ink: #0b0b0b;
+    --muted: #5d5d5d;
+    --line: rgba(11, 11, 11, 0.2);
+    --pad-x: clamp(20px, 3.3vw, 52px);
+    --pad-y: clamp(20px, 3.4vw, 54px);
   }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; }
+  body {
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr) auto;
+    background: var(--paper);
+    color: var(--ink);
+    font: 400 15px/1.45 'Manrope', 'Helvetica Neue', Arial, sans-serif;
+    font-synthesis: none;
+    text-rendering: optimizeLegibility;
+  }
+  a { color: inherit; }
+  header { display: flex; align-items: baseline; justify-content: space-between; gap: 24px; padding: var(--pad-y) var(--pad-x) 0; }
+  .logo { font: 500 clamp(26px, 2.4vw, 38px)/1 Helvetica, 'Helvetica Neue', Arial, sans-serif; letter-spacing: 0.14em; text-decoration: none; }
+  header nav a { color: var(--muted); text-decoration: none; }
+  header nav a:hover { color: var(--ink); }
+
+  model-viewer { width: 100%; height: 100%; min-height: 240px; background: transparent; --poster-color: transparent; }
+  /* Only what sits inside the model-viewer stays on screen during a WebXR session, so the
+     guidance for that session lives here, over the camera image. */
+  .ar-hint { display: none; position: absolute; inset: 0 0 auto; margin: 0; padding: 16px var(--pad-x); background: rgba(11, 11, 11, 0.82); color: var(--paper); text-align: center; }
+  model-viewer[ar-status="session-started"] .ar-hint,
+  model-viewer[ar-status="object-placed"] .ar-hint { display: block; }
+
+  .work { display: grid; gap: 18px; padding: 0 var(--pad-x) var(--pad-y); }
+  .work__text { display: grid; gap: 4px; }
+  h1 { margin: 0; font-size: clamp(22px, 2.2vw, 34px); font-weight: 500; line-height: 1.1; letter-spacing: -0.01em; }
+  p { margin: 0; }
+  .muted { color: var(--muted); }
+  .ar-button {
+    display: grid; place-items: center; width: 100%; min-height: clamp(56px, 5vw, 72px);
+    border: 1px solid var(--ink); border-radius: 0; background: none; color: var(--ink);
+    font: inherit; font-size: clamp(15px, 1.3vw, 19px); font-weight: 500; letter-spacing: -0.01em; cursor: pointer;
+    transition: background-color 180ms ease, color 180ms ease;
+  }
+  .ar-button:hover, .ar-button:active { background: var(--ink); color: var(--paper); }
+  .ar-button:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
+  .phone { display: flex; align-items: center; gap: 18px; }
+  .phone svg { flex: none; width: 112px; height: 112px; }
+  [hidden] { display: none !important; }
+  @media (min-width: 900px) {
+    .work { grid-template-columns: minmax(0, 1fr) minmax(280px, 420px); align-items: end; }
+  }
+  @media (prefers-reduced-motion: reduce) { .ar-button { transition: none; } }
 </style>
 <script type="module" src="https://cdn.jsdelivr.net/npm/@google/model-viewer@4.1.0/dist/model-viewer.min.js"></script>
 </head>
 <body>
-<!-- O model-viewer só entrega o quadro ao AR do aparelho; ar-placement="wall" pede parede e
-     ar-scale="fixed" trava o tamanho real. O GLB é um arquivo estático em metros, gerado por
-     scripts/build-ar-glb.mjs, porque o Scene Viewer baixa o modelo por conta própria.
-     Ordem no Android: Scene Viewer (o app de AR do Google, com posicionamento vertical) e, se ele
-     não existir no aparelho, WebXR dentro do Chrome. No iPhone, Quick Look.
-     ponytail: sem ios-src — o model-viewer converte o GLB em USDZ sozinho, e hoje esse USDZ sai com
-     ancoragem horizontal (google/model-viewer#3989). Exportar um USDZ próprio é o passo do iPhone. -->
-<model-viewer id="mv" src="/prototype-3d/rio-runner-36x24.glb" ar ar-modes="scene-viewer webxr quick-look"
-              ar-placement="wall" ar-scale="fixed" camera-controls shadow-intensity="0">
-  <button slot="ar-button">Ver na minha parede</button>
-  <!-- Dentro do model-viewer de propósito: só os filhos dele continuam visíveis na sessão de AR. -->
-  <p id="status">Carregando o quadro…</p>
+<header>
+  <a class="logo" href="/">TNES.</a>
+  <nav><a href="/works/runner">back to the work</a></nav>
+</header>
+
+<!-- model-viewer only hands the print to the phone's own AR: ar-placement="wall" asks for a
+     wall, ar-scale="fixed" holds the real size. The two models are static files in metres,
+     written by scripts/build-ar-models.mjs.
+     Android: Scene Viewer (Google's AR viewer, which places on vertical surfaces) and, where a
+     phone lacks it, WebXR inside Chrome. iPhone: AR Quick Look with the .usdz. -->
+<model-viewer id="mv" src="/prototype-3d/rio-runner-36x24.glb" ios-src="/prototype-3d/rio-runner-36x24.usdz"
+              alt="Rio Runner, framed in black, 36 by 24 inches"
+              ar ar-modes="scene-viewer webxr quick-look" ar-placement="wall" ar-scale="fixed"
+              camera-controls touch-action="pan-y" interaction-prompt="none" shadow-intensity="0">
+  <!-- An empty ar-button slot keeps model-viewer's own icon away; the page's button below does the job. -->
+  <span slot="ar-button"></span>
+  <p class="ar-hint" id="hint" aria-live="polite"></p>
 </model-viewer>
+
+<section class="work">
+  <div class="work__text">
+    <h1>Rio Runner</h1>
+    <p class="muted">Ipanema, Rio de Janeiro, Brazil · 2025</p>
+    <p class="muted" id="spec">36 × 24 in print · black frame</p>
+  </div>
+  <div class="work__text">
+    <button class="ar-button" id="ar" type="button" hidden>see it on your wall</button>
+    <div class="phone" id="phone" hidden>
+      <span id="qr"></span>
+      <p>AR opens on a phone. Scan the code to carry on there, at true size.</p>
+    </div>
+    <p class="muted" id="status" aria-live="polite">Loading the print…</p>
+  </div>
+</section>
 
 <script type="module">
 const mv = document.getElementById('mv')
 const status = document.getElementById('status')
+const hint = document.getElementById('hint')
+const arButton = document.getElementById('ar')
 
-// Botão de calibração para comparar os motores no aparelho: ?ar=webxr ou ?ar=scene-viewer força um só.
+// Calibration knob for comparing the engines on a real phone: ?ar=webxr or ?ar=scene-viewer
+// forces a single mode.
 const forced = new URLSearchParams(location.search).get('ar')
 if (forced) mv.setAttribute('ar-modes', forced)
 
+const onPhone = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent)
 const cm = (m) => Math.round(m * 100)
-// No celular não há console: o estado do AR aparece na tela. Os estados de sessão abaixo só existem
-// no WebXR (o Scene Viewer é outro app e não devolve nada à página). No WebXR o model-viewer só mostra
-// o quadro depois que o aparelho se localiza, e só o leva para a parede quando o ARCore acha um plano
-// vertical; até lá ele fica onde a câmera apontava no primeiro quadro.
+
+// A phone has no console, so the state of the AR is written on screen. The session states only
+// exist in WebXR (Scene Viewer and Quick Look are other apps and report nothing back). There,
+// model-viewer draws the print once the phone has located itself, and moves it to the wall only
+// when ARCore finds a vertical plane; until then it stays where the camera first pointed.
 function show() {
   if (!mv.loaded) return
-  const { x: W, y: H } = mv.getDimensions()
+  const { x, y } = mv.getDimensions()
+  document.getElementById('spec').textContent = `36 × 24 in print · black frame · ${cm(x)} × ${cm(y)} cm on the wall`
   const ar = mv.getAttribute('ar-status')
   const inSession = ar === 'session-started' || ar === 'object-placed'
+  hint.textContent =
+    mv.getAttribute('ar-tracking') === 'not-tracking' ? 'Lost track of the room. More light helps, and so does aiming at something with contrast.'
+    : ar === 'object-placed' ? 'On your wall, at true size. Drag to move it.'
+    : 'Looking for your wall. Move the phone slowly from side to side. Until it is found, the print stays where the camera first pointed.'
+  arButton.hidden = !mv.canActivateAR
   status.textContent =
-    ar === 'failed' ? 'O AR não abriu neste aparelho (sem ARCore/ARKit ou câmera bloqueada).'
-    : inSession && mv.getAttribute('ar-tracking') === 'not-tracking' ? 'Sem rastreamento: o celular não está se localizando. Mais luz, e mire em algo com contraste.'
-    : ar === 'object-placed' ? 'Parede encontrada: quadro posicionado. Arraste para mover.'
-    : inSession ? 'Procurando a parede: mova o celular devagar para os lados. Até achar, o quadro fica parado onde a câmera apontava ao abrir.'
-    : mv.canActivateAR ? `Tamanho real: ${cm(W)} × ${cm(H)} cm. Aponte a câmera para a parede e só então toque no botão.`
-    : `Prévia 3D (${cm(W)} × ${cm(H)} cm). O AR abre no celular: Chrome no Android ou Safari no iPhone.`
+    ar === 'failed' ? 'AR could not start on this phone.'
+    : inSession ? ''
+    : mv.canActivateAR ? 'Point your camera at the wall, then tap the button. The print appears at its real size.'
+    : onPhone ? 'This browser cannot open AR. Use Chrome on Android or Safari on iPhone.'
+    : ''
+  if (!mv.canActivateAR && !onPhone) showQr()
 }
 mv.addEventListener('load', show)
 mv.addEventListener('ar-status', show)
 mv.addEventListener('ar-tracking', show)
-mv.addEventListener('error', () => { status.textContent = 'O model-viewer não conseguiu carregar o quadro.' })
+mv.addEventListener('error', () => { status.textContent = 'The print could not be loaded.' })
+arButton.addEventListener('click', () => mv.activateAR())
+
+// Desktop has no AR: offer the same page on the phone instead.
+let qrShown = false
+function showQr() {
+  if (qrShown) return
+  qrShown = true
+  const script = document.createElement('script')
+  script.src = 'https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js'
+  script.onload = () => {
+    const qr = window.qrcode(0, 'M')
+    qr.addData(location.href)
+    qr.make()
+    document.getElementById('qr').innerHTML = qr.createSvgTag({ cellSize: 4, margin: 0, scalable: true })
+    document.getElementById('phone').hidden = false
+  }
+  document.head.appendChild(script)
+}
 </script>
 </body>
 </html>
