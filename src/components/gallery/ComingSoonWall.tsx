@@ -334,7 +334,7 @@ function EditorialPlate() {
  *
  * ponytail: a spreadsheet and 6 lines of Apps Script, not a mailing platform.
  * Ceiling: no double opt-in, no dedupe across visitors, no campaign sending —
- * move to Klaviyo/Shopify marketing when the list is worth mailing.
+ * move to MailerLite (api/subscribe.js) when the list is worth mailing.
  *
  * Set VITE_NOTIFY_URL in the Render dashboard to this deployment:
  *

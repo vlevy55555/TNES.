@@ -28,7 +28,7 @@
     { "source": "/prototype-3d", "destination": "/prototype-3d/index.html" },
     { "source": "/prototype-3d/:method(1|2|3)", "destination": "/prototype-3d/lab/index.html" },
     {
-      "source": "/(.*)",
+      "source": "/((?!api/).*)",
       "destination": "/index.html"
     }
   ],

@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent } from 'react'
-import { subscribeToKlaviyo } from '../lib/klaviyo'
+import { subscribeToNewsletter } from '../lib/newsletter'
 import { trackAnalyticsEvent } from '../analytics/clarity'
 
 const ARCHIVE_OPENING = new Date('2026-09-21T00:00:00-03:00')
@@ -19,7 +19,7 @@ async function subscribe(email: string) {
   if (!list.includes(email)) list.push(email)
   localStorage.setItem('tnes-subscribers', JSON.stringify(list))
 
-  await subscribeToKlaviyo(email, 'TNES. early access')
+  await subscribeToNewsletter(email, 'TNES. early access')
 }
 
 /** The copy is the only thing that changes between the pages that carry this —
