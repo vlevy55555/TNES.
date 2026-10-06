@@ -1,7 +1,7 @@
 import { useCallback } from 'react'
-import { decodeWall, encodeWall, settle, type Piece } from '../lib/wall'
+import { decodeWall, encodeWall, type Piece, type Room } from '../lib/wall'
 import ContactOverlay from './ContactOverlay'
-import WallBuilder, { isPortrait } from './WallBuilder'
+import WallBuilder, { isPortrait, wallPath } from './WallBuilder'
 
 const STORAGE = 'tnes-wall'
 
@@ -14,17 +14,15 @@ function initialWall(): Piece[] {
   } catch {
     // private mode or blocked storage: start empty
   }
-  // a hand-edited or older link may overlap: let the works make room for each other
-  return settle(decodeWall(shared ?? saved ?? '', isPortrait))
+  return decodeWall(shared ?? saved ?? '', isPortrait)
 }
 
 /** `/wall` — the gallery wall builder as a page, its state kept in the address. */
 export default function Wall() {
-  const keep = useCallback((pieces: Piece[]) => {
-    const value = encodeWall(pieces)
-    window.history.replaceState(null, '', value ? `/wall?w=${encodeURIComponent(value)}` : '/wall')
+  const keep = useCallback((pieces: Piece[], room: Room) => {
+    window.history.replaceState(null, '', wallPath(pieces, room))
     try {
-      localStorage.setItem(STORAGE, value)
+      localStorage.setItem(STORAGE, encodeWall(pieces))
     } catch {
       // the address still holds the wall
     }

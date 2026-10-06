@@ -17,7 +17,8 @@
 :where(.wall) button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; padding: 0; }
 @keyframes wall-in { from { opacity: 0; } }
 
-/* the room photo covers the screen, centred; its scale is exact (src/lib/wall.ts) */
+/* the room photo covers the screen, centred; the builder sets the photo and its
+   scale (--cm, --floor) from the chosen room (src/lib/wall.ts) */
 .wall__stage {
   position: absolute;
   left: 50%;
@@ -25,10 +26,8 @@
   translate: -50% -50%;
   width: max(100vw, 100vh * 1672 / 941);
   aspect-ratio: 1672 / 941;
-  background: url('/wall/concrete-room.webp') center / 100% 100% no-repeat;
+  background: center / 100% 100% no-repeat;
   container-type: inline-size;
-  --cm: calc(100cqw * 1.995 / 1672);
-  --floor: calc(690 / 941 * 100%);
   user-select: none;
   touch-action: none;
 }
@@ -102,7 +101,7 @@
 .wall__piece.-selected::after { opacity: 1; }
 
 /* measurements */
-.wall__dim { position: absolute; font: 11px/1 var(--mono); color: #fff; letter-spacing: .04em; white-space: nowrap; pointer-events: none; text-shadow: 0 1px 2px rgba(0, 0, 0, .45); }
+.wall__dim { position: absolute; font: 11px/1 var(--mono); color: #fff; letter-spacing: .04em; white-space: nowrap; pointer-events: none; text-shadow: 0 1px 2px rgba(0, 0, 0, .55), 0 0 8px rgba(0, 0, 0, .4); }
 .wall__dim.-w { left: 50%; bottom: 100%; transform: translate(-50%, calc(-2.5 * var(--cm) - 6px)); }
 .wall__dim.-h { left: 100%; top: 50%; transform: translate(calc(2.5 * var(--cm) + 6px), -50%) rotate(90deg); transform-origin: left center; }
 .wall__dim.-drop { left: 50%; top: 100%; width: 0; border-left: 1px dashed rgba(255, 255, 255, .8); }
@@ -194,6 +193,7 @@
 .wall__work img { display: block; width: 100%; height: auto; background: #e8e4dd; transition: opacity 200ms, scale 300ms var(--wall-ease); }
 .wall__work:hover img { opacity: .85; scale: .98; }
 .wall__work span { display: block; margin-top: 7px; font-size: 13px; }
+.wall__work[aria-pressed='true'] img { outline: 1.5px solid var(--wall-ink); outline-offset: 3px; }
 
 .wall__card {
   position: absolute; left: 50%; bottom: 22px; z-index: 6;
@@ -237,7 +237,7 @@
   .wall__card .wall__remove { grid-column: 1 / -1; justify-self: end; }
   .wall__brand small { display: none; }
   .wall__bar { padding: 14px 16px; }
-  .wall__tool { padding: 0 11px; font-size: 12px; }
+  .wall__tool { padding: 0 8px; font-size: 12px; white-space: nowrap; }
   .wall__tool svg { display: none; }
   .wall__actions { flex-wrap: wrap; justify-content: flex-end; }
 }

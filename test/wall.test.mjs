@@ -1,6 +1,6 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { decodeWall, dims, encodeWall, GAP, settle, sizeIndexOf, snapToGrid } from '../.test-build/lib/wall.js'
+import { clamp, decodeWall, dims, encodeWall, GAP, roomOf, settle, sizeIndexOf, snapToGrid } from '../.test-build/lib/wall.js'
 
 const piece = (key, x, extra = {}) => ({ key, id: 'runner', x, y: 150, size: 0, material: 'regular', finish: 'black', portrait: false, ...extra })
 
@@ -17,6 +17,17 @@ test('release lands the centre on the 5 cm grid', () => {
   const p = piece('a', 12.4, { y: 147.6 })
   snapToGrid(p)
   assert.deepEqual([p.x, p.y], [10, 150])
+})
+
+test('a work is held inside the photo of its own room', () => {
+  const far = (room) => {
+    const p = piece('a', 1000)
+    clamp(p, room)
+    return p.x + dims(p).w / 2
+  }
+  assert.ok(Math.abs(far(roomOf('concrete-room')) - 1672 / 2 / 1.995) < 0.01)
+  assert.ok(Math.abs(far(roomOf('alpine-residence')) - 1672 / 2 / 2.9) < 0.01)
+  assert.equal(roomOf('nope'), roomOf('concrete-room'))
 })
 
 test('share links round-trip and drop unknown works', () => {

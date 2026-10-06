@@ -2,12 +2,29 @@
  * The gallery wall's geometry, in centimetres on the wall plane. No DOM here,
  * so the push and the share link can be tested with node alone.
  *
- * Scale comes from the concrete-room photo (public/wall/concrete-room.webp,
- * 1672 x 941): its camera was calibrated in `Protótipos 3d/sala` — wall at
- * 5.66 m, focal length 1129 px — which puts 1.995 px on 1 cm of wall and the
- * floor line at y 690.
+ * Every room is a 1672 x 941 photo, public/wall/<id>.webp, with `pxPerCm`
+ * photo pixels on 1 cm of its wall and the wall meeting the floor at `floorY`.
+ * The concrete room's camera was calibrated in `Protótipos 3d/sala` — wall at
+ * 5.66 m, focal length 1129 px. The other rooms are read off the photo: the
+ * floor line measured, the scale taken from the furniture against the wall
+ * (a bench seat as 45 cm). Tune them here if works look too big or too small.
  */
-export const ROOM = { width: 1672, height: 941, pxPerCm: 1.995, floorY: 690 }
+export const ROOM = { width: 1672, height: 941 }
+
+export type Room = { id: string; pxPerCm: number; floorY: number }
+export const ROOMS: Room[] = [
+  { id: 'concrete-room', pxPerCm: 1.995, floorY: 690 },
+  { id: 'hotel-lobby', pxPerCm: 2.5, floorY: 760 },
+  // the banquette hides the floor line: placed from its depth and back height
+  { id: 'restaurant', pxPerCm: 2.4, floorY: 795 },
+  { id: 'beach-house', pxPerCm: 2.4, floorY: 783 },
+  { id: 'forest-retreat', pxPerCm: 2.8, floorY: 786 },
+  { id: 'limestone-coast', pxPerCm: 2.7, floorY: 777 },
+  { id: 'desert-residence', pxPerCm: 2.4, floorY: 806 },
+  { id: 'alpine-residence', pxPerCm: 2.9, floorY: 802 },
+]
+/** The room with this id; the first one for an unknown or missing id. */
+export const roomOf = (id: string | null | undefined) => ROOMS.find((r) => r.id === id) ?? ROOMS[0]
 
 export type WallMaterial = 'unframed' | 'regular' | 'aluminium' | 'glass'
 export type WallFinish = 'black' | 'white' | 'custom'
@@ -30,7 +47,6 @@ export const IN = 2.54
 /** The shop's print sizes, short x long side in inches (standardPrintSizes). */
 export const SIZES: [number, number][] = [[20, 30], [24, 36], [28, 42]]
 export const MOULDING = 3 // cm, the regular frame's face width
-export const WALL = { x: ROOM.width / 2 / ROOM.pxPerCm, top: ROOM.floorY / ROOM.pxPerCm }
 export const EYE = 145 // gallery hanging height for the centre of a work
 export const GAP = 8 // cm kept between neighbours when one pushes another
 export const GRID = 5 // cm: a released work's centre lands on this grid
@@ -54,16 +70,18 @@ export function dims(p: Pick<Piece, 'size' | 'material' | 'portrait'>) {
   return { w: pw + b * 2, h: ph + b * 2, b }
 }
 
-export function clamp(p: Piece) {
+/** Keeps a work inside the photo of `room`: half its width each side, floor to top edge. */
+export function clamp(p: Piece, room = ROOMS[0]) {
   const d = dims(p)
-  p.x = Math.max(-WALL.x + d.w / 2, Math.min(WALL.x - d.w / 2, p.x))
-  p.y = Math.max(d.h / 2 + 5, Math.min(WALL.top - d.h / 2, p.y))
+  const half = ROOM.width / 2 / room.pxPerCm
+  p.x = Math.max(-half + d.w / 2, Math.min(half - d.w / 2, p.x))
+  p.y = Math.max(d.h / 2 + 5, Math.min(room.floorY / room.pxPerCm - d.h / 2, p.y))
 }
 
-export const snapToGrid = (p: Piece) => {
+export const snapToGrid = (p: Piece, room = ROOMS[0]) => {
   p.x = Math.round(p.x / GRID) * GRID
   p.y = Math.round(p.y / GRID) * GRID
-  clamp(p)
+  clamp(p, room)
 }
 
 /**
@@ -72,7 +90,7 @@ export const snapToGrid = (p: Piece) => {
  * moves. Mutates the pieces in place.
  * ponytail: O(n²) relaxation, fine for a wall of a dozen works.
  */
-export function settle(pieces: Piece[], fixed?: Piece) {
+export function settle(pieces: Piece[], fixed?: Piece, room = ROOMS[0]) {
   for (let pass = 0; pass < 40; pass++) {
     let moved = false
     for (let i = 0; i < pieces.length; i++) {
@@ -94,8 +112,8 @@ export function settle(pieces: Piece[], fixed?: Piece) {
           a.y -= s * oy * share[0]
           b.y += s * oy * share[1]
         }
-        clamp(a)
-        clamp(b)
+        clamp(a, room)
+        clamp(b, room)
         moved = true
       }
     }
@@ -133,13 +151,16 @@ export const encodeWall = (pieces: Piece[]) =>
     .map((p) => `${p.id}.${Math.round(p.x)}.${Math.round(p.y)}.${p.size}${MATERIAL_CODES.indexOf(p.material)}${FINISH_CODES.indexOf(p.finish)}`)
     .join('~')
 
-/** Inverse of encodeWall; drops works `portraitOf` does not know (returns undefined). */
+/**
+ * Inverse of encodeWall; drops works `portraitOf` does not know (returns undefined).
+ * Positions come back as written: the builder fits them to its room.
+ */
 export function decodeWall(value: string, portraitOf: (id: string) => boolean | undefined): Piece[] {
   return value.split('~').flatMap((part, i) => {
     const m = part.match(/^([a-z0-9-]+)\.(-?\d+)\.(-?\d+)\.([0-2])([0-3])([0-2])$/)
     const portrait = m ? portraitOf(m[1]) : undefined
     if (!m || portrait === undefined) return []
-    const p: Piece = {
+    return [{
       key: `${m[1]}-${i}`,
       id: m[1],
       x: Number(m[2]),
@@ -148,8 +169,6 @@ export function decodeWall(value: string, portraitOf: (id: string) => boolean | 
       material: MATERIAL_CODES[Number(m[5])],
       finish: FINISH_CODES[Number(m[6])],
       portrait,
-    }
-    clamp(p)
-    return [p]
+    }]
   })
 }

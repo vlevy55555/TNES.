@@ -8,11 +8,14 @@ import {
   gapsOf,
   IN,
   ROOM,
+  roomOf,
+  ROOMS,
   settle,
   sizeLabel,
   SIZES,
   snapToGrid,
   type Piece,
+  type Room,
 } from '../lib/wall'
 import { useContactStore } from '../store/useContactStore'
 import './wall.css'
@@ -28,8 +31,32 @@ const cm = (v: number) => `${Math.round(v)} cm`
 const inch = (v: number) => `${Math.round(v / IN)}″`
 const copyAll = (pieces: Piece[]) => pieces.map((p) => ({ ...p }))
 
-export const wallLink = (pieces: Piece[]) =>
-  `${window.location.origin}/wall?w=${encodeURIComponent(encodeWall(pieces))}`
+/** A copy of the wall held inside `room`, overlapping works pushed apart. */
+const fit = (pieces: Piece[], room: Room) => {
+  const next = copyAll(pieces)
+  next.forEach((p) => clamp(p, room))
+  return settle(next, undefined, room)
+}
+
+const ROOM_STORAGE = 'tnes-room'
+
+/** A wall link names its room (none: the first); otherwise the room this browser chose last. */
+function initialRoom() {
+  const query = new URLSearchParams(window.location.search)
+  if (query.has('w') || query.has('r')) return roomOf(query.get('r'))
+  try {
+    return roomOf(localStorage.getItem(ROOM_STORAGE))
+  } catch {
+    return ROOMS[0]
+  }
+}
+
+/** `/wall` with the works in `w` and the room in `r`, each left out while it is the default. */
+export const wallPath = (pieces: Piece[], room: Room) => {
+  const query = [pieces.length && `w=${encodeURIComponent(encodeWall(pieces))}`, room !== ROOMS[0] && `r=${room.id}`].filter(Boolean).join('&')
+  return query ? `/wall?${query}` : '/wall'
+}
+export const wallLink = (pieces: Piece[], room: Room) => window.location.origin + wallPath(pieces, room)
 
 type Drag = {
   key: string
@@ -42,7 +69,7 @@ type Drag = {
 }
 
 /**
- * The gallery wall: works hung at true scale on the concrete room, dragged
+ * The gallery wall: works hung at true scale in a room of choice, dragged
  * into place, pushing their neighbours aside and settling on a 5 cm grid when
  * released. `/wall` renders it as a page; a work's "see on wall" renders it
  * over the product with that work already hung.
@@ -54,16 +81,19 @@ export default function WallBuilder({
   selectFirst = false,
 }: {
   initial: Piece[]
-  onChange?: (pieces: Piece[]) => void
+  onChange?: (pieces: Piece[], room: Room) => void
   /** set for the overlay: shows a close button and closes on Escape */
   onClose?: () => void
   selectFirst?: boolean
 }) {
-  const [pieces, setPieces] = useState(initial)
+  const [room, setRoom] = useState(initialRoom)
+  // a hand-edited or older link may overlap or leave this room: let the works make room
+  const [pieces, setPieces] = useState(() => fit(initial, room))
   const [leaving, setLeaving] = useState<Piece[]>([])
   const [selected, setSelected] = useState<string | null>(selectFirst ? initial[0]?.key ?? null : null)
   const [measure, setMeasure] = useState(true)
   const [drawer, setDrawer] = useState(false)
+  const [choosingRoom, setChoosingRoom] = useState(false) // what the drawer lists: rooms or works
   const [dragKey, setDragKey] = useState<string | null>(null)
   const [guides, setGuides] = useState({ v: false, h: false })
   const [copied, setCopied] = useState(false)
@@ -71,12 +101,12 @@ export default function WallBuilder({
   const drag = useRef<Drag | null>(null)
   const openContact = useContactStore((s) => s.openContact)
 
-  const live = useRef({ pieces, selected, onChange, onClose })
-  live.current = { pieces, selected, onChange, onClose }
+  const live = useRef({ pieces, room, selected, onChange, onClose })
+  live.current = { pieces, room, selected, onChange, onClose }
 
   useEffect(() => {
-    live.current.onChange?.(pieces)
-  }, [pieces])
+    live.current.onChange?.(pieces, room)
+  }, [pieces, room])
 
   // the wall is the whole screen: nothing scrolls underneath it
   useEffect(() => {
@@ -95,9 +125,25 @@ export default function WallBuilder({
     const p = next.find((q) => q.key === key)
     if (!p) return
     change(p)
-    clamp(p)
-    settle(next, p)
+    clamp(p, live.current.room)
+    settle(next, p, live.current.room)
     setPieces(next)
+  }
+
+  const openDrawer = (rooms: boolean) => {
+    setChoosingRoom(rooms)
+    setDrawer(true)
+  }
+
+  const moveTo = (next: Room) => {
+    setRoom(next)
+    setPieces(fit(pieces, next))
+    setDrawer(false)
+    try {
+      localStorage.setItem(ROOM_STORAGE, next.id)
+    } catch {
+      // the room still changes for this visit
+    }
   }
 
   const add = (id: string) => {
@@ -108,8 +154,8 @@ export default function WallBuilder({
     // beside the last work, or centred at eye level on an empty wall; settle() makes room
     const p: Piece = { key: crypto.randomUUID(), id, x: last ? last.x + 40 : 0, y: EYE, size: 0, material: 'regular', finish: 'black', portrait }
     next.push(p)
-    clamp(p)
-    settle(next, p)
+    clamp(p, room)
+    settle(next, p, room)
     setPieces(next)
     setSelected(p.key)
     setDrawer(false)
@@ -136,16 +182,16 @@ export default function WallBuilder({
       const d = dims(p)
       return `${work(p.id)?.title} — ${sizeLabel(p.size, p.portrait)} in · ${frameLabelFor(p.material, p.finish)} · ${cm(d.w)} × ${cm(d.h)} framed`
     })
-    openContact(`gallery wall · ${pieces.length} ${pieces.length === 1 ? 'work' : 'works'}`, `${lines.join('\n')}\n\nmy wall: ${wallLink(pieces)}`)
+    openContact(`gallery wall · ${pieces.length} ${pieces.length === 1 ? 'work' : 'works'}`, `${lines.join('\n')}\n\nmy wall: ${wallLink(pieces, room)}`)
   }
 
   const share = async () => {
     try {
-      await navigator.clipboard.writeText(wallLink(pieces))
+      await navigator.clipboard.writeText(wallLink(pieces, room))
       setCopied(true)
       window.setTimeout(() => setCopied(false), 1600)
     } catch {
-      window.prompt('copy your wall link', wallLink(pieces))
+      window.prompt('copy your wall link', wallLink(pieces, room))
     }
   }
 
@@ -192,7 +238,7 @@ export default function WallBuilder({
       key,
       origin: pieces,
       start: { mx: event.clientX, my: event.clientY, x: p.x, y: p.y },
-      perCm: (stage.current.getBoundingClientRect().width * ROOM.pxPerCm) / ROOM.width,
+      perCm: (stage.current.getBoundingClientRect().width * room.pxPerCm) / ROOM.width,
       last: { x: event.clientX, y: event.clientY },
       latest: pieces,
       frame: 0,
@@ -212,8 +258,8 @@ export default function WallBuilder({
     const h = Math.abs(p.y - EYE) < SNAP
     if (v) p.x = 0
     if (h) p.y = EYE
-    clamp(p)
-    settle(next, p)
+    clamp(p, room)
+    settle(next, p, room)
     d.latest = next
     setGuides({ v, h })
     setPieces(next)
@@ -234,8 +280,8 @@ export default function WallBuilder({
     // on release the work glides onto the grid (the CSS transition does the easing)
     const next = copyAll(d.latest)
     const p = next.find((q) => q.key === d.key)!
-    snapToGrid(p)
-    settle(next, p)
+    snapToGrid(p, room)
+    settle(next, p, room)
     setPieces(next)
     setDragKey(null)
     setGuides({ v: false, h: false })
@@ -283,7 +329,16 @@ export default function WallBuilder({
 
   return (
     <div className="wall" role="dialog" aria-label="Gallery wall">
-      <div className="wall__stage" ref={stage} onPointerDown={() => setSelected(null)}>
+      <div
+        className="wall__stage"
+        ref={stage}
+        style={{
+          backgroundImage: `url(/wall/${room.id}.webp)`,
+          '--cm': `calc(100cqw * ${room.pxPerCm} / ${ROOM.width})`,
+          '--floor': `${(room.floorY / ROOM.height) * 100}%`,
+        } as CSSProperties}
+        onPointerDown={() => setSelected(null)}
+      >
         <div className={`wall__guide -v${guides.v ? ' -on' : ''}`} />
         <div className={`wall__guide -h${guides.h ? ' -on' : ''}`} />
         {pieces.map((p) => renderPiece(p))}
@@ -310,9 +365,13 @@ export default function WallBuilder({
               <svg viewBox="0 0 20 20" aria-hidden="true"><rect x="2.5" y="6.5" width="15" height="7" rx="1" /><path d="M6 6.5v3M9 6.5v2M12 6.5v3M15 6.5v2" /></svg>
               measure
             </button>
-            <button type="button" className="wall__tool" onClick={() => setDrawer(true)}>
+            <button type="button" className="wall__tool" onClick={() => openDrawer(false)}>
               <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 4v12M4 10h12" /></svg>
               add work
+            </button>
+            <button type="button" className="wall__tool" onClick={() => openDrawer(true)}>
+              <svg viewBox="0 0 20 20" aria-hidden="true"><rect x="3" y="4" width="14" height="12" /><path d="M3 12.5h14" /></svg>
+              room
             </button>
             <button type="button" className="wall__tool" onClick={share} disabled={!pieces.length}>
               <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M8.5 11.5l3-3M7 9l-1.5 1.5a2.5 2.5 0 0 0 3.5 3.5L10.5 12.5M13 11l1.5-1.5a2.5 2.5 0 0 0-3.5-3.5L9.5 7.5" /></svg>
@@ -336,23 +395,30 @@ export default function WallBuilder({
 
       <div className={`wall__empty${pieces.length ? ' -hidden' : ''}`}>
         <p>your wall is empty</p>
-        <button type="button" className="wall__primary" onClick={() => setDrawer(true)}>add a work <span aria-hidden="true">→</span></button>
+        <button type="button" className="wall__primary" onClick={() => openDrawer(false)}>add a work <span aria-hidden="true">→</span></button>
       </div>
 
-      <aside className={`wall__drawer${drawer ? ' -open' : ''}`} aria-label="Collection" aria-hidden={!drawer}>
+      <aside className={`wall__drawer${drawer ? ' -open' : ''}`} aria-label={choosingRoom ? 'Rooms' : 'Collection'} aria-hidden={!drawer}>
         <header>
-          <h2>collection</h2>
+          <h2>{choosingRoom ? 'room' : 'collection'}</h2>
           <button type="button" className="wall__close -flat" onClick={() => setDrawer(false)} aria-label="Close">
             <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M5 5l10 10M15 5L5 15" /></svg>
           </button>
         </header>
         <div className="wall__grid">
-          {artworks.map((a) => (
-            <button type="button" className="wall__work" key={a.id} onClick={() => add(a.id)} tabIndex={drawer ? 0 : -1}>
-              <img src={a.image} alt="" loading="lazy" />
-              <span>{a.title}</span>
-            </button>
-          ))}
+          {choosingRoom
+            ? ROOMS.map((r) => (
+              <button type="button" className="wall__work" key={r.id} aria-pressed={r === room} onClick={() => moveTo(r)} tabIndex={drawer ? 0 : -1}>
+                <img src={`/wall/${r.id}.webp`} alt="" width={ROOM.width} height={ROOM.height} loading="lazy" />
+                <span>{r.id.replace(/-/g, ' ')}</span>
+              </button>
+            ))
+            : artworks.map((a) => (
+              <button type="button" className="wall__work" key={a.id} onClick={() => add(a.id)} tabIndex={drawer ? 0 : -1}>
+                <img src={a.image} alt="" loading="lazy" />
+                <span>{a.title}</span>
+              </button>
+            ))}
         </div>
       </aside>
 
