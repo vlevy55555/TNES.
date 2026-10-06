@@ -8,7 +8,8 @@
 <style>
   html, body { height: 100%; margin: 0; background: #ecebe7; color: #131313; font: 14px/1.4 Helvetica, Arial, sans-serif; }
   model-viewer { width: 100%; height: 100%; }
-  #status { position: fixed; left: 0; right: 0; top: 0; margin: 0; padding: 16px; text-align: center; }
+  /* Fundo escuro: durante o AR o texto fica por cima da imagem da câmera. */
+  #status { position: absolute; left: 0; right: 0; top: 0; margin: 0; padding: 16px; text-align: center; background: rgba(19, 19, 19, .85); color: #fff; }
   button[slot="ar-button"] {
     position: absolute; left: 50%; bottom: 32px; transform: translateX(-50%);
     padding: 14px 28px; border: 0; background: #131313; color: #fff; font: inherit; letter-spacing: .08em; text-transform: uppercase;
@@ -32,8 +33,9 @@
 <model-viewer id="mv" ar ar-modes="webxr quick-look" ar-placement="wall" ar-scale="fixed"
               camera-controls shadow-intensity="0">
   <button slot="ar-button">Ver na minha parede</button>
+  <!-- Dentro do model-viewer de propósito: só os filhos dele continuam visíveis na sessão de AR. -->
+  <p id="status">Montando o quadro…</p>
 </model-viewer>
-<p id="status">Montando o quadro…</p>
 
 <script type="module">
 import * as THREE from 'three'
@@ -80,16 +82,24 @@ try {
 }
 
 const cm = (m) => Math.round(m * 100)
-mv.addEventListener('load', () => {
-  status.textContent = mv.canActivateAR
-    ? `Tamanho real: ${cm(W)} × ${cm(H)} cm. Toque no botão e aponte a câmera para a parede.`
-    : `Prévia 3D (${cm(W)} × ${cm(H)} cm). O AR abre no celular: Chrome no Android ou Safari no iPhone.`
-})
-mv.addEventListener('error', () => { status.textContent = 'O model-viewer não conseguiu carregar o quadro.' })
 // No celular não há console: o estado da sessão de AR aparece na tela.
-mv.addEventListener('ar-status', (e) => {
-  if (e.detail.status === 'failed') status.textContent = 'O AR não abriu neste aparelho (sem ARCore/ARKit ou câmera bloqueada).'
-})
+// O model-viewer só mostra o quadro depois que o aparelho se localiza, e só o leva para a parede
+// quando o ARCore acha um plano vertical; até lá ele fica onde a câmera apontava no primeiro quadro.
+function show() {
+  const ar = mv.getAttribute('ar-status')
+  const inSession = ar === 'session-started' || ar === 'object-placed'
+  status.textContent =
+    ar === 'failed' ? 'O AR não abriu neste aparelho (sem ARCore/ARKit ou câmera bloqueada).'
+    : inSession && mv.getAttribute('ar-tracking') === 'not-tracking' ? 'Sem rastreamento: o celular não está se localizando. Mais luz, e mire em algo com contraste.'
+    : ar === 'object-placed' ? 'Parede encontrada: quadro posicionado. Arraste para mover.'
+    : inSession ? 'Procurando a parede: mova o celular devagar para os lados. Até achar, o quadro fica parado onde a câmera apontava ao abrir.'
+    : mv.canActivateAR ? `Tamanho real: ${cm(W)} × ${cm(H)} cm. Aponte a câmera para a parede e só então toque no botão.`
+    : `Prévia 3D (${cm(W)} × ${cm(H)} cm). O AR abre no celular: Chrome no Android ou Safari no iPhone.`
+}
+mv.addEventListener('load', show)
+mv.addEventListener('ar-status', show)
+mv.addEventListener('ar-tracking', show)
+mv.addEventListener('error', () => { status.textContent = 'O model-viewer não conseguiu carregar o quadro.' })
 </script>
 </body>
 </html>
