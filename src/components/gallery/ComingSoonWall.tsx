@@ -22,6 +22,7 @@ import {
   WALL_HEIGHT,
   WALL_WIDTH,
 } from '../../data/artworks'
+import { subscribeToNewsletter } from '../../lib/newsletter'
 import { useGalleryStore } from '../../store/useGalleryStore'
 import { shadowTexture } from './FrameLayers'
 import { WallPiece, useWallPieceMap, useWallShapeMap } from './MarbleWallSurface'
@@ -327,45 +328,16 @@ function EditorialPlate() {
 }
 
 /**
- * Where a signup goes. This site is a STATIC deploy — no server of ours to post
- * to — so the list lives in a Google Sheet fronted by an Apps Script web app,
- * which is a URL that accepts a POST and appends a row. No key ships in the
- * bundle: the deployment URL is the whole credential, and it is write-only.
- *
- * ponytail: a spreadsheet and 6 lines of Apps Script, not a mailing platform.
- * Ceiling: no double opt-in, no dedupe across visitors, no campaign sending —
- * move to MailerLite (api/subscribe.js) when the list is worth mailing.
- *
- * Set VITE_NOTIFY_URL in the Render dashboard to this deployment:
- *
- *   // Extensions ▸ Apps Script on the sheet, then Deploy ▸ New deployment ▸
- *   // Web app, execute as Me, access "Anyone". Paste the /exec URL.
- *   function doPost(e) {
- *     const { email } = JSON.parse(e.postData.contents)
- *     SpreadsheetApp.getActiveSheet().appendRow([new Date(), email])
- *     return ContentService.createTextOutput('ok')
- *   }
- *
- * Unset, the form behaves as it always has: local only, and the address never
- * reaches anyone.
+ * Where a signup goes: the same MailerLite list as every other signup on the
+ * site, through /api/subscribe (api/subscribe.js). The local copy stays too —
+ * it costs nothing and survives a failed request.
  */
-const NOTIFY_URL = import.meta.env.VITE_NOTIFY_URL as string | undefined
-
 async function subscribe(email: string) {
-  // keep the local copy either way — it costs nothing and survives a bad POST
   const list = JSON.parse(localStorage.getItem('tnes-subscribers') ?? '[]')
   if (!list.includes(email)) list.push(email)
   localStorage.setItem('tnes-subscribers', JSON.stringify(list))
 
-  if (!NOTIFY_URL) return
-  // text/plain keeps this a "simple" request, so the browser sends no CORS
-  // preflight — an Apps Script web app cannot answer an OPTIONS
-  const response = await fetch(NOTIFY_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-    body: JSON.stringify({ email, at: new Date().toISOString() }),
-  })
-  if (!response.ok) throw new Error(`notify: ${response.status}`)
+  await subscribeToNewsletter(email, 'TNES. gallery countdown')
 }
 
 /**

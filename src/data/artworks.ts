@@ -12,7 +12,6 @@ export const WALL_WIDTH = 9.4
 export const WALL_BOTTOM_Y = -2.2
 export const WALL_HEIGHT = 6.27
 export const WALL_CENTER_Y = WALL_BOTTOM_Y + WALL_HEIGHT / 2
-export const WALL_TOP_Y = WALL_BOTTOM_Y + WALL_HEIGHT
 // Framing stays based on the original exhibition field so the works do not
 // shrink merely because the marble surface is taller.
 export const WALL_VIEW_HEIGHT = 4.93
@@ -198,7 +197,6 @@ export const artworks: Artwork[] = cms.artworks.map((work, index) => ({
 }))
 
 export const FRAME_BORDER = 0.26
-export const MAT_BORDER = 0.2
 
 // ---- 02. Sistema Tipográfico (troika loads font files) ----
 // primary sans (titles, UI) · editorial serif (Georgia≈Gelasio, body) ·
@@ -206,7 +204,6 @@ export const MAT_BORDER = 0.2
 export const FONT_SANS = '/fonts/Manrope-Regular.ttf'
 export const FONT_SANS_MEDIUM = '/fonts/Manrope-Medium.ttf'
 export const FONT_SERIF = '/fonts/Gelasio-Regular.ttf'
-export const FONT_SERIF_ITALIC = '/fonts/Gelasio-Italic.ttf'
 export const FONT_BRAND = '/fonts/PlayfairDisplay-Regular.ttf'
 export const FONT_BRAND_ITALIC = '/fonts/PlayfairDisplay-Italic.ttf'
 /**

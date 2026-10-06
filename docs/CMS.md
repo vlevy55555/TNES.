@@ -173,5 +173,17 @@ npm run build           # cms:pull + typecheck + build + SEO
 4. **Acesso:** convide o Victor e quem mais for editar em sanity.io/manage ▸ Members (papel *Editor*).
 5. **CORS:** `http://localhost:3333` já vem liberado; o Studio hospedado em `tnes.sanity.studio` não precisa de nada.
 
+### Variáveis de ambiente na Vercel
+| Variável | Para quê | Obrigatória |
+|---|---|---|
+| `MAILERLITE_API_TOKEN` | Inscrições na newsletter (`api/subscribe.js`) | Sim |
+| `RESEND_API_KEY` | Formulários de contato e de catálogo (`api/contact.js`) | Sim |
+| `CONTACT_TO` | Para onde vão as mensagens (padrão `vlevy@tnes.studio`) | Não |
+| `MAILERLITE_GROUP_ID` | Grupo da lista (padrão "TNES. newsletter") | Não |
+| `RESEND_FROM` | Remetente (padrão `TNES. website <site@tnes.studio>`) | Não |
+| `SANITY_READ_TOKEN` | Só se o dataset virar privado | Não |
+
+Clarity e PostHog já estão em `.env.production` (são chaves públicas). `SANITY_WRITE_TOKEN` é só para a migração, no `.env` local — nunca na Vercel.
+
 ### Mudar o modelo de conteúdo
 Adicionar um campo exige três passos: o schema em `studio/schemaTypes/`, a query e a normalização em `scripts/cms/fetch-content.mjs`, e o tipo `Cms` em `src/data/cms.ts`, antes de usar o campo no componente. Depois `npm run studio:deploy`.

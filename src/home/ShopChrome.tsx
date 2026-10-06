@@ -15,9 +15,6 @@ const NAV = [
   { label: 'about', href: '/about' },
 ]
 
-// Never present a stale amount while Shopify is loading or unavailable.
-export const PRICE = '—'
-
 /** Every catalog reference opens the complete catalog presentation. */
 export const catalogHref = (title?: string) => {
   if (!title || title === 'private') return '/works#catalogs'

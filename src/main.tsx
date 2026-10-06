@@ -16,7 +16,7 @@ const About = lazy(() => import('./home/About'))
 const Moments = lazy(() => import('./home/Moments'))
 const Wall = lazy(() => import('./home/Wall'))
 
-// ponytail: one path check, no router dependency. render.yaml already rewrites
+// ponytail: one path check, no router dependency. vercel.json already rewrites
 // every path to index.html, so all of these resolve in production too.
 //
 //   /                 the landing page — the site's front door

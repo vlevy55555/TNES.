@@ -37,33 +37,3 @@ export function useProductState(handle?: string): ProductLoadState {
 export function useProduct(handle?: string): ShopProduct | null {
   return useProductState(handle).product
 }
-
-/**
- * Several products at once, keyed by handle. Used by the cart, which holds lines
- * from more than one work and re-reads prices live rather than trusting the
- * amounts captured when each line was added.
- */
-export function useProducts(handles: string[]): Record<string, ShopProduct> {
-  const [products, setProducts] = useState<Record<string, ShopProduct>>({})
-  // handles is a fresh array each render — depend on its contents, not identity
-  const key = [...new Set(handles)].sort().join(',')
-
-  useEffect(() => {
-    const wanted = key ? key.split(',') : []
-    if (!wanted.length) return setProducts({})
-    let alive = true
-    Promise.all(wanted.map(getProduct)).then((loaded) => {
-      if (!alive) return
-      setProducts(
-        Object.fromEntries(
-          loaded.filter((p): p is ShopProduct => p !== null).map((p) => [p.handle, p]),
-        ),
-      )
-    })
-    return () => {
-      alive = false
-    }
-  }, [key])
-
-  return products
-}

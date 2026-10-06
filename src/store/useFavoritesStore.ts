@@ -23,5 +23,3 @@ export const useFavoritesStore = create<FavoritesState>()(
     { name: 'tnes-favorites', version: 1 },
   ),
 )
-
-export const useFavoritesCount = () => useFavoritesStore((state) => state.ids.length)
