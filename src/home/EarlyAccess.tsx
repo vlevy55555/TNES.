@@ -79,7 +79,7 @@ export default function EarlyAccess({
           <p className="studio__signup-eyebrow">{eyebrow}</p>
           <h3 className="studio__signup-title">{title}</h3>
           <p className="studio__signup-copy">{copy}</p>
-          <form className="studio__signup-form" onSubmit={submit} noValidate data-clarity-mask="True">
+          <form className="studio__signup-form ph-no-capture" onSubmit={submit} noValidate data-clarity-mask="True">
             <input
               className="studio__signup-input"
               type="email"

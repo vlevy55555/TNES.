@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { analyticsAvailable, getAnalyticsConsent, setAnalyticsConsent, startAnalytics } from './clarity'
+import { analyticsAvailable, analyticsTools, getAnalyticsConsent, setAnalyticsConsent, startAnalytics } from './clarity'
 import './analytics.css'
 
 export default function AnalyticsConsent() {
@@ -22,7 +22,7 @@ export default function AnalyticsConsent() {
 
   return (
     <aside className="analytics-consent" aria-label="Analytics choice">
-      <p>May we use interaction analytics? With your permission, TNES. uses Microsoft Clarity to see clicks, scrolling and session replays. Inquiry form content is masked.</p>
+      <p>May we use interaction analytics? With your permission, TNES. uses {analyticsTools} to see visits, clicks, scrolling and session replays. Inquiry form content is masked.</p>
       <div className="analytics-consent__actions">
         <button type="button" onClick={() => choose('declined')}>decline</button>
         <button type="button" onClick={() => choose('accepted')}>allow analytics</button>

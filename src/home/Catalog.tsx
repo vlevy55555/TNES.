@@ -64,7 +64,7 @@ function CatalogInquiry({ onClose }: { onClose: () => void }) {
           <button type="button" onClick={onClose} aria-label="close inquiry">×</button>
         </header>
 
-        <form className="catalog-inquiry__form" onSubmit={sendInquiry} noValidate data-clarity-mask="True">
+        <form className="catalog-inquiry__form ph-no-capture" onSubmit={sendInquiry} noValidate data-clarity-mask="True">
           <label><span>name.</span><input value={name} onChange={(event) => setName(event.target.value)} placeholder="your name." /></label>
           <label><span>email.</span><input type="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="you@domain.com" /></label>
           <label><span>phone. <em>(optional)</em></span><input value={phone} onChange={(event) => setPhone(event.target.value)} placeholder="+1 555 555 5555" /></label>

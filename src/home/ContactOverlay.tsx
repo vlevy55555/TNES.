@@ -198,7 +198,7 @@ export default function ContactOverlay() {
               acquisitions, commissions, interiors, press — it reaches victor directly.
             </p>
 
-            <form className="contact__form" onSubmit={submit} noValidate data-clarity-mask="True">
+            <form className="contact__form ph-no-capture" onSubmit={submit} noValidate data-clarity-mask="True">
               <label className="contact__field">
                 <span>name</span>
                 <input value={draft.name} onChange={set('name')} autoComplete="name" />
