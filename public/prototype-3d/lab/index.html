@@ -155,6 +155,7 @@ if (forWork) {
   if (back) Object.assign($('back'), { href: back, hidden: false })
   $('number').textContent = 'See it at true size'
   $('name').textContent = title || 'On your wall'
+  document.title = `${title || 'Your wall'} at true size — TNES.`
 } else {
   $('number').textContent = `Method ${number} of 3`
   $('name').textContent = method.name
