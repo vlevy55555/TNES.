@@ -10,14 +10,14 @@ O site **tnes.studio** é editado pelo **Sanity Studio**: um painel no navegador
 ## 1. Como funciona, em uma figura
 
 ```
-Você edita no Studio ──► clica "Publish" ──► Sanity avisa a Vercel (webhook)
+Você edita no Studio ──► clica "Publish" ──► Sanity avisa a Vercel (webhook configurado)
                                                      │
                                                      ▼
               site atualizado em 1–3 min ◄── Vercel reconstrói o site
 ```
 
 - **Rascunho x publicado.** Tudo o que você digita fica salvo sozinho como *rascunho* — o site não muda. Só quando você clica em **Publish** a mudança vai para o site.
-- **Tempo.** Depois de publicar, o site é reconstruído e a mudança aparece em **1 a 3 minutos**. Se não aparecer, recarregue a página com Ctrl+Shift+R (Cmd+Shift+R no Mac).
+- **Tempo.** Com o webhook configurado, o site é reconstruído depois de publicar e a mudança costuma aparecer em **1 a 3 minutos**. Se não aparecer, confira o deploy na Vercel antes de recarregar com Ctrl+Shift+R (Cmd+Shift+R no Mac).
 - **Nada se perde.** Cada documento tem histórico: dá para voltar a qualquer versão anterior.
 - **Preços, tamanhos, molduras e estoque continuam na Shopify.** O Sanity guarda a *obra* (foto, título, texto); a Shopify guarda o *produto* (o que se compra). Uma obra se liga ao produto pelo campo "Produto na Shopify".
 
@@ -72,6 +72,7 @@ Abra a obra ▸ passe o mouse sobre a foto ▸ **Replace** (ou o ícone de lápi
 - **Temporariamente:** abra a obra ▸ menu **⋯** (ao lado de Publish) ▸ **Unpublish**. Ela some do site, mas continua no Studio para voltar depois.
 - **Para sempre:** ⋯ ▸ **Delete**. Se ela estiver no slideshow da Home, tire de lá antes.
 - Se a obra estava à venda, arquive o produto na Shopify também.
+- Mantenha pelo menos **uma obra publicada**: a Home e a galeria 3D precisam dela. Se a última for retirada, o build falha e avisa em vez de republicar conteúdo antigo.
 
 ### 3.5 Mudar a ordem
 Em **Obras**, **Catálogos** e **Moments**, arraste os itens na lista. A nova ordem é salva e publicada na hora — não precisa clicar em Publish — e aparece no site em 1 a 3 minutos.
@@ -136,7 +137,7 @@ As obras não têm campo de SEO: o título e a descrição do Google saem do tí
 
 | Sintoma | O que fazer |
 |---|---|
-| Publiquei e o site não mudou | Espere 3 min e recarregue com Ctrl+Shift+R. Se ainda não mudou, veja em Vercel ▸ Deployments se o último build deu erro. |
+| Publiquei e o site não mudou | Veja se surgiu um novo deploy em Vercel ▸ Deployments. Se não surgiu, confira o webhook do Sanity e o Deploy Hook da Vercel. Se falhou, leia o log `cms:`; se terminou, recarregue com Ctrl+Shift+R. |
 | Uma obra sumiu do site | Ela pode estar sem foto, título, local, ano ou descrição — obras incompletas ficam de fora para não quebrar a página. O log do build avisa qual. |
 | A obra não mostra preço | Confira o "Produto na Shopify": tem que ser igual ao handle da Shopify, e o produto precisa estar publicado no canal "Online Store/Headless" lá. |
 | "Publish" está cinza | Algum campo obrigatório está vazio ou inválido; os campos em vermelho dizem qual. |
@@ -149,9 +150,9 @@ As obras não têm campo de SEO: o título e a descrição do Google saem do tí
 ### Arquitetura
 - `studio/` — o Sanity Studio (pacote próprio). Schemas em `studio/schemaTypes/`, menu em `studio/structure.tsx`.
 - `scripts/cms/fetch-content.mjs` — roda **no começo de todo `npm run build`**. Lê o que está *publicado* no dataset (API pública, sem token) e escreve `src/data/cms.json`.
-- `src/data/cms.json` — o conteúdo que o site usa. **Fica commitado**: se o Sanity estiver fora do ar ou vazio, o build usa a última cópia boa em vez de falhar. Se `CMS_STRICT=1`, o build falha nesse caso.
+- `src/data/cms.json` — o conteúdo que o site usa. **Fica commitado** para desenvolvimento local. Uma falha de leitura, documentos essenciais ausentes ou zero obras publicadas interrompem o build, evitando um novo deploy com conteúdo antigo. Para trabalhar offline localmente, use `CMS_ALLOW_STALE=1`; essa opção é ignorada em CI/Vercel.
 - `src/data/cms.ts` — tipos e helpers (`linesOf`, `paragraphsOf`, `sized`). `src/data/artworks.ts` monta `artworks`, `HERO_ID`, `ABOUT`… a partir dele, com os mesmos nomes de antes.
-- O site **não busca conteúdo em tempo real**: tudo vai no HTML pré-renderizado (bom para SEO e velocidade). Cada Publish dispara um novo deploy.
+- O site **não busca conteúdo em tempo real**: tudo vai no HTML pré-renderizado (bom para SEO e velocidade). Cada Publish dispara um novo deploy **quando o webhook abaixo está ativo**.
 - Imagens vêm do CDN do Sanity (`cdn.sanity.io`). `sized(src, w)` pede o tamanho certo e o formato moderno. As URLs têm CORS aberto, então funcionam como textura na galeria 3D.
 - `scripts/generate-seo.mjs` gera uma página HTML por obra e por catálogo, com og:image do CDN do Sanity. `vercel.json` serve `/works/catalogs/:slug`.
 
@@ -161,15 +162,20 @@ npm run studio          # Studio local em http://localhost:3333
 npm run studio:deploy   # publica o Studio em https://tnes.sanity.studio (pede login no navegador)
 npm run cms:pull        # atualiza src/data/cms.json com o que está publicado
 npm run cms:import      # migração inicial: conteúdo + fotos de /public para o Sanity
+npm run cms:webhook     # liga mudanças publicadas ao Deploy Hook da Vercel
+npm run cms:webhook:check  # confere se o webhook existe
 npm run build           # cms:pull + typecheck + build + SEO
 ```
 
+`npm run dev` usa o `cms.json` já presente no disco; rode `npm run cms:pull` para ver mudanças publicadas localmente. Se estiver sem acesso à rede, no PowerShell use `$env:CMS_ALLOW_STALE='1'; npm run build` apenas para uma compilação local; remova a variável depois com `Remove-Item Env:CMS_ALLOW_STALE`.
+
 ### Configuração inicial (uma vez só)
-1. **Migrar o conteúdo:** crie um token *Editor* em sanity.io/manage ▸ API ▸ Tokens, coloque `SANITY_WRITE_TOKEN=…` no `.env` (não commitar) e rode `npm run cms:import`. Depois `npm run cms:pull` e commite o `src/data/cms.json`, que passa a apontar para o CDN do Sanity. O import nunca sobrescreve documentos que já existem (use `-- --replace` para forçar).
+1. **Migrar o conteúdo (já realizado para o projeto TNES):** o Studio deste repositório já está pronto; **não rode `npm create sanity@latest`**. Em um projeto vazio, crie um token *Editor* em sanity.io/manage ▸ API ▸ Tokens, coloque `SANITY_WRITE_TOKEN=…` no `.env` (não commitar) e rode `npm run cms:import`. Depois `npm run cms:pull` e commite o `src/data/cms.json`, que passa a apontar para o CDN do Sanity. O import pula documentos existentes e não reenvia suas fotos; `-- --replace` força a substituição.
 2. **Publicar o Studio:** `npm run studio:deploy` (faz login no navegador na primeira vez).
 3. **Deploy automático ao publicar:**
    - Vercel ▸ Project ▸ Settings ▸ Git ▸ **Deploy Hooks** ▸ crie um hook "sanity" para a branch `main` e copie a URL.
-   - sanity.io/manage ▸ projeto ▸ API ▸ **Webhooks** ▸ *Create webhook*: URL = a do hook; Dataset `production`; Trigger on *Create, Update, Delete*; Filter `!(_id in path("drafts.**"))`; HTTP method `POST`; sem projection.
+   - Guarde a URL do hook no `.env` como `VERCEL_DEPLOY_HOOK_URL=…` e rode `npm run cms:webhook`. O comando cria um webhook para documentos publicados dos tipos que o site usa, com método `POST` e payload mínimo. `npm run cms:webhook:check` confere o estado. Alternativamente, crie o mesmo webhook manualmente em sanity.io/manage ▸ projeto ▸ API ▸ **Webhooks**.
+   - **Verifique:** publique uma alteração pequena no Studio, confirme que o webhook foi entregue, que um novo deploy apareceu em Vercel ▸ Deployments e que o log do build mostrou `cms: ... obras`. Confira a alteração no site. Sem essas três confirmações, a publicação automática não está validada.
 4. **Acesso:** convide o Victor e quem mais for editar em sanity.io/manage ▸ Members (papel *Editor*).
 5. **CORS:** `http://localhost:3333` já vem liberado; o Studio hospedado em `tnes.sanity.studio` não precisa de nada.
 

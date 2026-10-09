@@ -124,8 +124,8 @@ export const aboutPage = defineType({
     defineField({ name: 'name', title: 'Nome', type: 'text', rows: 3, group: 'opening', description: 'Uma palavra por linha, como aparece no topo.' }),
     defineField({ name: 'role', title: 'Cargo', type: 'string', group: 'opening', description: 'Em maiúsculas. Ex.: "ARTIST AND FOUNDER OF TNES."' }),
     defineField({ name: 'statement', title: 'Texto de abertura', type: 'text', rows: 6, group: 'opening', description: 'Em primeira pessoa. O site quebra as linhas sozinho.' }),
-    defineField({ name: 'heroImage', title: 'Foto de abertura', type: 'photo', group: 'opening', description: 'Sobe e cobre a tela; depois encolhe e recebe a assinatura.' }),
-    defineField({ name: 'splitImage', title: 'Foto da segunda parte', type: 'photo', group: 'second' }),
+    defineField({ name: 'heroImage', title: 'Foto de abertura', type: 'photo', group: 'opening', description: 'Sobe e cobre a tela; depois encolhe e recebe a assinatura.', validation: (rule) => rule.required() }),
+    defineField({ name: 'splitImage', title: 'Foto da segunda parte', type: 'photo', group: 'second', validation: (rule) => rule.required() }),
     defineField({ name: 'splitTitle', title: 'Título da segunda parte', type: 'text', rows: 3, group: 'second', description: LINES_HINT }),
     defineField({
       name: 'splitText',

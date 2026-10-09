@@ -11,7 +11,7 @@ const SITE = 'https://www.tnes.studio'
 function Guide() {
   const steps: [string, string][] = [
     ['Editar', 'Abra um item no menu, mude o que quiser. Tudo fica salvo como rascunho automaticamente — nada vai para o site ainda.'],
-    ['Publicar', 'Clique em "Publish" (canto inferior direito). O site é reconstruído sozinho e a mudança aparece em 1 a 3 minutos.'],
+    ['Publicar', 'Clique em "Publish" (canto inferior direito). Com o webhook Sanity → Vercel ativo, um novo deploy atualiza o site em alguns minutos.'],
     ['Desfazer', 'Antes de publicar: menu "⋯" ▸ "Discard changes". Depois: aba "History" (relógio) para voltar a uma versão anterior.'],
     ['Ordem', 'Em Obras, Catálogos e Moments, arraste os itens na lista para mudar a ordem em que aparecem no site.'],
     ['Esconder', 'Para tirar algo do site sem apagar: menu "⋯" ▸ "Unpublish".'],

@@ -1,10 +1,10 @@
 // The site's editable content, as the Sanity Studio (studio/) publishes it.
 //
 // cms.json is written by scripts/cms/fetch-content.mjs at the start of every
-// build, and committed so a build without network — or before the dataset is
-// filled — still has the last good copy. Nothing in the site fetches content
-// at runtime: a publish in the Studio triggers a rebuild through the Vercel
-// deploy hook, and the new text ships in the prerendered HTML.
+// build, and committed for local development. A production build fails if the
+// Sanity read fails; an offline local build can explicitly use this snapshot
+// with CMS_ALLOW_STALE=1. Nothing fetches content at runtime: a publish in the
+// Studio triggers a rebuild through the configured Vercel deploy hook.
 import content from './cms.json'
 
 export type Seo = { title?: string; description?: string }

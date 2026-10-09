@@ -12,6 +12,7 @@
 import { createReadStream } from 'node:fs'
 import { readFile } from 'node:fs/promises'
 import path from 'node:path'
+import { setTimeout as wait } from 'node:timers/promises'
 import { createClient } from '@sanity/client'
 import { LexoRank } from 'lexorank'
 import { loadEnv } from 'vite'
@@ -27,14 +28,45 @@ if (!token) {
 const replace = process.argv.includes('--replace')
 const client = createClient({ ...SANITY, token, useCdn: false })
 const cms = JSON.parse(await readFile(path.join(root, 'src/data/cms.json'), 'utf8'))
+if (cms.source !== 'seed') {
+  throw new Error('A importação inicial exige src/data/cms.json com source "seed". O arquivo atual já veio do Sanity.')
+}
+const documentTypes = ['artwork', 'catalog', 'moment', 'siteSettings', 'homePage', 'worksPage', 'aboutPage', 'momentsPage']
+const existingIds = new Set(replace ? [] : await client.fetch('*[_type in $types]._id', { types: documentTypes }))
 
 // ---- pictures ---------------------------------------------------------------
 const uploaded = new Map()
+const uploadQueue = []
+let activeUploads = 0
+async function withUploadSlot(task) {
+  if (activeUploads >= 3) await new Promise((resolve) => uploadQueue.push(resolve))
+  activeUploads++
+  try {
+    return await task()
+  } finally {
+    activeUploads--
+    uploadQueue.shift()?.()
+  }
+}
+
+async function uploadImage(file) {
+  for (let attempt = 0; attempt < 5; attempt++) {
+    try {
+      // Each retry needs a new stream; a failed request consumes the old one.
+      return await client.assets.upload('image', createReadStream(file), { filename: path.basename(file) })
+    } catch (error) {
+      if (error.statusCode !== 429 || attempt === 4) throw error
+      const retryAfter = Number(error.response?.headers?.['retry-after']) || 2
+      await wait(Math.max(retryAfter, 2) * 1000)
+    }
+  }
+}
+
 async function asset(src) {
   if (src.startsWith('https://cdn.sanity.io/')) throw new Error(`${src} is already in Sanity — this content was imported before`)
   if (!uploaded.has(src)) {
     const file = path.join(root, 'public', src.replace(/^\//, ''))
-    uploaded.set(src, client.assets.upload('image', createReadStream(file), { filename: path.basename(file) }).then((doc) => {
+    uploaded.set(src, withUploadSlot(() => uploadImage(file)).then((doc) => {
       process.stdout.write('.')
       return doc._id
     }))
@@ -61,6 +93,7 @@ const ranks = (count) => {
 const docs = []
 const artworkRanks = ranks(cms.artworks.length)
 for (const [index, work] of cms.artworks.entries()) {
+  if (existingIds.has(`artwork-${work.id}`)) continue
   docs.push({
     _id: `artwork-${work.id}`,
     _type: 'artwork',
@@ -80,6 +113,7 @@ for (const [index, work] of cms.artworks.entries()) {
 
 const catalogRanks = ranks(cms.catalogs.length)
 for (const [index, catalog] of cms.catalogs.entries()) {
+  if (existingIds.has(`catalog-${catalog.slug}`)) continue
   docs.push({
     _id: `catalog-${catalog.slug}`,
     _type: 'catalog',
@@ -109,6 +143,7 @@ for (const [index, catalog] of cms.catalogs.entries()) {
 
 const momentRanks = ranks(cms.moments.length)
 for (const [index, entry] of cms.moments.entries()) {
+  if (existingIds.has(`moment-${index + 1}`)) continue
   docs.push({
     _id: `moment-${index + 1}`,
     _type: 'moment',
@@ -124,9 +159,8 @@ for (const [index, entry] of cms.moments.entries()) {
 }
 
 const { settings, home, works, about, momentsPage } = cms
-docs.push(
-  { _id: 'siteSettings', _type: 'siteSettings', ...settings },
-  {
+if (!existingIds.has('siteSettings')) docs.push({ _id: 'siteSettings', _type: 'siteSettings', ...settings })
+if (!existingIds.has('homePage')) docs.push({
     _id: 'homePage',
     _type: 'homePage',
     heroWorks: keyed(home.heroIds.map(ref)),
@@ -135,34 +169,35 @@ docs.push(
     statementArtwork: ref(home.statementArtworkId),
     selectedWorksTitle: home.selectedWorksTitle,
     seo: { _type: 'seo', ...home.seo },
-  },
-  { _id: 'worksPage', _type: 'worksPage', ...works, seo: { _type: 'seo', ...works.seo } },
-  {
+  })
+if (!existingIds.has('worksPage')) docs.push({ _id: 'worksPage', _type: 'worksPage', ...works, seo: { _type: 'seo', ...works.seo } })
+if (!existingIds.has('aboutPage')) docs.push({
     _id: 'aboutPage',
     _type: 'aboutPage',
     ...about,
     heroImage: { ...(await photo(about.heroImage)), _type: 'photo' },
     splitImage: { ...(await photo(about.splitImage)), _type: 'photo' },
     seo: { _type: 'seo', ...about.seo },
-  },
-  {
+  })
+if (!existingIds.has('momentsPage')) docs.push({
     _id: 'momentsPage',
     _type: 'momentsPage',
     ...momentsPage,
     introImages: keyed(await Promise.all(momentsPage.introImages.map(async (shot) => ({ ...(await photo(shot)), _type: 'photo' })))),
     seo: { _type: 'seo', ...momentsPage.seo },
-  },
-)
+  })
 process.stdout.write('\n')
 
 // drop undefined keys — Sanity stores absent and undefined the same, the API rejects the latter
 const clean = (value) => JSON.parse(JSON.stringify(value))
 
-const transaction = client.transaction()
-for (const doc of docs) {
-  if (replace) transaction.createOrReplace(clean(doc))
-  else transaction.createIfNotExists(clean(doc))
+if (docs.length) {
+  const transaction = client.transaction()
+  for (const doc of docs) {
+    if (replace) transaction.createOrReplace(clean(doc))
+    else transaction.createIfNotExists(clean(doc))
+  }
+  await transaction.commit({ visibility: 'sync' })
 }
-await transaction.commit({ visibility: 'sync' })
 console.log(`${replace ? 'Gravados' : 'Criados (os que faltavam)'}: ${docs.length} documentos, ${uploaded.size} fotos enviadas.`)
 console.log('Agora rode `npm run cms:pull` (ou um build) para o site passar a ler do Sanity.')

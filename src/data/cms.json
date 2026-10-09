@@ -1,5 +1,5 @@
 {
-  "source": "seed",
+  "source": "sanity",
   "settings": {
     "inquiryEmail": "vlevy@tnes.studio",
     "phone": "+1 917 445 4067",
@@ -22,7 +22,7 @@
       "location": "St. Peter's Pool, Malta",
       "year": 2025,
       "description": "Swimmers jump, dive and gather around the limestone basin at St. Peter's Pool.",
-      "image": "/artworks/v1/stpeterspool_hero_2025_v1.webp",
+      "image": "https://cdn.sanity.io/images/bchwhnoq/production/e0db63bfc765ba93efff7d98903638bda2d293dd-2560x1707.webp",
       "imageWidth": 2560,
       "imageHeight": 1707,
       "region": "europe",
@@ -40,7 +40,7 @@
       "location": "Ipanema, Rio de Janeiro, Brazil",
       "year": 2025,
       "description": "A runner crosses Ipanema with Dois Irmãos and the city fading into sea mist.",
-      "image": "/artworks/v1/ipanema_riorunner_2025_v1.webp",
+      "image": "https://cdn.sanity.io/images/bchwhnoq/production/359e0074749d27a11e69132ae6fe8d8764e1dab3-2560x1707.webp",
       "imageWidth": 2560,
       "imageHeight": 1707,
       "region": "south america",
@@ -57,7 +57,7 @@
       "location": "Gozo, Malta",
       "year": 2025,
       "description": "A woman rests beneath a huge limestone overhang on the coast of Gozo.",
-      "image": "/artworks/v1/gozo_cavegirl_2025_v1.webp",
+      "image": "https://cdn.sanity.io/images/bchwhnoq/production/e154d28cb97e581cbd7e277e3b338390cafc4adc-2560x1707.webp",
       "imageWidth": 2560,
       "imageHeight": 1707,
       "region": "europe",
@@ -75,7 +75,7 @@
       "location": "Mürren, Switzerland",
       "year": 2025,
       "description": "Two cows stand in dense fog on a mountain trail above Mürren.",
-      "image": "/artworks/v1/murren_foggycows_2025_v1.webp",
+      "image": "https://cdn.sanity.io/images/bchwhnoq/production/1fa9c545cb33030d70bda0a9f601e844bc1f4267-2560x3840.webp",
       "imageWidth": 2560,
       "imageHeight": 3840,
       "region": "europe",
@@ -93,7 +93,7 @@
       "location": "Praia da Baleia, São Sebastião, Brazil",
       "year": 2026,
       "description": "A cyclist carries a mint-green surfboard across Praia da Baleia.",
-      "image": "/artworks/v1/baleia_biker_2025_v1.webp",
+      "image": "https://cdn.sanity.io/images/bchwhnoq/production/f497575400bbe253a0712430541ef9654707b647-2560x1707.webp",
       "imageWidth": 2560,
       "imageHeight": 1707,
       "region": "south america",
@@ -110,7 +110,7 @@
       "location": "Paracas, Peru",
       "year": 2025,
       "description": "Wind draws repeating lines across the dunes of Paracas.",
-      "image": "/artworks/v1/paracas_flatdunes_2025_v1.webp",
+      "image": "https://cdn.sanity.io/images/bchwhnoq/production/f5cc816d35d4004fc5d8bc2b0916108ebf0258dd-2560x1707.webp",
       "imageWidth": 2560,
       "imageHeight": 1707,
       "region": "south america",
@@ -127,7 +127,7 @@
       "location": "La Muralla Roja, Calpe, Spain",
       "year": 2025,
       "description": "Blue, coral and violet walls stack against the sky at La Muralla Roja.",
-      "image": "/artworks/v1/calpe_murallaroja_2025_v1.webp",
+      "image": "https://cdn.sanity.io/images/bchwhnoq/production/394059b479de27792c0cc3768cdb91c7242933a7-2560x3840.webp",
       "imageWidth": 2560,
       "imageHeight": 3840,
       "region": "europe",
@@ -143,7 +143,7 @@
       "location": "Moraira, Spain",
       "year": 2025,
       "description": "Beachgoers dot a grey afternoon in Moraira with small bursts of color.",
-      "image": "/artworks/v1/moreira_crowdedbeach_2025_v1.webp",
+      "image": "https://cdn.sanity.io/images/bchwhnoq/production/b31de1f1b3b1d948462994aa985422dc9d1d3342-1024x1280.webp",
       "imageWidth": 1024,
       "imageHeight": 1280,
       "region": "europe",
@@ -161,7 +161,7 @@
       "location": "Florence, Italy",
       "year": 2025,
       "description": "A man sits on a stone ledge in Florence beside his sleeping dog.",
-      "image": "/artworks/v1/florence_dogman_2025_v1.webp",
+      "image": "https://cdn.sanity.io/images/bchwhnoq/production/0e6823e39c77938d55d9ce5306ba0fe4d7364053-2560x3840.webp",
       "imageWidth": 2560,
       "imageHeight": 3840,
       "region": "europe",
@@ -179,7 +179,7 @@
       "location": "Mezzatorre, Ischia, Italy",
       "year": 2025,
       "description": "A swimmer moves through the pool below striped umbrellas and the Mediterranean.",
-      "image": "/artworks/v1/ischia_mezzatorre_2025_v1.webp",
+      "image": "https://cdn.sanity.io/images/bchwhnoq/production/5d497c9c790b3f29fa424a54d510b07c60a5bbf2-2560x3840.webp",
       "imageWidth": 2560,
       "imageHeight": 3840,
       "region": "europe",
@@ -197,7 +197,7 @@
       "location": "Ditch Plains, Montauk, New York, United States",
       "year": 2026,
       "description": "A weathered dune fence runs toward an almost-empty Ditch Plains beach.",
-      "image": "/artworks/v1/ditchplains_far_2026_v1.webp",
+      "image": "https://cdn.sanity.io/images/bchwhnoq/production/540f50f4007d36db0ac254f044d3000cb6f3930f-2560x3840.webp",
       "imageWidth": 2560,
       "imageHeight": 3840,
       "region": "north america",
@@ -214,7 +214,7 @@
       "location": "Appenzell, Switzerland",
       "year": 2025,
       "description": "A turquoise alpine lake appears between the forest and rock far below Appenzell.",
-      "image": "/artworks/v1/appenzell_alpinelake_2025_v1.webp",
+      "image": "https://cdn.sanity.io/images/bchwhnoq/production/6218b7a678590aadbf84e3a4129b56454a6e1133-2560x1707.webp",
       "imageWidth": 2560,
       "imageHeight": 1707,
       "region": "europe",
@@ -232,7 +232,7 @@
       "location": "Paracas, Peru",
       "year": 2025,
       "description": "Pink salt water stretches across the pale desert in Paracas.",
-      "image": "/artworks/v1/paracas_pinklagoon_2025_v1.webp",
+      "image": "https://cdn.sanity.io/images/bchwhnoq/production/6757ea85f714006cb0ad541179170ed97ecf1b92-2560x1706.webp",
       "imageWidth": 2560,
       "imageHeight": 1706,
       "region": "south america",
@@ -250,7 +250,7 @@
       "location": "Moraira, Spain",
       "year": 2025,
       "description": "A curved beach and hillside houses wrap around the water in Moraira.",
-      "image": "/artworks/v1/moraira_aerialbeach_2025_v1.webp",
+      "image": "https://cdn.sanity.io/images/bchwhnoq/production/718a8f31e36f8caca5babf037f47162cb72f3a99-2560x1706.webp",
       "imageWidth": 2560,
       "imageHeight": 1706,
       "region": "europe",
@@ -268,7 +268,7 @@
       "location": "Paracas, Peru",
       "year": 2025,
       "description": "Fishing boats scatter across turquoise water beside the desert coast of Paracas.",
-      "image": "/artworks/v1/paracas_fishingboats_2025_v1.webp",
+      "image": "https://cdn.sanity.io/images/bchwhnoq/production/700f0f27ab6c4bb3e0d522d36cf3bc13ee1bb5ba-2560x1706.webp",
       "imageWidth": 2560,
       "imageHeight": 1706,
       "region": "south america",
@@ -285,7 +285,7 @@
       "location": "Ipanema, Rio de Janeiro, Brazil",
       "year": 2025,
       "description": "Ipanema fills with people, mist and late sun as the mountains fade behind the beach.",
-      "image": "/artworks/v1/ipanema_dusk_2025_v1.webp",
+      "image": "https://cdn.sanity.io/images/bchwhnoq/production/7c1ed3eac49ea3687be098affe6d53e182116e08-2560x1706.webp",
       "imageWidth": 2560,
       "imageHeight": 1706,
       "region": "south america",
@@ -304,7 +304,7 @@
       "location": "Mürren, Switzerland",
       "year": 2025,
       "description": "A narrow road runs through green pasture toward the mountains after the weather clears.",
-      "image": "/artworks/v1/murren_alpineroad_2025_v1.webp",
+      "image": "https://cdn.sanity.io/images/bchwhnoq/production/032f8ad7269cc0b5642ba4dc9ec5605535d1f82d-2560x1706.webp",
       "imageWidth": 2560,
       "imageHeight": 1706,
       "region": "europe",
@@ -321,7 +321,7 @@
       "location": "Praia da Baleia, São Sebastião, Brazil",
       "year": 2025,
       "description": "A red PERIGO sign stands alone against a purple-grey beach at dusk.",
-      "image": "/artworks/v1/baleia_perigosign_2025_v1.webp",
+      "image": "https://cdn.sanity.io/images/bchwhnoq/production/beadaa85ca34361f320d5ad4457e325ea1bd4322-2048x1365.webp",
       "imageWidth": 2048,
       "imageHeight": 1365,
       "region": "south america",
@@ -338,7 +338,7 @@
       "location": "Appenzell, Switzerland",
       "year": 2025,
       "description": "Green hills, roads and scattered houses unfold below the cable car in Appenzell.",
-      "image": "/artworks/v1/appenzell_valley_2025_v1.webp",
+      "image": "https://cdn.sanity.io/images/bchwhnoq/production/96e70e53e79592f8a07366b38ea96dd900e15b31-2560x1706.webp",
       "imageWidth": 2560,
       "imageHeight": 1706,
       "region": "europe",
@@ -355,7 +355,7 @@
       "location": "Mount Rigi, Switzerland",
       "year": 2025,
       "description": "A black-and-white cow grazes on Mount Rigi as the rest of the herd disappears into mist.",
-      "image": "/artworks/v1/rigi_cow_2025_v1.webp",
+      "image": "https://cdn.sanity.io/images/bchwhnoq/production/5b8c6a39f2211a7c99387d05a268c8711cf74d43-1706x2560.webp",
       "imageWidth": 1706,
       "imageHeight": 2560,
       "region": "europe",
@@ -373,7 +373,7 @@
       "location": "La Muralla Roja, Calpe, Spain",
       "year": 2025,
       "description": "Red walls, plants and open corridors frame the sea at La Muralla Roja.",
-      "image": "/artworks/v1/calpe_redrooms_2025_v1.webp",
+      "image": "https://cdn.sanity.io/images/bchwhnoq/production/59c263178192cd06800ec40637d839e773f80c8a-1706x2560.webp",
       "imageWidth": 1706,
       "imageHeight": 2560,
       "region": "europe",
@@ -389,7 +389,7 @@
       "location": "Gozo, Malta",
       "year": 2025,
       "description": "A concrete platform points toward an uninterrupted blue horizon on Gozo.",
-      "image": "/artworks/v1/gozo_blueedge_2025_v1.webp",
+      "image": "https://cdn.sanity.io/images/bchwhnoq/production/bf2692f1c6b80cbce866060b2a3f930679e98068-1706x2560.webp",
       "imageWidth": 1706,
       "imageHeight": 2560,
       "region": "europe",
@@ -407,7 +407,7 @@
       "location": "Wied il-Għasri, Gozo, Malta",
       "year": 2025,
       "description": "The limestone inlet at Wied il-Għasri opens into the Mediterranean.",
-      "image": "/artworks/v1/wiedilghasri_inlet_2025_v1.webp",
+      "image": "https://cdn.sanity.io/images/bchwhnoq/production/9ef3353207837db4d46d1d8984d817922ba2630b-2560x1706.webp",
       "imageWidth": 2560,
       "imageHeight": 1706,
       "region": "europe",
@@ -424,7 +424,7 @@
       "location": "Florence, Italy",
       "year": 2025,
       "description": "A carousel turns into bands of light at night in Florence.",
-      "image": "/artworks/v1/lorence_carousel_2025_v1.webp",
+      "image": "https://cdn.sanity.io/images/bchwhnoq/production/0f42be63a72c6aa167947849b37242fc6323fbcf-2560x1706.webp",
       "imageWidth": 2560,
       "imageHeight": 1706,
       "region": "europe",
@@ -442,7 +442,7 @@
       "location": "Praia da Baleia, São Sebastião, Brazil",
       "year": 2025,
       "description": "Wet sand reflects a dark headland at low tide.",
-      "image": "/artworks/v1/baleia_lowtide_2025_v1.webp",
+      "image": "https://cdn.sanity.io/images/bchwhnoq/production/15784ddea5125c953a6fa19baf27afa3890bac30-2560x1707.webp",
       "imageWidth": 2560,
       "imageHeight": 1707,
       "region": "south america",
@@ -460,7 +460,7 @@
       "location": "Ipanema, Rio de Janeiro, Brazil",
       "year": 2025,
       "description": "A vendor works beneath the palms with Ipanema beach and Dois Irmãos behind him.",
-      "image": "/artworks/v1/ipanema_promenade_2025_v1.webp",
+      "image": "https://cdn.sanity.io/images/bchwhnoq/production/0307e4a563a01701eb2c52eab37b1032767f36cb-1706x2560.webp",
       "imageWidth": 1706,
       "imageHeight": 2560,
       "region": "south america",
@@ -478,7 +478,7 @@
       "location": "Gozo, Malta",
       "year": 2025,
       "description": "An orange life ring hangs alone against pale limestone in Gozo.",
-      "image": "/artworks/v1/gozo_lifering_2025_v1.webp",
+      "image": "https://cdn.sanity.io/images/bchwhnoq/production/b5cce1c95c3a1d216227af0a05e1df61621cbb29-1706x2560.webp",
       "imageWidth": 1706,
       "imageHeight": 2560,
       "region": "europe",
@@ -495,7 +495,7 @@
       "location": "Gozo, Malta",
       "year": 2025,
       "description": "A red car and a few scuba divers sit above a rough limestone inlet in Gozo.",
-      "image": "/artworks/v1/gozo_redcar_2025_v1.webp",
+      "image": "https://cdn.sanity.io/images/bchwhnoq/production/bb60027ada0b0b03db068f5febb59367d1cb1876-2560x1706.webp",
       "imageWidth": 2560,
       "imageHeight": 1706,
       "region": "europe",
@@ -514,7 +514,7 @@
       "location": "Playa Roja, Paracas, Peru",
       "year": 2025,
       "description": "Red sand sits between rust-colored cliffs and green-blue water at Playa Roja.",
-      "image": "/artworks/v1/paracas_playaroja_2025_v1.webp",
+      "image": "https://cdn.sanity.io/images/bchwhnoq/production/77a7536a592184f01116357890ff2c6dbf61eae2-1707x2560.webp",
       "imageWidth": 1707,
       "imageHeight": 2560,
       "region": "south america",
@@ -533,7 +533,7 @@
       "location": "Rio de Janeiro, Brazil",
       "year": 2025,
       "description": "Christ the Redeemer nearly disappears into dense fog above Rio.",
-      "image": "/artworks/v1/rio_christfog_2025_v1.webp",
+      "image": "https://cdn.sanity.io/images/bchwhnoq/production/ebea8ea93729acd393ce927686480db51392a97a-1706x2560.webp",
       "imageWidth": 1706,
       "imageHeight": 2560,
       "region": "south america",
@@ -576,13 +576,13 @@
     "role": "ARTIST AND FOUNDER OF TNES.",
     "statement": "I started taking photographs as a way of keeping track of time — where I was, who was there, and what was happening before it became something else. I was always more interested in people and places as I found them: unposed, unplanned, already in motion. Over time, that personal archive became TNES., a studio built around one idea: nothing happens twice.",
     "heroImage": {
-      "src": "/about/stamping.webp",
+      "src": "https://cdn.sanity.io/images/bchwhnoq/production/a451e6b297cdcadd3aad304e34026c049c24beef-1800x1200.webp",
       "alt": "Victor stamping and signing a print at the studio desk",
       "width": 1800,
       "height": 1200
     },
     "splitImage": {
-      "src": "/about/subway.webp",
+      "src": "https://cdn.sanity.io/images/bchwhnoq/production/2d7e683b305d421ca1c8c0bbbf83337459519231-1350x1800.webp",
       "alt": "Victor on a subway platform, print under his arm",
       "width": 1350,
       "height": 1800
@@ -603,13 +603,13 @@
     "intro": "these are the places where TNES. has existed in real life. each appearance changes a space for a moment, then it is gone. this is the record of where the work has been.",
     "introImages": [
       {
-        "src": "/moments/east-hampton-art-affair/intro.webp",
+        "src": "https://cdn.sanity.io/images/bchwhnoq/production/181114a0c81684fdbfa426ac2e3d72e4fba60037-1800x2400.webp",
         "alt": "",
         "width": 1800,
         "height": 2400
       },
       {
-        "src": "/moments/nyc-soft-launch/intro.webp",
+        "src": "https://cdn.sanity.io/images/bchwhnoq/production/3df6b8ec286cd1a17e99ec588b64ff0f58b3e089-2400x1600.webp",
         "alt": "",
         "width": 2400,
         "height": 1600
@@ -640,25 +640,25 @@
       ],
       "photos": [
         {
-          "src": "/moments/nyc-soft-launch/cover.webp",
+          "src": "https://cdn.sanity.io/images/bchwhnoq/production/4041b37b88464871b2082e69e6a3d19fd6da401f-2400x1600.webp",
           "alt": "",
           "width": 2400,
           "height": 1600
         },
         {
-          "src": "/moments/nyc-soft-launch/01.webp",
+          "src": "https://cdn.sanity.io/images/bchwhnoq/production/6605cf7fc8fe5624918e632458937a9fa996f132-1600x2400.webp",
           "alt": "",
           "width": 1600,
           "height": 2400
         },
         {
-          "src": "/moments/nyc-soft-launch/02.webp",
+          "src": "https://cdn.sanity.io/images/bchwhnoq/production/dc0b6c6b15c7e939152103b7d5226f328564fcd3-2400x1600.webp",
           "alt": "",
           "width": 2400,
           "height": 1600
         },
         {
-          "src": "/moments/nyc-soft-launch/03.webp",
+          "src": "https://cdn.sanity.io/images/bchwhnoq/production/591e1c9c5c13709971b6fb2b1c0187bfe4e7754c-2400x1600.webp",
           "alt": "",
           "width": 2400,
           "height": 1600
@@ -679,25 +679,25 @@
       ],
       "photos": [
         {
-          "src": "/moments/encontros/cover.webp",
+          "src": "https://cdn.sanity.io/images/bchwhnoq/production/5a3c4cb3ff8f09b81d4e82992f4960b0b864fa4d-2400x1600.webp",
           "alt": "",
           "width": 2400,
           "height": 1600
         },
         {
-          "src": "/moments/encontros/01.webp",
+          "src": "https://cdn.sanity.io/images/bchwhnoq/production/3fa2247cccdcce257f1d05e9d8d25a750b40f51b-1600x2400.webp",
           "alt": "",
           "width": 1600,
           "height": 2400
         },
         {
-          "src": "/moments/encontros/02.webp",
+          "src": "https://cdn.sanity.io/images/bchwhnoq/production/2a1528cc3873ec000d69c325ab396daa44cfb6b0-2400x1600.webp",
           "alt": "",
           "width": 2400,
           "height": 1600
         },
         {
-          "src": "/moments/encontros/03.webp",
+          "src": "https://cdn.sanity.io/images/bchwhnoq/production/4c5084e6ea176dca197e9eb606077898ac6b48aa-2400x1600.webp",
           "alt": "",
           "width": 2400,
           "height": 1600
@@ -722,25 +722,25 @@
       ],
       "photos": [
         {
-          "src": "/moments/east-hampton-art-affair/cover.webp",
+          "src": "https://cdn.sanity.io/images/bchwhnoq/production/0e8fc75c68d092ab2e8dc13ca9cabdfd69e78a00-2400x1800.webp",
           "alt": "",
           "width": 2400,
           "height": 1800
         },
         {
-          "src": "/moments/east-hampton-art-affair/01.webp",
+          "src": "https://cdn.sanity.io/images/bchwhnoq/production/8d26ac20111e46e319adecd6458a7a7923833a94-1800x2400.webp",
           "alt": "",
           "width": 1800,
           "height": 2400
         },
         {
-          "src": "/moments/east-hampton-art-affair/02.webp",
+          "src": "https://cdn.sanity.io/images/bchwhnoq/production/207606e14245c6fea4ceba9dec04d0d6b0f46db8-1800x2400.webp",
           "alt": "",
           "width": 1800,
           "height": 2400
         },
         {
-          "src": "/moments/east-hampton-art-affair/03.webp",
+          "src": "https://cdn.sanity.io/images/bchwhnoq/production/16a3fd4be74e049b6a6ba9eb70f08692479ff511-1800x2400.webp",
           "alt": "",
           "width": 1800,
           "height": 2400
@@ -782,259 +782,259 @@
       "photos": [
         {
           "location": "main beach",
-          "image": "/images/catalogs/the-hamptons/01-main-beach.webp",
+          "image": "https://cdn.sanity.io/images/bchwhnoq/production/4649280a2fc600384908c4b1a17124f861cff6bc-1600x2400.webp",
           "width": 1600,
           "height": 2400,
           "compact": false
         },
         {
           "location": "georgica beach",
-          "image": "/images/catalogs/the-hamptons/02-georgica-beach.webp",
+          "image": "https://cdn.sanity.io/images/bchwhnoq/production/165d80051c6d118da20fbd65482c05adad0e09ea-1600x2400.webp",
           "width": 1600,
           "height": 2400,
           "compact": false
         },
         {
           "location": "main beach",
-          "image": "/images/catalogs/the-hamptons/03-main-beach.webp",
+          "image": "https://cdn.sanity.io/images/bchwhnoq/production/d08c11a98428d19ac1bdbe7a9548835c588c2b8e-1600x2400.webp",
           "width": 1600,
           "height": 2400,
           "compact": false
         },
         {
           "location": "atlantic ave beach",
-          "image": "/images/catalogs/the-hamptons/04-atlantic-ave-beach.webp",
+          "image": "https://cdn.sanity.io/images/bchwhnoq/production/99935097f6d6f417dc11b131c8968ace8204df35-1600x2400.webp",
           "width": 1600,
           "height": 2400,
           "compact": false
         },
         {
           "location": "indian wells beach",
-          "image": "/images/catalogs/the-hamptons/05-indian-wells-beach.webp",
+          "image": "https://cdn.sanity.io/images/bchwhnoq/production/1b2652aad975a92196a75b624d5b27ef0af3f183-2400x1600.webp",
           "width": 2400,
           "height": 1600,
           "compact": false
         },
         {
           "location": "ditch plains",
-          "image": "/images/catalogs/the-hamptons/06-ditch-plains.webp",
+          "image": "https://cdn.sanity.io/images/bchwhnoq/production/710637d8e96f9862241048f2c44eb98cbb1f902b-1600x2400.webp",
           "width": 1600,
           "height": 2400,
           "compact": false
         },
         {
           "location": "ditch plains",
-          "image": "/images/catalogs/the-hamptons/07-ditch-plains.webp",
+          "image": "https://cdn.sanity.io/images/bchwhnoq/production/915a2e891258cee193966f7e909c6e94ac4faa83-1600x2400.webp",
           "width": 1600,
           "height": 2400,
           "compact": true
         },
         {
           "location": "ditch plains",
-          "image": "/images/catalogs/the-hamptons/08-ditch-plains.webp",
+          "image": "https://cdn.sanity.io/images/bchwhnoq/production/3f6f92588e70eb2d001f40368b13d9c68117efc6-2400x1600.webp",
           "width": 2400,
           "height": 1600,
           "compact": false
         },
         {
           "location": "main beach",
-          "image": "/images/catalogs/the-hamptons/09-main-beach.webp",
+          "image": "https://cdn.sanity.io/images/bchwhnoq/production/df0eba9f59b95ed9cb5b39e7e5454a1981e6120a-2400x1600.webp",
           "width": 2400,
           "height": 1600,
           "compact": false
         },
         {
           "location": "main beach",
-          "image": "/images/catalogs/the-hamptons/10-main-beach.webp",
+          "image": "https://cdn.sanity.io/images/bchwhnoq/production/fb2c8a6d71bfdf2d06f1c8cb9cb727337b55e741-2400x1600.webp",
           "width": 2400,
           "height": 1600,
           "compact": false
         },
         {
           "location": "main beach",
-          "image": "/images/catalogs/the-hamptons/11-main-beach.webp",
+          "image": "https://cdn.sanity.io/images/bchwhnoq/production/f8f448384878e3d96667f463f8cb44baaf4112b6-2400x1600.webp",
           "width": 2400,
           "height": 1600,
           "compact": false
         },
         {
           "location": "shadmoor park",
-          "image": "/images/catalogs/the-hamptons/12-shadmoor-park.webp",
+          "image": "https://cdn.sanity.io/images/bchwhnoq/production/de83ebe598fce6ce338ba6ec9d10796ec4e351e5-2400x1600.webp",
           "width": 2400,
           "height": 1600,
           "compact": false
         },
         {
           "location": "shadmoor park",
-          "image": "/images/catalogs/the-hamptons/13-shadmoor-park.webp",
+          "image": "https://cdn.sanity.io/images/bchwhnoq/production/21648f574f9a07aef81560397e7df4fc080cc76d-1600x2400.webp",
           "width": 1600,
           "height": 2400,
           "compact": false
         },
         {
           "location": "shadmoor park",
-          "image": "/images/catalogs/the-hamptons/14-shadmoor-park.webp",
+          "image": "https://cdn.sanity.io/images/bchwhnoq/production/f6e94e47b0f748a099afc957396da4945efcdc60-1600x2400.webp",
           "width": 1600,
           "height": 2400,
           "compact": false
         },
         {
           "location": "ditch plains",
-          "image": "/images/catalogs/the-hamptons/15-ditch-plains.webp",
+          "image": "https://cdn.sanity.io/images/bchwhnoq/production/aa168f0053e425b0221a977cbaf199781d287f9d-2400x1600.webp",
           "width": 2400,
           "height": 1600,
           "compact": false
         },
         {
           "location": "main beach",
-          "image": "/images/catalogs/the-hamptons/16-main-beach.webp",
+          "image": "https://cdn.sanity.io/images/bchwhnoq/production/1de2618f02dc7dc4c9850dd0ab3869b2323f06de-2400x1600.webp",
           "width": 2400,
           "height": 1600,
           "compact": false
         },
         {
           "location": "atlantic ave beach",
-          "image": "/images/catalogs/the-hamptons/17-atlantic-ave-beach.webp",
+          "image": "https://cdn.sanity.io/images/bchwhnoq/production/3247ceef584505edb36453447fb9e51073716a19-1600x2400.webp",
           "width": 1600,
           "height": 2400,
           "compact": false
         },
         {
           "location": "hook pond",
-          "image": "/images/catalogs/the-hamptons/18-hook-pond.webp",
+          "image": "https://cdn.sanity.io/images/bchwhnoq/production/89dcb81eae73787b3c96c62abce5dc41e5dd36fe-1600x2400.webp",
           "width": 1600,
           "height": 2400,
           "compact": false
         },
         {
           "location": "napeague",
-          "image": "/images/catalogs/the-hamptons/19-napeague.webp",
+          "image": "https://cdn.sanity.io/images/bchwhnoq/production/61113ac2da218cb8b7e69a0049db39d86b4c0203-1600x2400.webp",
           "width": 1600,
           "height": 2400,
           "compact": false
         },
         {
           "location": "napeague",
-          "image": "/images/catalogs/the-hamptons/20-napeague.webp",
+          "image": "https://cdn.sanity.io/images/bchwhnoq/production/37b361702caf0fbd4a4e82e4c0dcdde30b5c4b54-1600x2400.webp",
           "width": 1600,
           "height": 2400,
           "compact": false
         },
         {
           "location": "napeague",
-          "image": "/images/catalogs/the-hamptons/21-napeague.webp",
+          "image": "https://cdn.sanity.io/images/bchwhnoq/production/613d89b074dc7d9ace25f4b9dd5fae28296009e7-2400x1600.webp",
           "width": 2400,
           "height": 1600,
           "compact": false
         },
         {
           "location": "montauk",
-          "image": "/images/catalogs/the-hamptons/22-montauk.webp",
+          "image": "https://cdn.sanity.io/images/bchwhnoq/production/1eacf681a2695fb2ecf4d67c3577b5a30334704f-2400x1600.webp",
           "width": 2400,
           "height": 1600,
           "compact": false
         },
         {
           "location": "east hampton",
-          "image": "/images/catalogs/the-hamptons/23-east-hampton.webp",
+          "image": "https://cdn.sanity.io/images/bchwhnoq/production/5db5d7f390b1ac57fec306fe0eab9240aee8c281-2400x1600.webp",
           "width": 2400,
           "height": 1600,
           "compact": false
         },
         {
           "location": "montauk",
-          "image": "/images/catalogs/the-hamptons/24-montauk.webp",
+          "image": "https://cdn.sanity.io/images/bchwhnoq/production/9ea11b27ca9e5640417a8f0a2e03fa5f9a1f3ddd-2400x1600.webp",
           "width": 2400,
           "height": 1600,
           "compact": false
         },
         {
           "location": "montauk",
-          "image": "/images/catalogs/the-hamptons/25-montauk.webp",
+          "image": "https://cdn.sanity.io/images/bchwhnoq/production/a55f6a09e0ee77d8823b5e76dbab646db6bb4157-1600x2400.webp",
           "width": 1600,
           "height": 2400,
           "compact": false
         },
         {
           "location": "napeague",
-          "image": "/images/catalogs/the-hamptons/26-napeague.webp",
+          "image": "https://cdn.sanity.io/images/bchwhnoq/production/8f6b039737755c2e69633eebf769933ebf2cb808-1600x2400.webp",
           "width": 1600,
           "height": 2400,
           "compact": false
         },
         {
           "location": "montauk",
-          "image": "/images/catalogs/the-hamptons/27-montauk.webp",
+          "image": "https://cdn.sanity.io/images/bchwhnoq/production/6afdd889138be0146c04828dd55d5a0eccd3309f-1600x2400.webp",
           "width": 1600,
           "height": 2400,
           "compact": false
         },
         {
           "location": "montauk",
-          "image": "/images/catalogs/the-hamptons/28-montauk.webp",
+          "image": "https://cdn.sanity.io/images/bchwhnoq/production/9bc4fcd8886855b600fa7e52ebceb7dc20cb756d-1600x2400.webp",
           "width": 1600,
           "height": 2400,
           "compact": false
         },
         {
           "location": "napeague",
-          "image": "/images/catalogs/the-hamptons/29-napeague.webp",
+          "image": "https://cdn.sanity.io/images/bchwhnoq/production/5eef8e6d12b51d8f21993c29ddadd2a25a33dbef-1600x2400.webp",
           "width": 1600,
           "height": 2400,
           "compact": true
         },
         {
           "location": "napeague",
-          "image": "/images/catalogs/the-hamptons/30-napeague.webp",
+          "image": "https://cdn.sanity.io/images/bchwhnoq/production/fd1ea3bfc9bfdc4a37175095f55f527600edfdc7-2400x1600.webp",
           "width": 2400,
           "height": 1600,
           "compact": false
         },
         {
           "location": "east hampton",
-          "image": "/images/catalogs/the-hamptons/31-east-hampton.webp",
+          "image": "https://cdn.sanity.io/images/bchwhnoq/production/99339bc49028b313607e37f6d33260620c964d7e-2400x1600.webp",
           "width": 2400,
           "height": 1600,
           "compact": false
         },
         {
           "location": "napeague",
-          "image": "/images/catalogs/the-hamptons/32-napeague.webp",
+          "image": "https://cdn.sanity.io/images/bchwhnoq/production/8689affd4d30ee421f672ff030d2da09660baeaf-1600x2400.webp",
           "width": 1600,
           "height": 2400,
           "compact": true
         },
         {
           "location": "napeague",
-          "image": "/images/catalogs/the-hamptons/33-napeague.webp",
+          "image": "https://cdn.sanity.io/images/bchwhnoq/production/a3b7ac554e6350d6a39bd102a7a9281fbd989331-2400x1600.webp",
           "width": 2400,
           "height": 1600,
           "compact": false
         },
         {
           "location": "napeague",
-          "image": "/images/catalogs/the-hamptons/34-napeague.webp",
+          "image": "https://cdn.sanity.io/images/bchwhnoq/production/6caaac06e0d60543a1e18e43e6cc3dfad0c02dcb-2400x1600.webp",
           "width": 2400,
           "height": 1600,
           "compact": false
         },
         {
           "location": "napeague",
-          "image": "/images/catalogs/the-hamptons/35-napeague.webp",
+          "image": "https://cdn.sanity.io/images/bchwhnoq/production/ba367a217846c7d31ae002f7316fbb112bf0c963-1600x2400.webp",
           "width": 1600,
           "height": 2400,
           "compact": true
         },
         {
           "location": "main beach",
-          "image": "/images/catalogs/the-hamptons/36-main-beach.webp",
+          "image": "https://cdn.sanity.io/images/bchwhnoq/production/37952011da9b6b44dcf617f2a9a0f4c18a3eeeda-2400x1600.webp",
           "width": 2400,
           "height": 1600,
           "compact": false
         }
       ],
       "cardImage": {
-        "src": "/images/catalogs/the-hamptons/24-montauk.webp",
+        "src": "https://cdn.sanity.io/images/bchwhnoq/production/9ea11b27ca9e5640417a8f0a2e03fa5f9a1f3ddd-2400x1600.webp",
         "alt": "the hamptons",
         "width": 2400,
         "height": 1600
